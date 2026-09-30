@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Biblioteca Otaku</title>
-<meta name="description" content="Organize seus animes, mangás, manhwas, manhuas, donghuas e aenis: marque o que já viu, dê nota, favorite e veja onde assistir ou ler.">
-<meta property="og:title" content="Biblioteca Otaku"><meta property="og:description" content="Sua biblioteca pessoal de animes, mangás, manhwas, manhuas, donghuas e aenis.">
+<meta name="description" content="Organize seus animes, mangás, manhwas, manhuas, novels, donghuas e aenis: marque o que já viu, dê nota, favorite e veja onde assistir ou ler.">
+<meta property="og:title" content="Biblioteca Otaku"><meta property="og:description" content="Sua biblioteca pessoal de animes, mangás, manhwas, manhuas, novels, donghuas e aenis.">
 <meta name="theme-color" content="#15131f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
 <style>
@@ -121,8 +121,8 @@ input[type=search]{flex:1;min-width:200px}
 <div id="modal"><div class="box" id="box"></div></div>
 
 <script>
-const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua'};
-const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN']};
+const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua',novel:'Novel'};
+const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN'],novel:['MANGA',undefined]};
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
 let src=null,favOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
@@ -145,6 +145,7 @@ function save(l){if(l)l.upd=Date.now();try{localStorage.setItem('otaku-lib',JSON
 
 function kindOf(m){
   const c=m.countryOfOrigin;
+  if(m.format==='NOVEL') return 'novel';
   if(m.type==='MANGA') return c==='KR'?'manhwa':(c==='CN'||c==='TW')?'manhua':'manga';
   return c==='CN'||c==='TW'?'donghua':c==='KR'?'aeni':'anime';
 }
@@ -175,11 +176,11 @@ function genreBox(el,set,mode,fn){
 }
 const genOk=(arr,set,all)=>!set.size||(all?[...set].every(g=>(arr||[]).includes(g)):[...set].some(g=>(arr||[]).includes(g)));
 
-const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:[String],$f:[MediaFormat],$stt:MediaStatus,$gt:FuzzyDateInt,$lt:FuzzyDateInt,$ms:Int){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,countryOfOrigin:$c,sort:$o,genre_in:$g,format_in:$f,status:$stt,startDate_greater:$gt,startDate_lesser:$lt,averageScore_greater:$ms,isAdult:false){id type countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
+const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:[String],$f:[MediaFormat],$fn:[MediaFormat],$stt:MediaStatus,$gt:FuzzyDateInt,$lt:FuzzyDateInt,$ms:Int){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,countryOfOrigin:$c,sort:$o,genre_in:$g,format_in:$f,format_not_in:$fn,status:$stt,startDate_greater:$gt,startDate_lesser:$lt,averageScore_greater:$ms,isAdult:false){id type format countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
 
 async function fetchPage(q,k,p,sort,g){
   const [t,c]=k==='all'?[undefined,undefined]:SPEC[k];
-  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:g&&g.length?g:undefined,f:F.fmt?F.fmt.split(','):undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
+  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:g&&g.length?g:undefined,f:k==='novel'?['NOVEL']:(F.fmt?F.fmt.split(','):undefined),fn:(k==='manga'||k==='manhwa'||k==='manhua')&&!F.fmt?['NOVEL']:undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
   const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
   const j=await r.json().catch(()=>null);
   if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
@@ -241,7 +242,7 @@ function card(s){
     <div class="m">${s.year||''} ${s.avg?'· AniList '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
 }
 
-const MF='id type countryOfOrigin isAdult title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status';
+const MF='id type format countryOfOrigin isAdult title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status';
 async function fetchSrc(p){
   if(src.type==='staff'){const d=await gql('query($id:Int,$p:Int){Staff(id:$id){staffMedia(page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:src.id,p});return d.Staff.staffMedia}
   const d=await gql('query($id:Int,$p:Int){Studio(id:$id){media(page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:src.id,p});return d.Studio.media;
@@ -492,14 +493,16 @@ async function showWhere(id){
   const verb=s.type==='MANGA'?'Onde ler':'Onde assistir';
   const best=g.free[0]||g.part[0]||g.paid[0]||g.other[0];
   const isM=s.type==='MANGA',trm=/^(youtube|dailymotion):([\w-]+)$/.exec(s.tr||'');
-  let h=`<b>${verb}</b><div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
+  let h=`<b>${verb}</b><div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}${s.kind==='novel'?`<a class="btn" target="_blank" rel="noopener" href="https://novelfull.com/search?keyword=${encodeURIComponent(s.title)}">📖 Ler no NovelFull</a>`:`<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a>`}</div><div id="trbox"></div>`;
   h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
   h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
-  const fr=s.type==='MANGA'
+  const nv=s.kind==='novel',nq=encodeURIComponent(s.title);
+  if(nv)h+=`<div class="wh"><small style="margin:0">Sites de web novels (abre a busca pelo título)</small><div class="gen"><a class="lk" target="_blank" rel="noopener" href="https://novelfull.com/search?keyword=${nq}">NovelFull (tradução de fãs)</a><a class="lk" target="_blank" rel="noopener" href="https://www.novelupdates.com/?s=${nq}&post_type=seriesplans">NovelUpdates</a><a class="lk" target="_blank" rel="noopener" href="https://www.webnovel.com/search?keywords=${nq}">Webnovel (oficial)</a></div></div>`;
+  const fr=nv?[]:s.type==='MANGA'
     ?[['MANGA Plus','MANGA Plus'],['WEBTOON (PT-BR) 🇧🇷','WEBTOON'],['Tapas','Tapas']]
     :[['Pluto TV Brasil 🇧🇷','Pluto TV'],['Muse Asia (YouTube)','Muse Asia'],['Ani-One Asia (YouTube)','Ani-One Asia']];
-  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
+  if(fr.length)h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
   h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
   const tb=$('#trbtn');
