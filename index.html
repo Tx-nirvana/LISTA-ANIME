@@ -66,7 +66,7 @@ input[type=search]{flex:1;min-width:200px}
 .box ol{padding-left:20px;color:#d5d0e6}.box code{background:var(--panel2);padding:1px 6px;border-radius:4px}
 @media(max-width:640px){.box{flex-direction:column}.box img{width:150px}}
 nav{overflow-x:auto}nav button{white-space:nowrap}
-.grid.land{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}.card.land img{aspect-ratio:16/9}.card.x .m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid.land{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}.card.land img{aspect-ratio:16/9}.card.cx .m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1227,7 +1227,7 @@ function paintWhere(s){
 /* ---------- cartão e janela de detalhes ---------- */
 function cardX(s){
   const l=lib[s.id];
-  return `<div class="card x${s.kind==='game'?' land':''}" data-id="${s.id}" tabindex="0"><span class="tag">${KX[s.kind]}</span>${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?'<span class="badge g">✓</span>':''}
+  return `<div class="card cx${s.kind==='game'?' land':''}" data-id="${s.id}" tabindex="0"><span class="tag">${KX[s.kind]}</span>${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?'<span class="badge g">✓</span>':''}
   <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
   <img loading="lazy" src="${s.cover||PH}" alt=""><div class="i"><div class="t">${s.title}</div>
   <div class="m">${[s.year,s.kind==='game'?s.pl:s.by].filter(Boolean).join(' · ')}${s.avg?' · ★ '+(s.avg/20).toFixed(1):''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${stl(s.kind,l.status)}</div>`:''}</div></div>`;
@@ -1319,12 +1319,12 @@ function mount(id){
   <div class="grid res${id==='jg'?' land':''}"></div><div class="msg"></div><button class="more" style="display:none">Carregar mais</button></div>
   <div data-p="l" style="display:none"><div class="bar"><input type="search" class="lq" placeholder="Buscar na minha lista">
   <select class="ls"><option value="">Todos os status</option>${['Na fila','Em andamento','Concluído','Abandonado'].map((t,i)=>`<option value="${STATUS[i]}">${t}</option>`).join('')}</select>
-  ${id==='lf'?'<select class="lk"><option value="">Livros e filmes</option><option value="book">Só livros</option><option value="movie">Só filmes</option></select>':''}
+  ${id==='lf'?'<select class="lkd"><option value="">Livros e filmes</option><option value="book">Só livros</option><option value="movie">Só filmes</option></select>':''}
   <button class="chip lf">♥ Só favoritos</button><select class="lo"><option value="added">Adicionados por último</option><option value="rating">Minha nota</option><option value="title">Título (A–Z)</option></select></div>
   <div class="stats lst"></div><div class="grid lg${id==='jg'?' land':''}"></div></div>`;
   $('main').appendChild(sec);
   const q=s=>sec.querySelector(s);
-  Object.assign(h,{sec,btn:$('#t-'+id),q:q('.q'),sort:q('.sort'),ban:q('.ban'),res:q('.res'),msg:q('.msg'),mb:q('.more'),lq:q('.lq'),ls:q('.ls'),lo:q('.lo'),lk:q('.lk'),lg:q('.lg'),lst:q('.lst'),cnt:q('.cnt'),kd:q('.kd'),gn:q('.gn')});
+  Object.assign(h,{sec,btn:$('#t-'+id),q:q('.q'),sort:q('.sort'),ban:q('.ban'),res:q('.res'),msg:q('.msg'),mb:q('.more'),lq:q('.lq'),ls:q('.ls'),lo:q('.lo'),lk:q('.lkd'),lg:q('.lg'),lst:q('.lst'),cnt:q('.cnt'),kd:q('.kd'),gn:q('.gn')});
   h.btn.onclick=()=>tab(id);
   h.res.onclick=clickCard;h.lg.onclick=clickCard;
   h.q.oninput=()=>{clearTimeout(h.t);h.t=setTimeout(()=>run(h,true),450)};
