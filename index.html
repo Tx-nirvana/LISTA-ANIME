@@ -78,10 +78,11 @@ input[type=search]{flex:1;min-width:200px}
   <div id="tip" class="stats" style="display:none;background:var(--panel);padding:10px 14px;border-radius:10px">Sua lista fica salva <b>neste navegador</b>. Para não perder e levar para outros aparelhos, use <b>Entrar</b> (canto superior, com Google ou GitHub) ou <b>Exportar</b> na aba Minha biblioteca. <button class="chip" id="tipx">Entendi</button></div>
   <section id="v-search">
     <div class="bar">
-      <input type="search" id="q" placeholder="Buscar por título (ou deixe vazio para ver os mais populares)">
+      <input type="search" id="q" placeholder="Buscar por título ou autor (vazio = mais populares)">
       <select id="sort"><option value="POPULARITY_DESC">Mais populares</option><option value="SCORE_DESC">Melhor avaliados</option><option value="TRENDING_DESC">Em alta</option><option value="START_DATE_DESC">Mais recentes</option></select>
     </div>
     <div id="banner" class="stats" style="display:none"></div>
+    <div id="authors" style="display:none"></div>
     <div class="chips" id="kinds"></div>
     <div class="grid" id="results"></div>
     <div id="smsg" class="msg"></div>
@@ -156,9 +157,24 @@ async function fetchPage(q,k,p,sort){
   return j.data.Page;
 }
 
+const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+async function authorsFor(q){
+  const box=$('#authors');
+  if(!q||q.length<3){box.style.display='none';box.innerHTML='';return}
+  try{
+    const d=await gql('query($s:String){Page(perPage:8){staff(search:$s,sort:SEARCH_MATCH){id name{full native} primaryOccupations image{medium}}}}',{s:q});
+    if($('#q').value.trim()!==q||src)return;
+    const ws=norm(q).split(/\s+/).filter(Boolean);
+    const list=(d.Page.staff||[]).filter(a=>{const n=norm(a.name.full)+' '+norm(a.name.native);return ws.every(w=>n.includes(w))}).slice(0,4);
+    if(!list.length){box.style.display='none';box.innerHTML='';return}
+    box.innerHTML='<small style="color:var(--mut);display:block;margin:6px 0">Autores e criadores encontrados (toque para ver as obras):</small><div class="gen">'+list.map(a=>`<button class="lk" style="border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px" data-id="${a.id}" data-n="${esc(a.name.full)}">${a.image&&/^https?:/.test(a.image.medium||'')?`<img src="${esc(a.image.medium)}" alt="" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`:''}${esc(a.name.full)}${a.primaryOccupations&&a.primaryOccupations[0]?' <small style="display:inline;margin:0;color:var(--mut)">· '+esc(a.primaryOccupations[0])+'</small>':''}</button>`).join('')+'</div>';
+    box.style.display='';
+    box.onclick=e=>{const b=e.target.closest('button');if(b)openWorks('staff',b.dataset.id,b.dataset.n)};
+  }catch(e){box.style.display='none'}
+}
 async function search(reset){
   if(loading) return; loading=true;
-  if(reset){page=1;$('#results').innerHTML='';current={};curOrder=[]}
+  if(reset){page=1;$('#results').innerHTML='';current={};curOrder=[];authorsFor(src?'':$('#q').value.trim())}
   $('#smsg').textContent='Carregando...';$('#more').style.display='none';
   try{
     const d=src?await fetchSrc(page):await fetchPage($('#q').value.trim(),kind,page,$('#sort').value);
@@ -328,11 +344,16 @@ async function showWhere(id){
   const el=$('#where');if(!el)return;
   const g={free:[],part:[],paid:[],other:[]};
   s.links.forEach(x=>{const t=TIERS.find(t=>t[1].test(x.site));g[t?t[0]:'other'].push(x)});
+  Object.values(g).forEach(a=>a.sort((x,y)=>/portug/i.test(y.lang||'')-/portug/i.test(x.lang||'')));
   const verb=s.type==='MANGA'?'Onde ler':'Onde assistir';
   let h=`<b>${verb}</b>`;
   h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
   h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
+  const fr=s.type==='MANGA'
+    ?[['MANGA Plus','https://mangaplus.shueisha.co.jp/search_result?keyword='],['WEBTOON (PT-BR) 🇧🇷','https://www.webtoons.com/pt-br/search?keyword='],['Tapas','https://tapas.io/search?t=COMICS&q=']]
+    :[['Pluto TV Brasil 🇧🇷','https://pluto.tv/br/on-demand',1],['Muse Asia (YouTube)','https://www.youtube.com/@MuseAsia/search?query='],['Ani-One Asia (YouTube)','https://www.youtube.com/@AniOneAsia/search?query=']];
+  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (busca pelo título; pode não ter esta obra)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="${f[1]}${f[2]?'':q}">${f[0]}</a>`).join('')}</div></div>`;
   h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
 }
