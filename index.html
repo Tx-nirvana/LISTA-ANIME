@@ -48,7 +48,7 @@ input[type=search]{flex:1;min-width:200px}
 .stars{display:flex;gap:2px}
 .stars span{font-size:30px;cursor:pointer;color:var(--panel2);line-height:1}
 .stars span.on{color:var(--star)}
-.btn{border:0;border-radius:var(--r);padding:9px 16px;font:600 14px inherit;cursor:pointer;background:var(--ac);color:#0d2b26;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn{border:0;border-radius:var(--r);padding:9px 16px;font:600 14px inherit;cursor:pointer;background:var(--ac);color:#0d2b26}
 .btn.d{background:var(--panel2);color:var(--red)}
 .gen{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .gen span{background:var(--panel2);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--mut)}
@@ -61,7 +61,7 @@ input[type=search]{flex:1;min-width:200px}
 .bar2{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}.bar2 .n{width:150px;flex:none;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bar2 .b{height:14px;background:var(--ac);border-radius:4px;flex:none}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}.sc{background:var(--panel);border-radius:var(--r);padding:14px;color:var(--mut)}.sc b{display:block;font-size:26px;color:var(--tx)}.sec{background:var(--panel);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}.sec h3{margin:0 0 8px;font-size:16px}
 .gdet{margin:8px 0}.gdet summary{cursor:pointer;color:var(--ac);font-size:14px;padding:4px 0}.gdet .chips{margin-top:8px}
-.lk{background:var(--panel2);color:var(--ac);border-radius:6px;padding:4px 10px;font-size:13px;text-decoration:none;display:inline-block;margin:2px 0}
+.lk{background:var(--panel2);color:var(--ac);border-radius:6px;padding:3px 10px;font-size:13px;text-decoration:none}
 .lk:hover{background:var(--ac);color:#0d2b26}
 .box ol{padding-left:20px;color:#d5d0e6}.box code{background:var(--panel2);padding:1px 6px;border-radius:4px}
 @media(max-width:640px){.box{flex-direction:column}.box img{width:150px}}
@@ -342,7 +342,7 @@ function renderStats(){
     <div class="sc"><b>${eps}</b>episódios (~${Math.round(eps*24/60)} h)</div><div class="sc"><b>${chs}</b>capítulos lidos</div></div>
     ${box('Por tipo',bars(cnt(items,x=>x.kind),k=>KINDS[k]||k))}
     ${box('Por situação',bars(cnt(items,x=>x.status)))}
-    ${box('Suas notas',[5,4,3,2,1].map(n=>`<div class="bar2"><span class="n">${'★'.repeat(n)}</span><span class="b" style="width:${Math.max(2,(stars[n]\vert{}\vert{}0)/sm*55)}\%"></span><span>${stars[n]||0}</span></div>`).join('')+(rated.length?'':'<small>Você ainda não deu notas.</small>'))}
+    ${box('Suas notas',[5,4,3,2,1].map(n=>`<div class="bar2"><span class="n">${'★'.repeat(n)}</span><span class="b" style="width:${Math.max(2,(stars[n]||0)/sm*55)}%"></span><span>${stars[n]||0}</span></div>`).join('')+(rated.length?'':'<small>Você ainda não deu notas.</small>'))}
     ${box('Gêneros mais frequentes',bars(gc,g=>GEN[g]||g,10))}
     ${box('Gêneros em que você dá as melhores notas',bestRows)}
     ${box('Títulos adicionados nos últimos 12 meses',monthRows)}
@@ -431,7 +431,7 @@ async function showSyn(id){
   }
   let pt=s.pt, showPT=true;
   const paint=()=>{
-    const el2=$('#syn'); if(!el2\vert{}\vert{}$('#syn').dataset.id!==String(id)&&false)return;
+    const el2=$('#syn'); if(!el2||$('#syn').dataset.id!==String(id)&&false)return;
     el2.textContent=showPT?pt:s.syn;
     tg.textContent=showPT?'Ver original (inglês)':'Ver tradução (português)';
   };
@@ -466,7 +466,7 @@ async function showWhere(id){
       const d=await gql('query($id:Int){Media(id:$id){siteUrl trailer{id site} externalLinks{site url type language isDisabled} staff(perPage:25,sort:RELEVANCE){edges{role node{id name{full}}}} studios{edges{isMain node{id name}}}}}',{id:+id});
       s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled&&/^https?:\/\//i.test(x.url)).map(x=>({site:x.site,url:x.url,lang:x.language}));
       s.page=d.Media.siteUrl;
-      const tr=d.Media.trailer;s.tr=tr&&/^[\w-]{5,20}$/.test(tr.id\vert{}\vert{}'')&&/^(youtube\vert{}dailymotion)$/.test(tr.site||'')?tr.site+':'+tr.id:'-';
+      const tr=d.Media.trailer;s.tr=tr&&/^[\w-]{5,20}$/.test(tr.id||'')&&/^(youtube|dailymotion)$/.test(tr.site||'')?tr.site+':'+tr.id:'-';
       const seen={};
       s.authors=d.Media.staff.edges.filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
       s.studios=d.Media.studios.edges.filter(e=>e.isMain).map(e=>({id:e.node.id,name:e.node.name}));
@@ -492,36 +492,15 @@ async function showWhere(id){
   const verb=s.type==='MANGA'?'Onde ler':'Onde assistir';
   const best=g.free[0]||g.part[0]||g.paid[0]||g.other[0];
   const isM=s.type==='MANGA',trm=/^(youtube|dailymotion):([\w-]+)$/.exec(s.tr||'');
-  let h=`<b>${verb}</b><div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener noreferrer" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
-  
-  if(s.links.length){
-    h+=Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener noreferrer" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join('');
-  }
-
-  // Seção de busca rápida no Google por sites e plataformas (inclui Anime Fire, Crunchyroll, etc.)
-  const platforms = isM ? [
-    ['MANGA Plus 🇧🇷','MANGA Plus'],
-    ['WEBTOON 🇧🇷','WEBTOON'],
-    ['MangaDex 🔍','MangaDex'],
-    ['Mangás Brasil 🔍','Mangás Brasil'],
-    ['ReadManga 🔍','ReadManga']
-  ] : [
-    ['Crunchyroll 🇧🇷','Crunchyroll'],
-    ['Netflix 🇧🇷','Netflix'],
-    ['Prime Video 🇧🇷','Prime Video'],
-    ['Pluto TV 🇧🇷','Pluto TV'],
-    ['Anime Fire 🔍','Anime Fire'],
-    ['Animes Online 🔍','Animes Online'],
-    ['BetterAnime 🔍','BetterAnime'],
-    ['Animes Vision 🔍','Animes Vision']
-  ];
-
-  h+=`<div class="wh"><small style="margin:0;font-weight:600;color:var(--tx)">Pesquisar em sites e plataformas (abre no Google):</small><div class="gen" style="margin-top:6px">${platforms.map(p=>`<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+p[1])}">${p[0]}</a>`).join('')}</div></div>`;
-
+  let h=`<b>${verb}</b><div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
+  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
-  h+=`<div class="wh"><small style="margin:0">Busca Geral</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler':' assistir'))}">Google Geral</a>${s.page?`<a class="lk" target="_blank" rel="noopener noreferrer" href="${s.page}">Página AniList</a>`:''}</div></div>`;
-  h+='<small>💡 Os botões com 🔍 pesquisam diretamente o nome do anime + site no Google para você encontrar facilmente.</small>';
-
+  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
+  const fr=s.type==='MANGA'
+    ?[['MANGA Plus','MANGA Plus'],['WEBTOON (PT-BR) 🇧🇷','WEBTOON'],['Tapas','Tapas']]
+    :[['Pluto TV Brasil 🇧🇷','Pluto TV'],['Muse Asia (YouTube)','Muse Asia'],['Ani-One Asia (YouTube)','Ani-One Asia']];
+  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
+  h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
   const tb=$('#trbtn');
   if(tb)tb.onclick=()=>{const box=$('#trbox');if(box.innerHTML){box.innerHTML='';tb.textContent='🎬 Ver trailer aqui';return}
@@ -651,16 +630,16 @@ async function unpack(t){
 function showSync(){
   const on=prov&&ghu,goo=prov==='google';
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div style="flex:1;min-width:0">
-  ${on?`<h2>Conta conectada</h2><p>Você está logado como <b>${esc(ghu.login)}</b> (${goo?'Google':'GitHub'}).${goo?'Sua lista fica numa pasta escondida do seu Google Drive':'Sua lista fica num Gist privado da sua conta'} e sincroniza sozinha a cada mudança.</p>
+  ${on?`<h2>Conta conectada</h2><p>Você está logado como <b>${esc(ghu.login)}</b> (${goo?'Google':'GitHub'}). ${goo?'Sua lista fica numa pasta escondida do seu Google Drive':'Sua lista fica num Gist privado da sua conta'} e sincroniza sozinha a cada mudança.</p>
     ${goo&&!tk?'<p class="sub">Por segurança, o Google pede para reconectar de tempos em tempos. Toque em Sincronizar agora.</p>':''}
-    <div class="row"><button class="btn" id="now">${goo&&!tk?'Reconectar e sincronizar':'Sincronizar agora'}</button>${goo?'':`<a class="lk" target="_blank" rel="noopener noreferrer" href="https://gist.github.com/${esc(ghu.login)}/${esc(gid)}">Ver meu Gist</a>`}<button class="btn d" id="off">Sair</button></div>`
+    <div class="row"><button class="btn" id="now">${goo&&!tk?'Reconectar e sincronizar':'Sincronizar agora'}</button>${goo?'':`<a class="lk" target="_blank" rel="noopener" href="https://gist.github.com/${esc(ghu.login)}/${esc(gid)}">Ver meu Gist</a>`}<button class="btn d" id="off">Sair</button></div>`
   :`<h2>Entrar</h2>
     <p class="sub">Guarde sua lista na nuvem e sincronize entre aparelhos. Escolha uma opção:</p>
     <p><b>Google</b> (mais fácil)</p>
     <div class="row"><button class="btn" id="gg">Entrar com Google</button></div>
     <p class="sub">Sua lista fica numa pasta escondida do seu Google Drive. Só este site enxerga essa pasta e ela não ocupa nada visível no seu Drive.</p>
     <p style="margin-top:16px"><b>GitHub</b> (com token, uma única vez, uns 2 minutos)</p>
-    <ol><li>Abra <a class="lk" target="_blank" rel="noopener noreferrer" href="https://github.com/settings/tokens/new?scopes=gist&description=Biblioteca%20Otaku">esta página do GitHub</a> e faça login se pedir.</li>
+    <ol><li>Abra <a class="lk" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=gist&description=Biblioteca%20Otaku">esta página do GitHub</a> e faça login se pedir.</li>
     <li>Em <b>Expiration</b>, escolha <b>No expiration</b>. Deixe marcada só a opção <b>gist</b>.</li>
     <li>Role até o fim, clique em <b>Generate token</b> e copie o código que começa com <code>ghp_</code>.</li>
     <li>Cole abaixo e toque em Entrar.</li></ol>
@@ -699,15 +678,14 @@ function showSync(){
     catch(e){say('Não consegui ler esse texto. Copie de novo, inteiro.')}
   };
 }
-
-/* Garante abertura correta dos links em nova aba */
+/* links externos: abre em nova aba; se o navegador bloquear, abre na mesma aba */
 document.addEventListener('click',e=>{
   const a=e.target.closest&&e.target.closest('a[href]');
-  if(!a||!/^https?:\/\//i.test(a.href))return;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
+  if(!a||!/^https?:\/\//i.test(a.href)||a.origin===location.origin)return;
+  e.preventDefault();
+  const w=window.open(a.href,'_blank');
+  if(w){try{w.opener=null}catch(x){}}else location.href=a.href;
 });
-
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 document.onkeydown=e=>{if(e.key==='Escape')closeModal()};
@@ -725,7 +703,7 @@ function renderLib(){
   const tc={};Object.values(lib).forEach(x=>(x.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));
   [...lgTags].forEach(t=>{if(!tc[t])lgTags.delete(t)});
   $('#ltags').innerHTML=Object.keys(tc).sort((a,b)=>a.localeCompare(b)).map(t=>`<button class="chip ${lgTags.has(t)?'on':''}" data-t="${esc(t)}">🏷 ${esc(t)} (${tc[t]})</button>`).join('');
-  let items=Object.values(lib).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&[...lgTags].every(t=>(s.tags||[]).includes(t))&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!(+$('#lmin').value)\vert{}\vert{}(s.rating\vert{}\vert{}0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
+  let items=Object.values(lib).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&[...lgTags].every(t=>(s.tags||[]).includes(t))&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
   items.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
   const rated=items.filter(s=>s.rating);
   const avg=rated.length?(rated.reduce((a,s)=>a+s.rating,0)/rated.length).toFixed(1):'–';
@@ -746,7 +724,8 @@ let tm;
 $('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>search(true),450)};
 $('#sort').onchange=()=>search(true);
 $('#more').onclick=()=>{page++;search(false)};
-['#lq','#lstatus','#lsort','#lmin'].forEach(s=>$(s).oninput=renderLib);$('#lfav').onclick=e=>{favOnly=!favOnly;e.target.classList.toggle('on',favOnly);renderLib()};
+['#lq','#lstatus','#lsort','#lmin'].forEach(s=>$(s).oninput=renderLib);
+$('#lfav').onclick=e=>{favOnly=!favOnly;e.target.classList.toggle('on',favOnly);renderLib()};
 
 $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
 $('#imp').onclick=()=>$('#file').click();
