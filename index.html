@@ -66,7 +66,6 @@ input[type=search]{flex:1;min-width:200px}
 .box ol{padding-left:20px;color:#d5d0e6}.box code{background:var(--panel2);padding:1px 6px;border-radius:4px}
 @media(max-width:640px){.box{flex-direction:column}.box img{width:150px}}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.media-hub{margin-top:14px;border-top:1px solid var(--panel2);padding-top:12px}.media-hub h3{margin:0 0 8px;font-size:16px}.media-source{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}.player-wrap{margin-top:12px;background:#0b0a10;border-radius:10px;overflow:hidden;border:1px solid var(--panel2)}.player-wrap iframe{width:100%;aspect-ratio:16/9;border:0;display:block}.player-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:var(--panel2)}.player-title{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.back-media{background:none;border:0;color:var(--ac);cursor:pointer;font:inherit}.status-media{background:var(--panel2);padding:10px;border-radius:8px;margin:8px 0;color:var(--mut)}.external-note{color:var(--mut);font-size:12px;margin-top:8px}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -181,10 +180,24 @@ const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:
 async function fetchPage(q,k,p,sort,g){
   const [t,c]=k==='all'?[undefined,undefined]:SPEC[k];
   const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:g&&g.length?g:undefined,f:F.fmt?F.fmt.split(','):undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
-  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
-  const j=await r.json().catch(()=>null);
-  if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
-  return j.data.Page;
+  const request=async(query,vars)=>{
+    const ctl=new AbortController();
+    const timer=setTimeout(()=>ctl.abort(),15000);
+    try{
+      const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query,variables:vars}),signal:ctl.signal});
+      const j=await r.json().catch(()=>null);
+      const msg=j&&j.errors&&j.errors.map(e=>e.message).join(' | ');
+      if(!r.ok||!j||j.errors||!j.data) throw new Error('API '+r.status+(msg?' — '+msg:''));
+      return j.data.Page;
+    }finally{clearTimeout(timer)}
+  };
+  try{return await request(GQL,v)}catch(first){
+    /* Se algum filtro novo/temporariamente inválido causar erro, tenta uma consulta mínima. */
+    const simple=`query($s:String,$t:MediaType,$p:Int){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,sort:POPULARITY_DESC,isAdult:false){id type countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
+    try{return await request(simple,{s:q||undefined,t,p})}catch(second){
+      throw new Error((String(second.message).includes('404')?'AniList não encontrou a consulta solicitada. ': 'Não foi possível consultar o AniList. ')+String(second.message||first.message));
+    }
+  }
 }
 
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -227,7 +240,7 @@ async function search(reset){
     }
     $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';
     $('#more').style.display=hasNext?'block':'none';
-  }catch(e){$('#smsg').textContent=(String(e.message).startsWith('API')?'O AniList recusou a busca ('+e.message+'). Tente de novo em instantes.':'Sem conexão com o AniList. Se você abriu este arquivo dentro do Claude, baixe e abra direto no navegador (Chrome, Edge, Firefox). Detalhe: '+e.message)}
+  }catch(e){$('#smsg').textContent=(String(e.message).includes('404')?'A busca não encontrou resultados válidos. Tente o título original, outro idioma ou selecione outro tipo.':(String(e.message).startsWith('API')||String(e.message).startsWith('Não foi possível')?'O catálogo não respondeu corretamente agora. Tente novamente em alguns segundos.':'Sem conexão com o catálogo. Abra o arquivo diretamente no navegador (Chrome, Edge ou Firefox).'))}
   loading=false;
 }
 
@@ -361,7 +374,7 @@ function openModal(id){
     <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
     <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
     <button class="chip" id="tg" style="display:none">Ver original (inglês)</button>
-    ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option value="${esc(x)}" ${x===l.status?'selected':''}>${x==='Quero ver/ler'?(s.type==='MANGA'?'Quero ler':'Quero assistir'):x}</option>`).join('')}</select>
+    ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option ${x===l.status?'selected':''}>${x}</option>`).join('')}</select>
       <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
       <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/5':'sem nota'}</span></div>
       <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${(l.note||'').replace(/</g,'&lt;')}</textarea>
@@ -458,52 +471,23 @@ function toggleFav(id){
 
 /* ---------- onde assistir / ler ---------- */
 const TIERS=[['free',/youtube|tubi|pluto|retrocrush|ani-?one|muse/i],['part',/manga ?plus|webtoon|tapas|comikey|shonen jump|viz|bilibili|viki|iqiyi|wetv|tappytoon|lezhin|pocket comics|mangamo|azuki|inkr|k manga|kakao|naver|manta|toomics/i],['paid',/netflix|amazon|prime|disney|hulu|hbo|\bmax\b|hidive|funimation|crunchyroll|apple|kindle|bookwalker|comixology|google play|paramount/i]];
-const TNAME={free:'Grátis',part:'Grátis com limites ou catálogo parcial',paid:'Pago',other:'Outros'};
-const FONTES_OTAKU={
-  anime:[
-    {site:'AnimeFire',url:'https://animefire.one/',search:true},
-    {site:'Animes Online',url:'https://animesonlinecc.to/',search:true},
-    {site:'YouTube',url:'https://www.youtube.com/results?search_query=',search:true},
-    {site:'Muse Asia (YouTube)',url:'https://www.youtube.com/@MuseAsia/search?query=',search:true},
-    {site:'Ani-One Asia (YouTube)',url:'https://www.youtube.com/@AniOneAsia/search?query=',search:true},
-    {site:'Pluto TV Brasil',url:'https://pluto.tv/br/on-demand',search:false}
-  ],
-  manga:[
-    {site:'Manga Livre',url:'https://mangalivre.tv/',search:true},
-    {site:'MANGA Plus',url:'https://mangaplus.shueisha.co.jp/search_result?keyword=',search:true},
-    {site:'WEBTOON (PT-BR)',url:'https://www.webtoons.com/pt-br/search?keyword=',search:true},
-    {site:'Tapas',url:'https://tapas.io/search?t=COMICS&q=',search:true}
-  ]
-};
-async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});if(!r.ok)throw new Error('API '+r.status);const j=await r.json();if(j.errors)throw new Error(j.errors[0].message);return j.data}
-function mediaKind(s){return s.type==='MANGA'?'manga':'anime'}
-function mediaVerb(s){return s.type==='MANGA'?'ler':'assistir'}
-function mediaStatus(s){return s.type==='MANGA'?'Quero ler':'Quero assistir'}
-function youtubeId(url){try{const u=new URL(url);if(u.hostname==='youtu.be')return u.pathname.slice(1).split('/')[0];if(/youtube\.com$/.test(u.hostname)){if(u.pathname==='/watch')return u.searchParams.get('v');const m=u.pathname.match(/\/embed\/([^/?]+)/);if(m)return m[1];const m2=u.pathname.match(/\/(?:shorts|live)\/([^/?]+)/);if(m2)return m2[1]}}catch(e){}return ''}
-function youtubeEmbed(url){const id=youtubeId(url);return id?'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?rel=0&modestbranding=1':''}
-function abrirPlayer(id,url,nome){
-  const embed=youtubeEmbed(url);if(!embed){window.open(url,'_blank','noopener,noreferrer');return}
-  const s=lib[id]||current[id];if(!s)return;
-  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="openModal(${Number(id)})">×</button><div style="width:100%;min-width:0"><div class="player-head"><div class="player-title">${esc(nome||s.title)}</div><button class="back-media" onclick="openModal(${Number(id)})">← Voltar ao título</button></div><div class="player-wrap"><iframe src="${esc(embed)}" title="${esc(nome||s.title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><div class="external-note">O player interno é usado somente para vídeos do YouTube. Outras fontes abrem no próprio site porque podem bloquear incorporação.</div></div>`;
-  $('#modal').classList.add('on');
-}
-function fonteUrl(f,title){return f.search?f.url+encodeURIComponent(title):f.url}
-function fonteTipo(site){return /youtube|muse|ani-one|pluto/i.test(site)?'anime':'other'}
-function renderMediaHub(s){
-  const kind=mediaKind(s),verb=mediaVerb(s),status=mediaStatus(s),q=encodeURIComponent(s.title);
-  const fontes=(FONTES_OTAKU[kind]||[]).map(f=>`<a class="lk" target="_blank" rel="noopener" href="${esc(fonteUrl(f,s.title))}">${esc(f.site)}</a>`).join('');
-  return `<div class="media-hub"><h3>Onde ${verb}</h3><div class="status-media"><b>${status}</b> — procure este título nas fontes abaixo.</div><div class="media-source">${fontes}</div><div class="external-note">As fontes são atalhos de busca. Disponibilidade, idioma e catálogo dependem do site e da região.</div></div>`;
+const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns capítulos/episódios)',paid:'Pago (assinatura ou compra)',other:'Outros (veja o preço no site)'};
+async function gql(q,v){
+  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:q,variables:v})});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok||!j||j.errors||!j.data) throw new Error('AniList '+r.status+(j&&j.errors?' — '+j.errors.map(e=>e.message).join(' | '):''));
+  return j.data;
 }
 async function showWhere(id){
   const s=lib[id]||current[id];if(!s||!$('#where'))return;
-  if(!s.links||!s.authors||!s.studios){
+  if(!s.links||!s.authors){
     try{
       const d=await gql('query($id:Int){Media(id:$id){siteUrl externalLinks{site url type language isDisabled} staff(perPage:25,sort:RELEVANCE){edges{role node{id name{full}}}} studios{edges{isMain node{id name}}}}}',{id:+id});
-      s.links=(d.Media.externalLinks||[]).filter(x=>x.type==='STREAMING'&&!x.isDisabled&&/^https?:\/\//i.test(x.url)).map(x=>({site:x.site,url:x.url,lang:x.language}));
+      s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled&&/^https?:\/\//i.test(x.url)).map(x=>({site:x.site,url:x.url,lang:x.language}));
       s.page=d.Media.siteUrl;
       const seen={};
-      s.authors=(d.Media.staff?.edges||[]).filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
-      s.studios=(d.Media.studios?.edges||[]).filter(e=>e.isMain).map(e=>({id:e.node.id,name:e.node.name}));
+      s.authors=d.Media.staff.edges.filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
+      s.studios=d.Media.studios.edges.filter(e=>e.isMain).map(e=>({id:e.node.id,name:e.node.name}));
       [lib[id],current[id]].forEach(o=>{if(o)Object.assign(o,{links:s.links,page:s.page,authors:s.authors,studios:s.studios})});
       if(lib[id])save();
     }catch(e){s.links=s.links||[];s.authors=s.authors||[];s.studios=s.studios||[]}
@@ -511,7 +495,7 @@ async function showWhere(id){
   const cr=$('#credits');
   if(cr){
     const RL={'Original Creator':'Criador original','Original Story':'História original','Story & Art':'História e arte','Story':'História','Art':'Arte','Creator':'Criador'};
-    const btn=(t,x,extra)=>`<button class="lk" style="border:0;cursor:pointer" data-t="${t}" data-id="${x.id}" data-n="${esc(x.name)}">${esc(x.name)}${extra||''}</button>`;
+    const btn=(t,x,extra)=>`<button class="lk" style="border:0;cursor:pointer" data-t="${t}" data-id="${x.id}" data-n="${x.name.replace(/"/g,'&quot;')}">${x.name}${extra||''}</button>`;
     let h='';
     if(s.authors.length)h+=`<div class="wh"><b>${s.type==='MANGA'?'Autor e criador':'Criador e autor original'}</b><div class="gen">${s.authors.map(a=>btn('staff',a,' ('+(RL[a.role]||a.role)+')')).join('')}</div></div>`;
     if(s.type!=='MANGA'&&s.studios.length)h+=`<div class="wh"><b>Estúdio</b><div class="gen">${s.studios.map(x=>btn('studio',x)).join('')}</div></div>`;
@@ -523,14 +507,17 @@ async function showWhere(id){
   const g={free:[],part:[],paid:[],other:[]};
   s.links.forEach(x=>{const t=TIERS.find(t=>t[1].test(x.site));g[t?t[0]:'other'].push(x)});
   Object.values(g).forEach(a=>a.sort((x,y)=>/portug/i.test(y.lang||'')-/portug/i.test(x.lang||'')));
+  const verb=s.type==='MANGA'?'Onde ler':'Onde assistir';
+  let h=`<b>${verb}</b>`;
+  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
-  let h=renderMediaHub(s);
-  if(s.links.length)h+=`<div class="wh"><b>Links encontrados no AniList</b><div class="media-source">${s.links.map(x=>{const yt=youtubeEmbed(x.url);return yt?`<button class="lk" style="border:0;cursor:pointer" data-y="${esc(x.url)}" data-n="${esc(x.site)}">▶ Assistir aqui — ${esc(x.site)}</button><a class="lk" target="_blank" rel="noopener" href="${esc(x.url)}">Abrir</a>`:`<a class="lk" target="_blank" rel="noopener" href="${esc(x.url)}">${esc(x.site)}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`}).join('')}</div></div>`;
-  else h+='<div class="wh">O AniList não listou um link de streaming específico para este título.</div>';
-  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="media-source">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${esc(s.page)}">Página no AniList</a>`:''}</div></div>`;
-  h+='<small>Disponibilidade e direitos variam por região. O app não tenta contornar bloqueios de incorporação.</small>';
+  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
+  const fr=s.type==='MANGA'
+    ?[['MANGA Plus','https://mangaplus.shueisha.co.jp/search_result?keyword='],['WEBTOON (PT-BR) 🇧🇷','https://www.webtoons.com/pt-br/search?keyword='],['Tapas','https://tapas.io/search?t=COMICS&q=']]
+    :[['Pluto TV Brasil 🇧🇷','https://pluto.tv/br/on-demand',1],['Muse Asia (YouTube)','https://www.youtube.com/@MuseAsia/search?query='],['Ani-One Asia (YouTube)','https://www.youtube.com/@AniOneAsia/search?query=']];
+  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (busca pelo título; pode não ter esta obra)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="${f[1]}${f[2]?'':q}">${f[0]}</a>`).join('')}</div></div>`;
+  h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
-  el.onclick=e=>{const b=e.target.closest('[data-y]');if(b)abrirPlayer(id,b.dataset.y,b.dataset.n)};
 }
 
 /* ---------- login (Google Drive ou GitHub Gist) + sincronização ---------- */
