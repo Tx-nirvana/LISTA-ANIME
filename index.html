@@ -120,7 +120,7 @@ nav{overflow-x:auto}nav button{white-space:nowrap}
 
   <section id="v-stats" style="display:none"></section>
 </main>
-<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados de anime/mangá vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. WEB Novels vêm principalmente do <a class="lk" target="_blank" rel="noopener" href="https://kitsu.io">Kitsu</a> (capa, sinopse, nota e gêneros), com o catálogo sincronizado de NovelFull. Livros: <a class="lk" target="_blank" rel="noopener" href="https://books.google.com">Google Livros</a> e <a class="lk" target="_blank" rel="noopener" href="https://openlibrary.org">Open Library</a>. Filmes: <a class="lk" target="_blank" rel="noopener" href="https://www.themoviedb.org">TMDB</a> (este produto usa a API do TMDB, mas não é endossado nem certificado por ele), com disponibilidade por JustWatch. Jogos: <a class="lk" target="_blank" rel="noopener" href="https://rawg.io">RAWG</a>.com, NovelFull.net e Wuxiaworld como complemento de links de leitura. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
+<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados de anime/mangá vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. WEB Novels vêm principalmente do <a class="lk" target="_blank" rel="noopener" href="https://kitsu.io">Kitsu</a> (capa, sinopse, nota e gêneros), com o catálogo sincronizado de NovelFull. Livros: <a class="lk" target="_blank" rel="noopener" href="https://books.google.com">Google Livros</a> e <a class="lk" target="_blank" rel="noopener" href="https://openlibrary.org">Open Library</a>. Filmes: <a class="lk" target="_blank" rel="noopener" href="https://www.themoviedb.org">TMDB</a> (este produto usa a API do TMDB, mas não é endossado nem certificado por ele), com disponibilidade por JustWatch. Jogos: <a class="lk" target="_blank" rel="noopener" href="https://rawg.io">RAWG</a> e <a class="lk" target="_blank" rel="noopener" href="https://www.cheapshark.com">CheapShark</a>.com, NovelFull.net e Wuxiaworld como complemento de links de leitura. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
 
 <div id="modal"><div class="box" id="box"></div></div>
 
@@ -1128,7 +1128,15 @@ async function fMovie(st,p){
   return {items,more:r.page<r.total_pages};
 }
 const gmItem=g=>({id:4e9+g.id,ref:String(g.id),kind:'game',type:'ANIME',title:T(g.name),native:'',cover:U(g.background_image),syn:'',genres:(g.genres||[]).map(x=>GGN[x.slug]||T(x.name)),year:(g.released||'').slice(0,4),avg:g.metacritic||Math.round((g.rating||0)*20),by:'',pl:(g.parent_platforms||[]).map(x=>T(x.platform.name)).join(', '),url:'https://rawg.io/games/'+encodeURIComponent(g.slug||g.id)});
-async function fGame(st,p){
+const SID=new Map();
+async function fCheap(st,p){
+  const o={pageSize:24,pageNumber:p-1,sortBy:{pop:'Reviews',score:'Metacritic',new:'Release'}[st.sort],desc:'1'};
+  if(st.q)o.title=st.q;
+  const r=await jget('https://www.cheapshark.com/api/1.0/deals?'+new URLSearchParams(o));
+  const items=r.map(d=>({id:6e9+Number(d.gameID),ref:'c'+d.gameID,kind:'game',type:'ANIME',title:T(d.title),native:'',cover:d.steamAppID&&d.steamAppID!=='0'?'https://cdn.cloudflare.steamstatic.com/steam/apps/'+d.steamAppID+'/header.jpg':U(d.thumb),syn:'',genres:[],year:d.releaseDate?String(new Date(d.releaseDate*1000).getFullYear()):'',avg:Number(d.metacriticScore)||Number(d.steamRatingPercent)||0,by:'',pl:'PC',url:''}));
+  return {items,more:r.length===24};
+}
+async function fGame(st,p){if(!key('rawg'))return fCheap(st,p);
   const o={page:p,page_size:24,exclude_additions:'true'};
   if(st.q)o.search=st.q;
   else{o.ordering={pop:'-added',score:'-metacritic',new:'-released'}[st.sort];if(st.sort==='score')o.metacritic='70,100';if(st.sort==='new')o.dates='2000-01-01,'+today()}
@@ -1176,6 +1184,10 @@ async function load(s){
     o.tr=v?'youtube:'+v.key:'-';
     const w=((m['watch/providers']||{}).results||{}).BR||{};
     x.wp={};['flatrate','free','ads','rent','buy'].forEach(k=>x.wp[k]=(w[k]||[]).map(p=>T(p.provider_name)));
+  }else if(s.kind==='game'&&s.ref[0]==='c'){
+    const g=await jget('https://www.cheapshark.com/api/1.0/games?id='+s.ref.slice(1));
+    if(!SID.size)try{(await jget('https://www.cheapshark.com/api/1.0/stores')).forEach(z=>SID.set(z.storeID,T(z.storeName)))}catch(e){}
+    x.stores=(g.deals||[]).sort((a,b)=>a.price-b.price).slice(0,8).map(z=>({site:(SID.get(z.storeID)||'Loja')+' · US$ '+z.price,url:'https://www.cheapshark.com/redirect?dealID='+encodeURIComponent(z.dealID)}));
   }else if(s.kind==='game'){
     const g=await rw('games/'+s.ref,{});
     o.syn=T(g.description_raw||html2txt(g.description));o.genres=(g.genres||[]).map(z=>GGN[z.slug]||T(z.name));
@@ -1273,11 +1285,12 @@ function streams(h){
   return S;
 }
 function keyBox(h){
-  h.ban.innerHTML=[...h.need].map(n=>`<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">Para buscar <b>${n==='tmdb'?'filmes':'jogos'}</b> é preciso uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="${n==='tmdb'?'https://www.themoviedb.org/settings/api':'https://rawg.io/apidocs'}">${n==='tmdb'?'TMDB':'RAWG'}</a> (cadastro rápido). Cole aqui: <input data-kn="${n}" placeholder="sua chave" style="width:260px"> <button class="btn" data-ks="${n}">Salvar</button></div>`).join('');
+  if(h.id==='jg'&&!key('rawg')&&!h.need.size){h.ban.innerHTML='<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">Modo sem chave: jogos de PC (via CheapShark), sem gêneros e sem sinopse. Para o catálogo completo (consoles, gêneros), cole uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="https://rawg.io/apidocs">RAWG</a>: <input data-kn="rawg" placeholder="sua chave (opcional)" style="width:240px"> <button class="btn" data-ks="rawg">Salvar</button></div>';return}
+  h.ban.innerHTML=[...h.need].map(n=>`<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">${lsKey(n)?'<b style="color:var(--red)">A chave salva foi recusada.</b> Confira se copiou inteira e sem espaços.<br>':''}Para buscar <b>${n==='tmdb'?'filmes':'jogos'}</b> é preciso uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="${n==='tmdb'?'https://www.themoviedb.org/settings/api':'https://rawg.io/apidocs'}">${n==='tmdb'?'TMDB':'RAWG'}</a> (cadastro rápido). Cole aqui: <input data-kn="${n}" placeholder="sua chave" style="width:260px"> <button class="btn" data-ks="${n}">Salvar</button></div>`).join('');
 }
 async function run(h,reset){
   if(h.busy){if(reset)h.redo=1;return}
-  h.busy=true;
+  h.busy=true;if(h.id==='jg')chipsDraw(h);
   if(reset){h.pg={};h.more={};h.ord=[];h.seen=new Set();h.need=new Set();h.res.innerHTML=''}
   h.msg.textContent='Carregando...';h.mb.style.display='none';
   const S=streams(h).filter(s=>h.more[s.k]!==false);let err=null;
@@ -1296,7 +1309,7 @@ async function run(h,reset){
 function chipsDraw(h){
   if(h.id==='jg')h.kd.innerHTML=[['','Todas as plataformas'],...PLAT].map(([v,l])=>`<button class="chip ${v===''?(h.pl.size?'':'on'):h.pl.has(String(v))?'on':''}" data-pl="${v}">${l}</button>`).join('');
   else h.kd.innerHTML=CFG.lf.kinds.map(([v,l])=>`<button class="chip ${h.kind===v?'on':''}" data-kd="${v}">${l}</button>`).join('');
-  const list=h.id==='jg'?GG:h.kind==='book'?BGC:h.kind==='movie'?MG:null;
+  const rk=h.id!=='jg'||!!key('rawg');h.kd.style.display=rk?'':'none';const list=!rk?null:h.id==='jg'?GG:h.kind==='book'?BGC:h.kind==='movie'?MG:null;
   h.gn.style.display=list?'':'none';
   if(list)h.gn.innerHTML=`<summary>Gêneros${h.g.size?' ('+h.g.size+')':''}</summary><div class="chips">${list.map(([v,l])=>`<button class="chip ${h.g.has(String(v))?'on':''}" data-g="${v}">${l}</button>`).join('')}${h.g.size?'<button class="chip" data-g="">Limpar</button>':''}</div>`;
 }
