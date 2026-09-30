@@ -368,8 +368,10 @@ function showSync(){
       say('Criando...');
       try{const r=await fetch(JB,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload()});
         if(!r.ok)throw new Error(r.status);
-        code=r.headers.get('Location').split('/').pop();ready=true;done()}
-      catch(e){say('Não foi possível criar o código agora. Tente de novo.')}
+        const loc=r.headers.get('Location')||r.headers.get('X-jsonblob')||'';
+        if(!loc)throw new Error('o navegador não conseguiu ler o código devolvido pelo serviço (CORS)');
+        code=loc.split('/').pop();ready=true;done()}
+      catch(e){say('Não foi possível criar o código. Motivo: '+(e.message==='Failed to fetch'?'sem conexão com o serviço JSONBlob (rede bloqueada, serviço fora do ar, ou você abriu o arquivo dentro do Claude)':e.message)+'. Enquanto isso, use Exportar e Importar na aba Minha biblioteca.')}
     };
     $('#cn').onclick=()=>{
       const c=$('#ci').value.trim();
