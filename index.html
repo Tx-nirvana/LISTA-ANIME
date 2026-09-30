@@ -157,7 +157,8 @@ function openModal(id){
     <div style="flex:1;min-width:0"><h2>${s.title}</h2>
     <div class="sub">${[KINDS[s.kind],s.year,...size,s.avg&&'Nota AniList '+s.avg/10,s.native].filter(Boolean).join(' · ')}</div>
     <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
-    <div class="syn">${s.syn.replace(/</g,'&lt;')}</div>
+    <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
+    <button class="chip" id="tg" style="display:none">Ver original (inglês)</button>
     ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option ${x===l.status?'selected':''}>${x}</option>`).join('')}</select>
       <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
       <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/10':'sem nota'}</span></div>
@@ -166,6 +167,7 @@ function openModal(id){
      :`<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>`}
     </div>`;
   $('#modal').classList.add('on');
+  showSyn(id);
   if(l){
     $('#mst').onchange=e=>{l.status=e.target.value;save();refresh()};
     $('#mprog').onchange=e=>{l.prog=e.target.value;save()};
@@ -175,6 +177,63 @@ function openModal(id){
   }else{
     $('#add').onclick=()=>{lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',added:Date.now()};save();openModal(id);refresh()};
   }
+}
+function splitText(t,max){
+  const out=[];
+  t.split('\n').forEach(par=>{
+    if(!par.trim()){out.push('');return}
+    let cur='';
+    (par.match(/[^.!?]+[.!?]*\s*/g)||[par]).forEach(sn=>{
+      while(sn.length>max){ if(cur){out.push(cur);cur=''} out.push(sn.slice(0,max)); sn=sn.slice(max) }
+      if((cur+sn).length>max){out.push(cur);cur=sn}else cur+=sn;
+    });
+    if(cur)out.push(cur);
+    out.push('\n');
+  });
+  return out;
+}
+async function gtr(c){
+  const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q='+encodeURIComponent(c));
+  if(!r.ok)throw new Error('g'+r.status);
+  const j=await r.json();return j[0].map(x=>x[0]).join('');
+}
+async function mtr(c){
+  const r=await fetch('https://api.mymemory.translated.net/get?langpair=en|pt-BR&q='+encodeURIComponent(c));
+  const j=await r.json();
+  if(!j.responseData||!j.responseData.translatedText)throw new Error('m');
+  return j.responseData.translatedText;
+}
+async function translate(text){
+  let parts;
+  try{
+    parts=await Promise.all(splitText(text,1500).map(c=>c.trim()?gtr(c):c));
+  }catch(e){
+    parts=[];
+    for(const c of splitText(text,450)) parts.push(c.trim()?await mtr(c):c);
+  }
+  return parts.join('').replace(/\n{3,}/g,'\n\n').trim();
+}
+async function showSyn(id){
+  const s=lib[id]||current[id];
+  const el=$('#syn'),tg=$('#tg');
+  if(!s||!el)return;
+  let pt=s.pt, showPT=true;
+  const paint=()=>{
+    const el2=$('#syn'); if(!el2||$('#syn').dataset.id!==String(id)&&false)return;
+    el2.textContent=showPT?pt:s.syn;
+    tg.textContent=showPT?'Ver original (inglês)':'Ver tradução (português)';
+  };
+  el.dataset.id=id;
+  tg.onclick=()=>{showPT=!showPT;paint()};
+  if(!pt){
+    if(s.syn==='Sem sinopse disponível.'){pt=s.syn}
+    else{
+      try{pt=await translate(s.syn)}
+      catch(e){ if($('#syn')) $('#syn').textContent=s.syn+'\n\n(Não foi possível traduzir agora. Mostrando o texto original.)'; return }
+      s.pt=pt; if(lib[id]){lib[id].pt=pt;save()} if(current[id])current[id].pt=pt;
+    }
+  }
+  if($('#syn')&&$('#syn').dataset.id===String(id)){tg.style.display=pt===s.syn?'none':'';paint()}
 }
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
