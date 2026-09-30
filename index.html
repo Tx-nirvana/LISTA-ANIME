@@ -160,12 +160,14 @@ function chips(el,cur,fn){
 }
 
 const GEN={Action:'Ação',Adventure:'Aventura',Comedy:'Comédia',Drama:'Drama',Ecchi:'Ecchi',Fantasy:'Fantasia',Horror:'Terror','Mahou Shoujo':'Mahou Shoujo',Mecha:'Mecha',Music:'Música',Mystery:'Mistério',Psychological:'Psicológico',Romance:'Romance','Sci-Fi':'Ficção científica','Slice of Life':'Cotidiano',Sports:'Esportes',Supernatural:'Sobrenatural',Thriller:'Suspense'};
+const GEN_NOVEL={Xianxia:'Xianxia',Wuxia:'Wuxia',Xuanhuan:'Xuanhuan','Martial Arts':'Artes marciais',Cultivation:'Cultivo',Isekai:'Isekai',Reincarnation:'Reencarnação',LitRPG:'LitRPG',Harem:'Harém',Historical:'Histórico','School Life':'Vida escolar',Tragedy:'Tragédia',Alchemy:'Alquimia',Shounen:'Shounen',Seinen:'Seinen',Josei:'Josei',Shoujo:'Shoujo'};
+const gname=g=>GEN[g]||GEN_NOVEL[g]||g;
 function multiKinds(el,set,fn){
   el.innerHTML=Object.entries(KINDS).map(([k,v])=>`<button class="chip ${(k==='all'?!set.size:set.has(k))?'on':''}" data-k="${k}">${v}</button>`).join('');
   el.onclick=e=>{const k=e.target.dataset.k;if(!k)return;if(k==='all')set.clear();else if(set.has(k))set.delete(k);else set.add(k);multiKinds(el,set,fn);fn()};
 }
-function genreBox(el,set,mode,fn){
-  const draw=()=>{el.innerHTML=`<summary>Gêneros${set.size?' ('+set.size+' selecionado'+(set.size>1?'s':'')+')':''}</summary><div class="chips">${Object.entries(GEN).map(([k,v])=>`<button class="chip ${set.has(k)?'on':''}" data-g="${k}">${v}</button>`).join('')}</div>
+function genreBox(el,set,mode,fn,extra){
+  const draw=()=>{const list=extra&&extra()?{...GEN,...GEN_NOVEL}:GEN;if(!(extra&&extra()))Object.keys(GEN_NOVEL).forEach(k=>{if(!GEN[k])set.delete(k)});el.innerHTML=`<summary>Gêneros${set.size?' ('+set.size+' selecionado'+(set.size>1?'s':'')+')':''}</summary><div class="chips">${Object.entries(list).map(([k,v])=>`<button class="chip ${set.has(k)?'on':''}" data-g="${k}">${v}</button>`).join('')}</div>
     <div class="gen" style="margin-top:10px"><button class="chip ${mode.all?'':'on'}" data-m="any">Qualquer um dos gêneros</button><button class="chip ${mode.all?'on':''}" data-m="all">Todos os gêneros</button>${set.size?'<button class="chip" data-c="1">Limpar gêneros</button>':''}</div>`};
   draw();
   el.onclick=e=>{const b=e.target.closest('button');if(!b)return;
@@ -175,13 +177,13 @@ function genreBox(el,set,mode,fn){
     else return;
     draw();fn()};
 }
-const genOk=(arr,set,all)=>!set.size||(all?[...set].every(g=>(arr||[]).includes(g)):[...set].some(g=>(arr||[]).includes(g)));
+const genOk=(arr,set,all)=>{if(!set.size)return true;const a=(arr||[]).map(x=>String(x).toLowerCase()),has=g=>a.includes(String(g).toLowerCase());return all?[...set].every(has):[...set].some(has)};
 
 const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:[String],$f:[MediaFormat],$fn:[MediaFormat],$stt:MediaStatus,$gt:FuzzyDateInt,$lt:FuzzyDateInt,$ms:Int){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,countryOfOrigin:$c,sort:$o,genre_in:$g,format_in:$f,format_not_in:$fn,status:$stt,startDate_greater:$gt,startDate_lesser:$lt,averageScore_greater:$ms,isAdult:false){id type format countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
 
 async function fetchPage(q,k,p,sort,g){
   const [t,c]=k==='all'?[undefined,undefined]:SPEC[k];
-  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:g&&g.length?g:undefined,f:k==='novel'?['NOVEL']:(F.fmt?F.fmt.split(','):undefined),fn:(k==='manga'||k==='manhwa'||k==='manhua')&&!F.fmt?['NOVEL']:undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
+  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:(g||[]).filter(x=>GEN[x]).length?(g||[]).filter(x=>GEN[x]):undefined,f:k==='novel'?['NOVEL']:(F.fmt?F.fmt.split(','):undefined),fn:(k==='manga'||k==='manhwa'||k==='manhua')&&!F.fmt?['NOVEL']:undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
   const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
   const j=await r.json().catch(()=>null);
   if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
@@ -211,9 +213,9 @@ async function search(reset){
     const addCard=m=>{const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
     const addNovel=n=>{const s=novelSlim(n);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
     let hasNext=false;
-    if(src&&src.type==='kitsu'){
-      const k=await kitsuWorks(src.id,page===1);
-      k.items.forEach(addNovel);kitsuBatch(k.items.map(n=>current[novelId(n)]));hasNext=k.hasNext;
+    if(src&&src.type==='author'){
+      const w=await authorWorks(page===1);
+      w.novels.forEach(addNovel);w.media.forEach(addCard);kitsuBatch(w.novels.map(n=>current[novelId(n)]));hasNext=w.hasNext;
     }else if(src){
       const d=await fetchSrc(page); d.nodes.filter(m=>!m.isAdult).forEach(addCard); hasNext=d.pageInfo.hasNextPage;
     }else if([...kSet].includes('webnovel')){
@@ -223,7 +225,8 @@ async function search(reset){
       if(page===1)novelUseCat=false;
       let slice=null,more=false;
       if(!novelUseCat){
-        try{const k=await kitsuNovels(q,page===1);if(k.items.length||page>1){slice=k.items;more=k.hasNext}else novelUseCat=true}
+        if(page===1)novelExtra=gSet.size?novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)):[];
+        try{const k=await kitsuNovels(q,page===1);if(k.items.length||page>1){slice=k.items;more=k.hasNext;if(novelExtra.length){slice=slice.concat(novelExtra.splice(0,12));more=more||novelExtra.length>0}}else novelUseCat=true}
         catch(e){novelUseCat=true}
       }
       if(novelUseCat){ /* plano B: catálogo sincronizado (novels-catalog.json) */
@@ -259,7 +262,7 @@ async function search(reset){
 function novelId(n){
   let h=2166136261;for(const c of String(n.source+'|'+n.url)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return -Math.abs(h||1);
 }
-function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#2a2640"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:(n.authors&&n.authors.length?n.authors.map(a=>({id:Number(a.id)||0,name:String(a.name||'').replace(/[<>]/g,''),role:String(a.role||'')})):(n.author?[{id:0,name:String(n.author).replace(/[<>]/g,''),role:'Autor'}]:[])),links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog'} }
+function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#2a2640"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:(n.authors&&n.authors.length?n.authors.map(a=>({id:Number(a.id)||0,name:String(a.name||'').replace(/[<>]/g,''),role:String(a.role||'')})):splitNames(n.author).map(x=>({id:0,name:x,role:'Autor'}))),links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog'} }
 function matchNovel(n,q){if(!q)return true;const z=norm(q);return norm(n.title).includes(z)||norm(n.author).includes(z)||(n.alternative&&norm(n.alternative).includes(z))}
 async function loadNovelCatalog(){
   try{const r=await fetch('./novels-catalog.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
@@ -291,7 +294,7 @@ function setSrc(v){
   src=v;
   ['.bar','#kinds','#gsearch','#fsearch','#recs'].forEach(x=>{const e=$('#v-search '+x);if(e)e.style.display=v?'none':''});
   const b=$('#banner');b.style.display=v?'':'none';
-  b.innerHTML=v?`<button class="chip" id="bk">← Voltar</button> <b>Obras de ${esc(v.name)}</b>${v.type==='kitsu'?' (WEB novels, das mais bem avaliadas às menos)':' (das mais populares às menos)'}`:'';
+  b.innerHTML=v?`<button class="chip" id="bk">← Voltar</button> <b>Obras de ${esc(v.name)}</b>${v.type==='author'?' (WEB novels e novels encontradas no Kitsu, no catálogo e no AniList)':' (das mais populares às menos)'}`:'';
   if(v)$('#bk').onclick=()=>{setSrc(null)};
   search(true);
 }
@@ -369,7 +372,7 @@ function renderStats(){
   const gc=cnt(items.flatMap(x=>x.genres||[]),g=>g);
   const gr={};rated.forEach(x=>(x.genres||[]).forEach(g=>{(gr[g]=gr[g]||[]).push(x.rating)}));
   const bestG={};Object.entries(gr).filter(([g,a])=>a.length>=2).forEach(([g,a])=>{bestG[g]=+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)});
-  const bestRows=Object.entries(bestG).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([g,n])=>`<div class="bar2"><span class="n">${esc(GEN[g]||g)}</span><span class="b" style="width:${n/5*55}%"></span><span>${n} ★</span></div>`).join('')||'<small>Precisa de pelo menos 2 títulos com nota no mesmo gênero.</small>';
+  const bestRows=Object.entries(bestG).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([g,n])=>`<div class="bar2"><span class="n">${esc(gname(g))}</span><span class="b" style="width:${n/5*55}%"></span><span>${n} ★</span></div>`).join('')||'<small>Precisa de pelo menos 2 títulos com nota no mesmo gênero.</small>';
   const key=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
   const now=new Date(),months=[];for(let i=11;i>=0;i--)months.push(key(new Date(now.getFullYear(),now.getMonth()-i,1)));
   const mc=cnt(items.filter(x=>x.added),x=>key(x.added));
@@ -384,7 +387,7 @@ function renderStats(){
     ${box('Por tipo',bars(cnt(items,x=>x.kind),k=>KINDS[k]||k))}
     ${box('Por situação',bars(cnt(items,x=>x.status)))}
     ${box('Suas notas',[5,4,3,2,1].map(n=>`<div class="bar2"><span class="n">${'★'.repeat(n)}</span><span class="b" style="width:${Math.max(2,(stars[n]||0)/sm*55)}%"></span><span>${stars[n]||0}</span></div>`).join('')+(rated.length?'':'<small>Você ainda não deu notas.</small>'))}
-    ${box('Gêneros mais frequentes',bars(gc,g=>GEN[g]||g,10))}
+    ${box('Gêneros mais frequentes',bars(gc,g=>gname(g),10))}
     ${box('Gêneros em que você dá as melhores notas',bestRows)}
     ${box('Títulos adicionados nos últimos 12 meses',monthRows)}
     <small style="color:var(--mut)">Horas estimadas com 24 min por episódio. Episódios contam o que você marcou como visto e o total dos títulos completos.</small>`;
@@ -550,7 +553,8 @@ let novelUseCat=false,kCur={off:0,done:false},catIdx=new Map(),catIdxN=-1;
 const kHit=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'');
 function catFind(n){
   if(catIdxN!==novelCatalog.length){catIdx=new Map();novelCatalog.forEach(c=>{[c.title,c.alternative].forEach(t=>{const k=kn(t);if(k&&!catIdx.has(k))catIdx.set(k,c)})});catIdxN=novelCatalog.length}
-  return catIdx.get(kn(n.title))||(n.alternative&&catIdx.get(kn(n.alternative)))||null;
+  for(const k of [kn(n.title),kn(n.alternative),...(n.names||[])]){if(k&&catIdx.has(k))return catIdx.get(k)}
+  return null;
 }
 const kH={headers:{Accept:'application/vnd.api+json'}};let kStaffOK=true;
 function kInc(j){
@@ -575,13 +579,15 @@ function kitsuNovel(m,inc){
   const rel=(m.relationships&&m.relationships.categories&&m.relationships.categories.data)||[];
   const genres=rel.map(x=>inc.cat[x.id]).filter(Boolean).slice(0,12);
   const url='https://kitsu.io/manga/'+(a.slug||m.id);
-  const n={source:'Kitsu',title,alternative,author:'',chapters:a.chapterCount||null,
+  const names=[t.en,t.en_us,t.en_jp,t.ja_jp,a.canonicalTitle,...(a.abbreviatedTitles||[])].map(kn).filter(Boolean);
+  const n={source:'Kitsu',names,title,alternative,author:'',chapters:a.chapterCount||null,
     status:{current:'Ongoing',finished:'Completed'}[a.status]||'',
     stcode:{current:'RELEASING',finished:'FINISHED',tba:'NOT_YET_RELEASED',unreleased:'NOT_YET_RELEASED',upcoming:'NOT_YET_RELEASED'}[a.status]||'',
     genres,cover,synopsis:syn,url,year:a.startDate?String(a.startDate).slice(0,4):'',rating:Math.round(parseFloat(a.averageRating))||null,language:'EN'};
   const au=kAuthors(m,inc);n.authors=au;n.author=au.map(x=>x.name).join(', ');
   const kl={site:'Kitsu',url,lang:'EN'},c=catFind(n);
   if(c){ /* obra também está no catálogo: reaproveita os links de leitura e o mesmo id */
+    n.genres=[...new Set([...n.genres,...(c.genres||[])])].slice(0,16);
     n.source=c.source;n.url=c.url;n.author=n.author||c.author||'';n.chapters=n.chapters||c.chapters||null;
     n.sources=(c.sources&&c.sources.length?c.sources:[{site:c.source,url:c.url,lang:c.language||'EN'}]).concat([kl]);
   }else{
@@ -614,52 +620,118 @@ async function kitsuNovels(q,reset){
   return {items:out,hasNext:!kCur.done};
 }
 
-/* ---------- autores (Kitsu) e outras obras do autor ---------- */
-async function kitsuWorks(pid,reset){
-  if(reset)kCur={off:0,done:false};
+/* ---------- autores e outras obras do autor ---------- */
+/* ids: >0 = pessoa do Kitsu · <0 = staff do AniList (id negativo) · 0 = só o nome (catálogo) */
+const splitNames=str=>String(str||'').split(/\s*(?:\/|,|&|;)\s*/).map(x=>x.replace(/[<>]/g,'').trim()).filter(Boolean);
+const ws=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).sort().join(' ');
+const authTried=new Set();
+function catalogWorksBy(name){const k=kn(name);if(!k)return [];return novelCatalog.filter(c=>splitNames(c.author).some(x=>kn(x)===k))}
+
+async function kitsuWorks(pid,st){
   const out=[];let tries=0;
-  while(!kCur.done&&tries<5&&!out.length){
-    const r=await fetch('https://kitsu.io/api/edge/people/'+pid+'/staff?include=media&page[limit]=20&page[offset]='+kCur.off,kH);
+  while(!st.done&&tries<5&&!out.length){
+    const r=await fetch('https://kitsu.io/api/edge/people/'+pid+'/staff?include=media&page[limit]=20&page[offset]='+st.off,kH);
     if(!r.ok)throw new Error('Kitsu '+r.status);
     const j=await r.json(),data=j.data||[],empty={cat:{},ppl:{},stf:{}};
     (j.included||[]).forEach(m=>{if(m.type==='manga'&&/^(novel|oel)$/.test((m.attributes||{}).subtype||'')){const n=kitsuNovel(m,empty);if(n.title)out.push(n)}});
-    kCur.off+=20;kCur.done=!data.length||!(j.links&&j.links.next);tries++;
+    st.off+=20;st.done=!data.length||!(j.links&&j.links.next);tries++;
   }
-  out.sort((a,b)=>(b.rating||0)-(a.rating||0));
-  return {items:out,hasNext:!kCur.done};
+  return out.sort((a,b)=>(b.rating||0)-(a.rating||0));
 }
-async function kitsuAuthors(s){
+async function anilistWorks(id,st){
+  const out=[];let tries=0;
+  while(!st.done&&tries<3&&!out.length){
+    st.p++;
+    const d=await gql('query($id:Int,$p:Int){Staff(id:$id){staffMedia(type:MANGA,page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:+id,p:st.p});
+    const sm=d.Staff.staffMedia;
+    sm.nodes.forEach(m=>{if(m.format==='NOVEL'&&!m.isAdult)out.push(m)});
+    st.done=!sm.pageInfo.hasNextPage;tries++;
+  }
+  return out;
+}
+async function resolveKitsuPerson(name){
+  for(const f of ['name','query']){
+    try{
+      const r=await fetch('https://kitsu.io/api/edge/people?filter['+f+']='+encodeURIComponent(name)+'&page[limit]=5',kH);
+      if(!r.ok)continue;
+      const j=await r.json(),p=(j.data||[]).find(x=>ws((x.attributes||{}).name)===ws(name));
+      if(p)return +p.id;
+    }catch(e){}
+  }
+  return 0;
+}
+async function resolveAniListStaff(name){
+  try{
+    const d=await gql('query($s:String){Page(perPage:6){staff(search:$s,sort:SEARCH_MATCH){id name{full native}}}}',{s:name});
+    const p=(d.Page.staff||[]).find(x=>ws(x.name.full)===ws(name)||kn(x.name.native)===kn(name));
+    return p?+p.id:0;
+  }catch(e){return 0}
+}
+/* junta tudo que o autor tem: Kitsu + catálogo + AniList (sem repetir título) */
+async function authorWorks(reset){
+  const S=src,out={novels:[],media:[],hasNext:false};
+  if(reset){
+    S.seen=new Set();
+    const [kid,alid]=await Promise.all([S.kid?S.kid:resolveKitsuPerson(S.name),S.alid?S.alid:resolveAniListStaff(S.name)]);
+    S.kid=kid||0;S.alid=alid||0;S.k={off:0,done:!S.kid};S.al={p:0,done:!S.alid};
+  }
+  const [kl,al]=await Promise.all([
+    S.k.done?[]:kitsuWorks(S.kid,S.k).catch(()=>{S.k.done=true;return []}),
+    S.al.done?[]:anilistWorks(S.alid,S.al).catch(()=>{S.al.done=true;return []})
+  ]);
+  const dupe=t=>{const k=kn(t);if(!k||S.seen.has(k))return true;S.seen.add(k);return false};
+  kl.forEach(n=>{if(!dupe(n.title))out.novels.push(n)});
+  if(reset)catalogWorksBy(S.name).forEach(n=>{if(!dupe(n.title))out.novels.push(n)});
+  al.forEach(m=>{if(!dupe(title(m)))out.media.push(m)});
+  out.hasNext=!S.k.done||!S.al.done;
+  return out;
+}
+
+async function kitsuAuthorsFor(s){
   try{
     const r=await fetch(KITSU+'?filter[text]='+encodeURIComponent(String(s.title).replace(/[’‘]/g,"'"))+'&page[limit]=10&include=staff.person',kH);
-    if(!r.ok)return false;
+    if(!r.ok)return [];
     const j=await r.json(),m=kPick(j.data||[],s.title,s.native);
-    if(!m)return false;
-    const au=kAuthors(m,kInc(j));if(!au.length)return false;
-    [s,current[s.id],lib[s.id]].forEach(o=>{if(o)o.authors=au});
-    if(lib[s.id])save(lib[s.id]);
-    return true;
-  }catch(e){return false}
+    return m?kAuthors(m,kInc(j)):[];
+  }catch(e){return []}
+}
+async function anilistAuthorsFor(s){
+  try{
+    const d=await gql('query($s:String){Page(perPage:8){media(search:$s,type:MANGA,format:NOVEL){id title{romaji english native}synonyms staff(perPage:8,sort:RELEVANCE){edges{role node{id name{full}}}}}}}',{s:String(s.title)});
+    const want=[kn(s.title),kn(s.native)].filter(Boolean);
+    const m=(d.Page.media||[]).find(x=>[x.title.english,x.title.romaji,x.title.native,...(x.synonyms||[])].map(kn).some(k=>k&&want.includes(k)));
+    if(!m)return [];
+    const seen={},all=m.staff.edges.filter(e=>!seen[e.node.id]&&(seen[e.node.id]=1));
+    const main=all.filter(e=>/story|original|creator|author/i.test(e.role));
+    return (main.length?main:all).slice(0,3).map(e=>({id:-e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
+  }catch(e){return []}
+}
+/* descobre o autor por 3 caminhos: Kitsu → AniList → nome que já vem no catálogo */
+async function ensureAuthors(s){
+  if(authTried.has(s.id))return false;authTried.add(s.id);
+  let au=(s.authors||[]).filter(a=>a&&a.name),ch=false;
+  const real=()=>au.some(a=>a.id!==0);
+  if(!real()){const k=await kitsuAuthorsFor(s);if(k.length){au=k;ch=true}}
+  if(!real()){const a=await anilistAuthorsFor(s);if(a.length){au=a.concat(au.filter(x=>!a.some(y=>kn(y.name)===kn(x.name))));ch=true}}
+  const c=catFind({title:s.title,alternative:s.native});
+  if(c)splitNames(c.author).forEach(nm=>{if(!au.some(x=>kn(x.name)===kn(nm))){au.push({id:0,name:nm,role:'Autor'});ch=true}});
+  if(ch){[s,current[s.id],lib[s.id]].forEach(o=>{if(o)o.authors=au});if(lib[s.id])save(lib[s.id])}
+  return ch;
 }
 function novelCredits(s){
   const cr=$('#credits');if(!cr)return;
-  const RL={'Story':'História','Art':'Arte','Story & Art':'História e arte','Author':'Autor','Original Creator':'Criador original','Illustration':'Ilustração'};
+  const RL={'Story':'História','Art':'Arte','Story & Art':'História e arte','Author':'Autor','Original Story':'História original','Original Creator':'Criador original','Illustration':'Ilustração'};
   const au=(s.authors||[]).filter(a=>a&&a.name);
   cr.dataset.id=String(s.id);
   if(!au.length){cr.style.display='none';cr.innerHTML='';return}
-  cr.innerHTML='<div class="wh"><b>Autor e criador</b><div class="gen">'+au.map(a=>`<button class="lk" style="border:0;cursor:pointer" data-t="${a.id>0?'kitsu':'kname'}" data-id="${a.id||0}" data-n="${esc(a.name)}">${esc(a.name)}${a.role&&a.role!=='Autor'?' ('+esc(RL[a.role]||a.role)+')':''}</button>`).join('')+'</div></div><small>Toque em um nome para ver as outras obras do autor.</small>';
+  cr.innerHTML='<div class="wh"><b>Autor e criador</b><div class="gen">'+au.map(a=>`<button class="lk" style="border:0;cursor:pointer" data-k="${a.id>0?a.id:0}" data-a="${a.id<0?-a.id:0}" data-n="${esc(a.name)}">${esc(a.name)}${a.role&&a.role!=='Autor'?' ('+esc(RL[a.role]||a.role)+')':''}</button>`).join('')+'</div></div><small>Toque em um nome para ver as outras obras do autor.</small>';
   cr.style.display='';
-  cr.onclick=e=>{const b=e.target.closest('button');if(b)openAuthor(b.dataset.t,b.dataset.id,b.dataset.n)};
+  cr.onclick=e=>{const b=e.target.closest('button');if(b)openAuthor(b.dataset.n,+b.dataset.k,+b.dataset.a)};
 }
-async function openAuthor(t,id,name){
-  if(t==='kitsu')return openWorks('kitsu',id,name);
-  try{
-    const r=await fetch('https://kitsu.io/api/edge/people?filter[name]='+encodeURIComponent(name)+'&page[limit]=5',kH);
-    const j=await r.json(),p=(j.data||[]).find(x=>kn((x.attributes||{}).name)===kn(name));
-    if(p)return openWorks('kitsu',p.id,name);
-  }catch(e){}
-  alert('Não achei outras obras deste autor no Kitsu.');
-}
+function openAuthor(name,kid,alid){closeModal();tab('s');setSrc({type:'author',name,kid:kid||0,alid:alid||0})}
 
+function drawSearchGenres(){genreBox($('#gsearch'),gSet,gMode,()=>search(true),()=>kSet.has('webnovel'))}
+let novelExtra=[];
 const NOVEL_SOURCES=[
   {site:'NovelFull.com',base:'https://novelfull.com/search?keyword=',kind:'search'},
   {site:'NovelFull.net',base:'https://novelfull.net/search?keyword=',kind:'search'},
@@ -699,7 +771,7 @@ const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns c
 async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
 async function showWhere(id){
   const s=lib[id]||current[id];if(!s||!$('#where'))return;
-  if(s.kind==='webnovel'){attachNovelSources(s);novelCredits(s);if(!(s.authors||[]).some(a=>a.id>0)){kitsuAuthors(s).then(ok=>{const cr=$('#credits');if(ok&&cr&&cr.dataset.id===String(s.id))novelCredits(s)})}const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
+  if(s.kind==='webnovel'){attachNovelSources(s);novelCredits(s);ensureAuthors(s).then(ch=>{const cr=$('#credits');if(ch&&cr&&cr.dataset.id===String(s.id))novelCredits(s)});const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
   if(s.kind==='novel')attachNovelSources(s);
   if(!s.links||!s.authors||s.tr===undefined){
     try{
@@ -966,7 +1038,7 @@ function tab(t){
   $('#t-search').classList.toggle('on',t==='s');$('#t-lib').classList.toggle('on',t==='l');$('#t-stats').classList.toggle('on',t==='x');
   if(t==='l')renderLib();if(t==='x')renderStats();
 }
-$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;$('#novelCatalogBtn').onclick=()=>{kSet.clear();kSet.add('webnovel');multiKinds($('#kinds'),kSet,()=>search(true));$('#novelCatalogStatus').style.display='';search(true)};$('#importNovelsBtn').onclick=importNovelCatalog;
+$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;$('#novelCatalogBtn').onclick=()=>{kSet.clear();kSet.add('webnovel');multiKinds($('#kinds'),kSet,()=>{drawSearchGenres();search(true)});drawSearchGenres();$('#novelCatalogStatus').style.display='';search(true)};$('#importNovelsBtn').onclick=importNovelCatalog;
 $('#ltags').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.t;lgTags.has(t)?lgTags.delete(t):lgTags.add(t);renderLib()};
 
 let tm;
@@ -994,8 +1066,8 @@ function seedNovelSourceCatalog(){
 
 (function init(){
   seedNovelSourceCatalog();
-  multiKinds($('#kinds'),kSet,()=>search(true));genreBox($('#gsearch'),gSet,gMode,()=>search(true));
-  multiKinds($('#lkinds'),lkSet,renderLib);genreBox($('#glib'),lgSet,lgMode,renderLib);
+  multiKinds($('#kinds'),kSet,()=>{drawSearchGenres();search(true)});drawSearchGenres();
+  multiKinds($('#lkinds'),lkSet,renderLib);genreBox($('#glib'),lgSet,lgMode,renderLib,()=>Object.values(lib).some(x=>x.kind==='webnovel'||x.kind==='novel'));
   filterBox();save();renderUser();startSync();
   try{if(!localStorage.getItem('otaku-seen')){$('#tip').style.display='';$('#tipx').onclick=()=>{$('#tip').style.display='none';localStorage.setItem('otaku-seen','1')}}}catch(e){}
   loadNovelCatalog().then(()=>{if(novelCatalogLoaded&&novelCatalog.length){const b=$('#novelCatalogStatus');b.style.display='';b.textContent=novelCatalog.length+' WEB novels no catálogo';}});
