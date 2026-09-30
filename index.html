@@ -116,7 +116,7 @@ input[type=search]{flex:1;min-width:200px}
 
   <section id="v-stats" style="display:none"></section>
 </main>
-<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados, capas e notas vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios.</footer>
+<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados, capas e notas vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
 
 <div id="modal"><div class="box" id="box"></div></div>
 
@@ -384,7 +384,7 @@ function openModal(id){
     $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save(l);openModal(id);refresh()};
     $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
   }else{
-    $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};save(lib[id]);openModal(id);refresh()};
+    $('#add').onclick=()=>{delete dels[id];const item={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};attachNovelSources(item);lib[id]=item;save(lib[id]);openModal(id);refresh()};
   }
 }
 function splitText(t,max){
@@ -449,9 +449,35 @@ async function showSyn(id){
   if($('#syn')&&$('#syn').dataset.id===String(id)){tg.style.display=pt===s.syn?'none':'';paint()}
 }
 
+const NOVEL_SOURCES=[
+  {site:'NovelFull.com',base:'https://novelfull.com/search?keyword=',kind:'search'},
+  {site:'NovelFull.net',base:'https://novelfull.net/search?keyword=',kind:'search'},
+  {site:'Wuxiaworld',base:'https://www.google.com/search?q=',kind:'google'}
+];
+function novelSlug(t){return norm(t).replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
+function novelSourceLinks(s){
+  if(!s||s.kind!=='novel')return [];
+  const q=(s.title+' '+((s.authors&&s.authors[0]&&s.authors[0].name)||'')).trim();
+  const e=encodeURIComponent(q);
+  const slug=novelSlug(s.title);
+  return [
+    {site:'NovelFull.com',url:'https://novelfull.com/search?keyword='+e,lang:'EN'},
+    {site:'NovelFull.net',url:'https://novelfull.net/search?keyword='+e,lang:'EN'},
+    {site:'Wuxiaworld',url:'https://www.google.com/search?q='+encodeURIComponent('site:wuxiaworld.com/novel '+q),lang:'EN'}
+  ];
+}
+function attachNovelSources(s){
+  if(!s||s.kind!=='novel')return s;
+  const add=novelSourceLinks(s);
+  const old=Array.isArray(s.links)?s.links:[];
+  const seen=new Set(old.map(x=>x.site+'|'+x.url));
+  s.links=old.concat(add.filter(x=>!seen.has(x.site+'|'+x.url))).slice(0,40);
+  return s;
+}
+
 function toggleFav(id){
   let l=lib[id];
-  if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()}}
+  if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};attachNovelSources(l)}
   l.fav=!l.fav;save(l);refresh();
   if($('#modal').classList.contains('on'))openModal(id);
 }
@@ -462,6 +488,7 @@ const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns c
 async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
 async function showWhere(id){
   const s=lib[id]||current[id];if(!s||!$('#where'))return;
+  if(s.kind==='novel')attachNovelSources(s);
   if(!s.links||!s.authors||s.tr===undefined){
     try{
       const d=await gql('query($id:Int){Media(id:$id){siteUrl trailer{id site} externalLinks{site url type language isDisabled} staff(perPage:25,sort:RELEVANCE){edges{role node{id name{full}}}} studios{edges{isMain node{id name}}}}}',{id:+id});
@@ -490,19 +517,25 @@ async function showWhere(id){
   const g={free:[],part:[],paid:[],other:[]};
   s.links.forEach(x=>{const t=TIERS.find(t=>t[1].test(x.site));g[t?t[0]:'other'].push(x)});
   Object.values(g).forEach(a=>a.sort((x,y)=>/portug/i.test(y.lang||'')-/portug/i.test(x.lang||'')));
-  const verb=s.type==='MANGA'?'Onde ler':'Onde assistir';
+  const verb=s.kind==='novel'?'Onde ler':'Onde '+(s.type==='MANGA'?'ler':'assistir');
   const best=g.free[0]||g.part[0]||g.paid[0]||g.other[0];
   const isM=s.type==='MANGA',trm=/^(youtube|dailymotion):([\w-]+)$/.exec(s.tr||'');
-  let h=`<b>${verb}</b><div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}${s.kind==='novel'?`<a class="btn" target="_blank" rel="noopener" href="https://novelfull.com/search?keyword=${encodeURIComponent(s.title)}">📖 Ler no NovelFull</a>`:`<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a>`}</div><div id="trbox"></div>`;
+  let h=`<b>${verb}</b>`;
+  if(s.kind==='novel'){
+    const ns=novelSourceLinks(s);
+    h+=`<div class="sub" style="margin-top:6px">Fontes de novels encontradas para este título. A biblioteca guarda os links; a leitura continua no site de origem.</div>`;
+    h+=`<div class="row" style="margin:8px 0">${ns.map(x=>`<a class="btn" target="_blank" rel="noopener" href="${x.url}">🔎 ${x.site}</a>`).join('')}</div>`;
+    h+=`<div class="wh"><small style="margin:0">Atalho para o catálogo Wuxiaworld</small><div class="gen"><a class="lk" target="_blank" rel="noopener" href="https://www.wuxiaworld.com/novels">Wuxiaworld · Novels</a></div></div>`;
+  }else{
+    h+=`<div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
+  }
   h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
   h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
-  const nv=s.kind==='novel',nq=encodeURIComponent(s.title);
-  if(nv)h+=`<div class="wh"><small style="margin:0">Sites de web novels (abre a busca pelo título)</small><div class="gen"><a class="lk" target="_blank" rel="noopener" href="https://novelfull.com/search?keyword=${nq}">NovelFull (tradução de fãs)</a><a class="lk" target="_blank" rel="noopener" href="https://www.novelupdates.com/?s=${nq}&post_type=seriesplans">NovelUpdates</a><a class="lk" target="_blank" rel="noopener" href="https://www.webnovel.com/search?keywords=${nq}">Webnovel (oficial)</a></div></div>`;
-  const fr=nv?[]:s.type==='MANGA'
+  const fr=s.type==='MANGA'
     ?[['MANGA Plus','MANGA Plus'],['WEBTOON (PT-BR) 🇧🇷','WEBTOON'],['Tapas','Tapas']]
     :[['Pluto TV Brasil 🇧🇷','Pluto TV'],['Muse Asia (YouTube)','Muse Asia'],['Ani-One Asia (YouTube)','Ani-One Asia']];
-  if(fr.length)h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
+  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
   h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
   const tb=$('#trbtn');
@@ -734,7 +767,20 @@ $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObje
 $('#imp').onclick=()=>$('#file').click();
 $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{{const o=JSON.parse(r.result);if(Object.values(o).some(l=>l.rating>5))to5(o);Object.values(o).forEach(x=>{const v=safe(x);if(v.id)lib[v.id]=v})}save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
 
+function seedNovelSourceCatalog(){
+  try{
+    const key='otaku-novel-sources';
+    if(localStorage.getItem(key))return;
+    localStorage.setItem(key,JSON.stringify([{title:'Martial World',author:'Cocooned Cow',chapters:2276,status:'Completed',links:[
+      {site:'NovelFull.com',url:'https://novelfull.com/martial-world.html'},
+      {site:'NovelFull.net',url:'https://novelfull.net/martial-world.html'},
+      {site:'Wuxiaworld',url:'https://www.wuxiaworld.com/novel/martial-world'}
+    ]}]));
+  }catch(e){}
+}
+
 (function init(){
+  seedNovelSourceCatalog();
   multiKinds($('#kinds'),kSet,()=>search(true));genreBox($('#gsearch'),gSet,gMode,()=>search(true));
   multiKinds($('#lkinds'),lkSet,renderLib);genreBox($('#glib'),lgSet,lgMode,renderLib);
   filterBox();save();renderUser();startSync();
