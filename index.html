@@ -1136,10 +1136,12 @@ async function fCheap(st,p){
   const items=r.map(d=>({id:6e9+Number(d.gameID),ref:'c'+d.gameID,kind:'game',type:'ANIME',title:T(d.title),native:'',cover:d.steamAppID&&d.steamAppID!=='0'?'https://cdn.cloudflare.steamstatic.com/steam/apps/'+d.steamAppID+'/header.jpg':U(d.thumb),syn:'',genres:[],year:d.releaseDate?String(new Date(d.releaseDate*1000).getFullYear()):'',avg:Number(d.metacriticScore)||Number(d.steamRatingPercent)||0,by:'',pl:'PC',url:''}));
   return {items,more:r.length===24};
 }
+const WP={1:'Microsoft Windows|Linux|macOS',2:'PlayStation',3:'Xbox',7:'Nintendo|Wii|Game Boy|GameCube|Super Nintendo',4:'iOS',8:'Android'};
 async function fWiki(st,p){
+  const rx=st.plat.map(i=>WP[i]).filter(Boolean).join('|');
   const qs=st.q.replace(/["\\]/g,' '),nw=st.sort==='new'&&!qs;
   const sr=qs?`SERVICE wikibase:mwapi{bd:serviceParam wikibase:api "EntitySearch";wikibase:endpoint "www.wikidata.org";mwapi:search "${qs}";mwapi:language "pt";wikibase:limit 100 . ?g wikibase:apiOutputItem mwapi:item.}`:'';
-  const q=`SELECT ?g (SAMPLE(?lb) AS ?l) (SAMPLE(?im) AS ?img) (MIN(?dt) AS ?d) (MAX(?s) AS ?sl) WHERE{${sr}?g wdt:P31 wd:Q7889;wikibase:sitelinks ?s.${qs?'':'FILTER(?s>='+(nw?6:12)+')'}${qs?'OPTIONAL':''}{?g wdt:P18 ?im}OPTIONAL{?g wdt:P577 ?dt}${nw?'FILTER(BOUND(?dt)&&?dt<=NOW())':''}SERVICE wikibase:label{bd:serviceParam wikibase:language "pt,en".?g rdfs:label ?lb}}GROUP BY ?g ORDER BY ${nw?'DESC(?d)':'DESC(?sl)'} LIMIT 24 OFFSET ${(p-1)*24}`;
+  const q=`SELECT ?g (SAMPLE(?lb) AS ?l) (SAMPLE(?im) AS ?img) (MIN(?dt) AS ?d) (MAX(?s) AS ?sl) WHERE{${sr}?g wdt:P31 wd:Q7889;wikibase:sitelinks ?s.${qs?'':'FILTER(?s>='+(nw?6:12)+')'}${rx?'?g wdt:P400 ?pf.?pf rdfs:label ?pn.FILTER(LANG(?pn)="en"&&REGEX(?pn,"^('+rx+')"))':''}${qs?'OPTIONAL':''}{?g wdt:P18 ?im}OPTIONAL{?g wdt:P577 ?dt}${nw?'FILTER(BOUND(?dt)&&?dt<=NOW())':''}SERVICE wikibase:label{bd:serviceParam wikibase:language "pt,en".?g rdfs:label ?lb}}GROUP BY ?g ORDER BY ${nw?'DESC(?d)':'DESC(?sl)'} LIMIT 24 OFFSET ${(p-1)*24}`;
   const r=await jget('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q));
   const items=r.results.bindings.map(b=>{const qid=b.g.value.split('/').pop();return {id:7e9+Number(qid.slice(1)),ref:'w'+qid,kind:'game',type:'ANIME',title:T(b.l&&b.l.value),native:'',cover:b.img?U(b.img.value.replace('http:','https:').replace(/'/g,'%27')+'?width=400'):'',syn:'',genres:[],year:b.d?b.d.value.slice(0,4):'',avg:0,by:'',pl:'',url:''}}).filter(x=>x.title&&!/^Q\d+$/.test(x.title));
   return {items,more:items.length>=20};
@@ -1331,7 +1333,7 @@ async function run(h,reset){
 function chipsDraw(h){
   if(h.id==='jg')h.kd.innerHTML=[['','Todas as plataformas'],...PLAT].map(([v,l])=>`<button class="chip ${v===''?(h.pl.size?'':'on'):h.pl.has(String(v))?'on':''}" data-pl="${v}">${l}</button>`).join('');
   else h.kd.innerHTML=CFG.lf.kinds.map(([v,l])=>`<button class="chip ${h.kind===v?'on':''}" data-kd="${v}">${l}</button>`).join('');
-  const rk=h.id!=='jg'||!!key('rawg');h.kd.style.display=rk?'':'none';const list=!rk?null:h.id==='jg'?GG:h.kind==='book'?BGC:h.kind==='movie'?MG:null;
+  const rk=h.id!=='jg'||!!key('rawg');h.kd.style.display='';const list=!rk?null:h.id==='jg'?GG:h.kind==='book'?BGC:h.kind==='movie'?MG:null;
   h.gn.style.display=list?'':'none';
   if(list)h.gn.innerHTML=`<summary>Gêneros${h.g.size?' ('+h.g.size+')':''}</summary><div class="chips">${list.map(([v,l])=>`<button class="chip ${h.g.has(String(v))?'on':''}" data-g="${v}">${l}</button>`).join('')}${h.g.size?'<button class="chip" data-g="">Limpar</button>':''}</div>`;
 }
