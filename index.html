@@ -84,9 +84,9 @@ input[type=search]{flex:1;min-width:200px}
     <div class="bar">
       <input type="search" id="q" placeholder="Buscar por título ou autor (vazio = mais populares)">
       <select id="sort"><option value="POPULARITY_DESC">Mais populares</option><option value="SCORE_DESC">Melhor avaliados</option><option value="TRENDING_DESC">Em alta</option><option value="START_DATE_DESC">Mais recentes</option></select>
-      <button class="btn" id="rnd">🎲 Me surpreenda</button><button class="btn" id="rec">✨ Recomendados</button>
+      <button class="btn" id="rnd">🎲 Me surpreenda</button><button class="btn" id="rec">✨ Recomendados</button><button class="btn" id="novelCatalogBtn">📚 Catálogo WEB Novels</button><button class="btn" id="importNovelsBtn">⬇ Importar catálogo</button>
     </div>
-    <div id="banner" class="stats" style="display:none"></div>
+    <div id="banner" class="stats" style="display:none"></div><div id="novelCatalogStatus" class="stats" style="display:none"></div>
     <div id="authors" style="display:none"></div>
     <div class="chips" id="kinds"></div>
     <details class="gdet" id="gsearch"></details>
@@ -116,13 +116,14 @@ input[type=search]{flex:1;min-width:200px}
 
   <section id="v-stats" style="display:none"></section>
 </main>
-<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados, capas e notas vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
+<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados de anime/mangá vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. WEB Novels vêm do catálogo sincronizado de NovelFull.com, NovelFull.net e Wuxiaworld. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
 
 <div id="modal"><div class="box" id="box"></div></div>
 
 <script>
-const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua',novel:'Novel'};
+const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua',novel:'Novel',webnovel:'WEB Novel'};
 const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN'],novel:['MANGA',undefined]};
+let novelCatalog=[];let novelCatalogLoaded=false;let novelCatalogUpdated='';
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
 let src=null,favOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
@@ -208,29 +209,56 @@ async function search(reset){
   $('#smsg').textContent='Carregando...';$('#more').style.display='none';
   try{
     const addCard=m=>{const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
+    const addNovel=n=>{const s=novelSlim(n);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
     let hasNext=false;
     if(src){
-      const d=await fetchSrc(page);
-      d.nodes.filter(m=>!m.isAdult).forEach(addCard);
-      hasNext=d.pageInfo.hasNextPage;
+      const d=await fetchSrc(page); d.nodes.filter(m=>!m.isAdult).forEach(addCard); hasNext=d.pageInfo.hasNextPage;
+    }else if([...kSet].includes('webnovel')){
+      const q=$('#q').value.trim();
+      const kinds=kSet.size?[...kSet]:['webnovel'];
+      const onlyWeb=kinds.length===1&&kinds[0]==='webnovel';
+      const list=novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)&&(!F.st||norm(n.status)===norm(F.st))&&(!F.from||Number(n.year)>=Number(F.from))&&(!F.to||Number(n.year)<=Number(F.to)));
+      list.sort((a,b)=>{if($('#sort').value==='SCORE_DESC')return (b.rating||0)-(a.rating||0);if($('#sort').value==='START_DATE_DESC')return (b.year||0)-(a.year||0);return (b.popularity||0)-(a.popularity||0)});
+      const slice=list.slice((page-1)*24,page*24); slice.forEach(addNovel); hasNext=page*24<list.length;
+      if(!slice.length && !onlyWeb){
+        // Se o filtro misturar tipos, deixa o AniList continuar abaixo.
+        kSet.delete('webnovel');
+        await search(reset);
+        kSet.add('webnovel');
+        loading=false;return;
+      }
     }else{
       const keys=kSet.size?[...kSet]:['all'],q=$('#q').value.trim(),gs=[...gSet],all=gMode.all&&gs.length>1;
       let tries=0,added=0;
       do{
-        const act=keys.filter(k=>mores[k]!==false);
+        const act=keys.filter(k=>k!=='webnovel'&&mores[k]!==false);
         const res=await Promise.all(act.map(async k=>{const pg=(pgs[k]||0)+1;pgs[k]=pg;const d=await fetchPage(q,k,pg,$('#sort').value,gs);mores[k]=d.pageInfo.hasNextPage;return d.media}));
         const mx=Math.max(0,...res.map(r=>r.length));
         for(let i=0;i<mx;i++)res.forEach(r=>{const m=r[i];if(!m||m.isAdult)return;if(all&&!genOk(m.genres,gSet,true))return;added+=addCard(m)});
-        hasNext=keys.some(k=>mores[k]!==false);
-        tries++;
+        hasNext=keys.filter(k=>k!=='webnovel').some(k=>mores[k]!==false);tries++;
       }while(all&&added<8&&hasNext&&tries<5);
     }
     $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';
     $('#more').style.display=hasNext?'block':'none';
-  }catch(e){$('#smsg').textContent=(String(e.message).startsWith('API')?'O AniList recusou a busca ('+e.message+'). Tente de novo em instantes.':'Sem conexão com o AniList. Se você abriu este arquivo dentro do Claude, baixe e abra direto no navegador (Chrome, Edge, Firefox). Detalhe: '+e.message)}
+  }catch(e){$('#smsg').textContent='Não consegui carregar o catálogo. '+e.message}
   loading=false;
 }
 
+function novelId(n){
+  let h=2166136261;for(const c of String(n.source+'|'+n.url)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return -Math.abs(h||1);
+}
+function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#2a2640"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:n.author?[{id:0,name:n.author,role:'Autor'}]:[],links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog'} }
+function matchNovel(n,q){if(!q)return true;const z=norm(q);return norm(n.title).includes(z)||norm(n.author).includes(z)||(n.alternative&&norm(n.alternative).includes(z))}
+async function loadNovelCatalog(){
+  try{const r=await fetch('./novels-catalog.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
+    const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent=novelCatalog.length+' WEB novels carregadas'+(novelCatalogUpdated?' · atualizado '+new Date(novelCatalogUpdated).toLocaleDateString('pt-BR'): '');
+  }catch(e){novelCatalog=[];novelCatalogLoaded=false;const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent='Catálogo de WEB novels ainda não foi gerado. Publique também a pasta .github/workflows.'}
+}
+function importNovelCatalog(){
+  if(!novelCatalog.length){alert('O catálogo de WEB novels ainda não foi carregado.');return}
+  let count=0;for(const n of novelCatalog){const s=novelSlim(n);if(!lib[s.id]){lib[s.id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:['WEB Novel',n.source],fav:false,added:Date.now(),upd:Date.now()};count++}else{lib[s.id]={...lib[s.id],...s,links:lib[s.id].links||s.links}}
+  }save();renderLib();alert(count+' WEB novels foram adicionadas à sua biblioteca.');
+}
 function card(s){
   const l=lib[s.id];
   return `<div class="card" data-id="${s.id}" tabindex="0">
@@ -488,6 +516,7 @@ const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns c
 async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
 async function showWhere(id){
   const s=lib[id]||current[id];if(!s||!$('#where'))return;
+  if(s.kind==='webnovel'){attachNovelSources(s);const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
   if(s.kind==='novel')attachNovelSources(s);
   if(!s.links||!s.authors||s.tr===undefined){
     try{
@@ -753,7 +782,7 @@ function tab(t){
   $('#t-search').classList.toggle('on',t==='s');$('#t-lib').classList.toggle('on',t==='l');$('#t-stats').classList.toggle('on',t==='x');
   if(t==='l')renderLib();if(t==='x')renderStats();
 }
-$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;
+$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;$('#novelCatalogBtn').onclick=()=>{kSet.clear();kSet.add('webnovel');multiKinds($('#kinds'),kSet,()=>search(true));$('#novelCatalogStatus').style.display='';search(true)};$('#importNovelsBtn').onclick=importNovelCatalog;
 $('#ltags').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.t;lgTags.has(t)?lgTags.delete(t):lgTags.add(t);renderLib()};
 
 let tm;
@@ -785,6 +814,7 @@ function seedNovelSourceCatalog(){
   multiKinds($('#lkinds'),lkSet,renderLib);genreBox($('#glib'),lgSet,lgMode,renderLib);
   filterBox();save();renderUser();startSync();
   try{if(!localStorage.getItem('otaku-seen')){$('#tip').style.display='';$('#tipx').onclick=()=>{$('#tip').style.display='none';localStorage.setItem('otaku-seen','1')}}}catch(e){}
+  loadNovelCatalog().then(()=>{if(novelCatalogLoaded&&novelCatalog.length){const b=$('#novelCatalogStatus');b.style.display='';b.textContent=novelCatalog.length+' WEB novels no catálogo';}});
   search(true);
 })();
 </script>
