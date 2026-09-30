@@ -42,7 +42,7 @@ input[type=search]{flex:1;min-width:200px}
 .x{position:absolute;top:8px;right:12px;background:none;border:0;color:var(--mut);font-size:26px;cursor:pointer}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .stars{display:flex;gap:2px}
-.stars span{font-size:24px;cursor:pointer;color:var(--panel2);line-height:1}
+.stars span{font-size:30px;cursor:pointer;color:var(--panel2);line-height:1}
 .stars span.on{color:var(--star)}
 .btn{border:0;border-radius:var(--r);padding:9px 16px;font:600 14px inherit;cursor:pointer;background:var(--ac);color:#0d2b26}
 .btn.d{background:var(--panel2);color:var(--red)}
@@ -75,6 +75,7 @@ input[type=search]{flex:1;min-width:200px}
       <input type="search" id="q" placeholder="Buscar por título (ou deixe vazio para ver os mais populares)">
       <select id="sort"><option value="POPULARITY_DESC">Mais populares</option><option value="SCORE_DESC">Melhor avaliados</option><option value="TRENDING_DESC">Em alta</option><option value="START_DATE_DESC">Mais recentes</option></select>
     </div>
+    <div id="banner" class="stats" style="display:none"></div>
     <div class="chips" id="kinds"></div>
     <div class="grid" id="results"></div>
     <div id="smsg" class="msg"></div>
@@ -85,7 +86,7 @@ input[type=search]{flex:1;min-width:200px}
     <div class="bar">
       <input type="search" id="lq" placeholder="Buscar na minha biblioteca">
       <select id="lstatus"><option value="">Todos os status</option><option>Quero ver/ler</option><option>Em andamento</option><option>Completo</option><option>Abandonado</option></select>
-      <button class="chip" id="lfav">♥ Só favoritos</button><select id="lmin"><option value="0">Qualquer nota</option><option value="5">Minha nota 5+</option><option value="7">Minha nota 7+</option><option value="9">Minha nota 9+</option><option value="10">Minha nota 10</option></select>
+      <button class="chip" id="lfav">♥ Só favoritos</button><select id="lmin"><option value="0">Qualquer nota</option><option value="2">Minha nota 2+ ★</option><option value="3">Minha nota 3+ ★</option><option value="4">Minha nota 4+ ★</option><option value="5">Minha nota 5 ★</option></select>
       <select id="lsort"><option value="added">Adicionados por último</option><option value="rating">Minha nota</option><option value="title">Título (A–Z)</option></select>
       <button class="btn" id="exp">Exportar</button>
       <button class="btn" id="imp">Importar</button>
@@ -99,17 +100,16 @@ input[type=search]{flex:1;min-width:200px}
 
 <div id="modal"><div class="box" id="box"></div></div>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-const GOOGLE_CLIENT_ID=''; // cole aqui o seu Client ID do Google (veja as instruções no botão Entrar com Google)
 const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua'};
 const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN']};
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
-let favOnly=false,curOrder=[],lib={},kind='all',lkind='all',page=1,loading=false,current={};
+let src=null,favOnly=false,curOrder=[],lib={},kind='all',lkind='all',page=1,loading=false,current={};
 
-try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}')}catch(e){lib={}}
-function save(l){if(l)l.upd=Date.now();try{localStorage.setItem('otaku-lib',JSON.stringify(lib))}catch(e){}$('#cnt').textContent=Object.keys(lib).length;schedulePush()}
+function to5(o){Object.values(o).forEach(l=>{if(l&&l.rating)l.rating=Math.max(1,Math.ceil(l.rating/2))})}
+try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}');if(localStorage.getItem('otaku-scale')!=='5'){to5(lib);localStorage.setItem('otaku-scale','5')}}catch(e){lib={}}
+function save(l){if(l)l.upd=Date.now();try{localStorage.setItem('otaku-lib',JSON.stringify(lib));localStorage.setItem('otaku-del',JSON.stringify(dels))}catch(e){}$('#cnt').textContent=Object.keys(lib).length;schedulePush()}
 
 function kindOf(m){
   const c=m.countryOfOrigin;
@@ -142,9 +142,10 @@ async function search(reset){
   if(reset){page=1;$('#results').innerHTML='';current={};curOrder=[]}
   $('#smsg').textContent='Carregando...';$('#more').style.display='none';
   try{
-    const d=await fetchPage($('#q').value.trim(),kind,page,$('#sort').value);
-    d.media.forEach(m=>{const s=slim(m);current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s))});
-    $('#smsg').textContent=d.media.length||page>1?'':'Nada encontrado. Tente outro título ou tipo.';
+    const d=src?await fetchSrc(page):await fetchPage($('#q').value.trim(),kind,page,$('#sort').value);
+    const list=(src?d.nodes:d.media).filter(m=>!m.isAdult);
+    list.forEach(m=>{const s=slim(m);if(current[s.id])return;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s))});
+    $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título ou tipo.';
     $('#more').style.display=d.pageInfo.hasNextPage?'block':'none';
   }catch(e){$('#smsg').textContent=(String(e.message).startsWith('API')?'O AniList recusou a busca ('+e.message+'). Tente de novo em instantes.':'Sem conexão com o AniList. Se você abriu este arquivo dentro do Claude, baixe e abra direto no navegador (Chrome, Edge, Firefox). Detalhe: '+e.message)}
   loading=false;
@@ -158,9 +159,23 @@ function card(s){
     <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
     <img loading="lazy" src="${s.cover}" alt="Capa de ${s.title.replace(/"/g,'')}">
     <div class="i"><div class="t">${s.title}</div>
-    <div class="m">${s.year||''} ${s.avg?'· AniList '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★ '+l.rating+'/10':'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
+    <div class="m">${s.year||''} ${s.avg?'· AniList '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
 }
 
+const MF='id type countryOfOrigin isAdult title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status';
+async function fetchSrc(p){
+  if(src.type==='staff'){const d=await gql('query($id:Int,$p:Int){Staff(id:$id){staffMedia(page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:src.id,p});return d.Staff.staffMedia}
+  const d=await gql('query($id:Int,$p:Int){Studio(id:$id){media(page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:src.id,p});return d.Studio.media;
+}
+function setSrc(v){
+  src=v;
+  ['.bar','#kinds'].forEach(x=>{const e=$('#v-search '+x);if(e)e.style.display=v?'none':''});
+  const b=$('#banner');b.style.display=v?'':'none';
+  b.innerHTML=v?`<button class="chip" id="bk">← Voltar</button> <b>Obras de ${v.name}</b> (das mais populares às menos)`:'';
+  if(v)$('#bk').onclick=()=>{setSrc(null)};
+  search(true);
+}
+function openWorks(type,id,name){closeModal();tab('s');setSrc({type,id:+id,name})}
 function openModal(id){
   const s=lib[id]||current[id]; if(!s) return;
   const l=lib[id]; const stars=l?l.rating||0:0;
@@ -174,10 +189,11 @@ function openModal(id){
     <button class="chip" id="tg" style="display:none">Ver original (inglês)</button>
     ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option ${x===l.status?'selected':''}>${x}</option>`).join('')}</select>
       <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
-      <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/10':'sem nota'}</span></div>
+      <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/5':'sem nota'}</span></div>
       <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${(l.note||'').replace(/</g,'&lt;')}</textarea>
       <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`
      :`<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>`}
+    <div class="where" id="credits"></div>
     <div class="where" id="where">Buscando onde ${s.type==='MANGA'?'ler':'assistir'}...</div>
     </div>`;
   $('#modal').classList.add('on');
@@ -187,9 +203,9 @@ function openModal(id){
     $('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
     $('#mnote').onchange=e=>{l.note=e.target.value;save(l)};
     $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save(l);openModal(id);refresh()};
-    $('#rm').onclick=()=>{delete lib[id];save();closeModal();refresh()};
+    $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
   }else{
-    $('#add').onclick=()=>{lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()};save(lib[id]);openModal(id);refresh()};
+    $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()};save(lib[id]);openModal(id);refresh()};
   }
 }
 function splitText(t,max){
@@ -231,6 +247,10 @@ async function showSyn(id){
   const s=lib[id]||current[id];
   const el=$('#syn'),tg=$('#tg');
   if(!s||!el)return;
+  if(!s.syn){
+    try{const d=await gql('query($id:Int){Media(id:$id){description(asHtml:false)}}',{id:+id});s.syn=clean(d.Media.description);[lib[id],current[id]].forEach(o=>{if(o)o.syn=s.syn})}
+    catch(e){s.syn='Sem sinopse disponível.'}
+  }
   let pt=s.pt, showPT=true;
   const paint=()=>{
     const el2=$('#syn'); if(!el2||$('#syn').dataset.id!==String(id)&&false)return;
@@ -252,7 +272,7 @@ async function showSyn(id){
 
 function toggleFav(id){
   let l=lib[id];
-  if(!l){const s=current[id];if(!s)return;l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()}}
+  if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()}}
   l.fav=!l.fav;save(l);refresh();
   if($('#modal').classList.contains('on'))openModal(id);
 }
@@ -263,14 +283,28 @@ const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns c
 async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
 async function showWhere(id){
   const s=lib[id]||current[id];if(!s||!$('#where'))return;
-  if(!s.links){
+  if(!s.links||!s.authors){
     try{
-      const d=await gql('query($id:Int){Media(id:$id){siteUrl externalLinks{site url type language isDisabled}}}',{id:+id});
+      const d=await gql('query($id:Int){Media(id:$id){siteUrl externalLinks{site url type language isDisabled} staff(perPage:25,sort:RELEVANCE){edges{role node{id name{full}}}} studios{edges{isMain node{id name}}}}}',{id:+id});
       s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled).map(x=>({site:x.site,url:x.url,lang:x.language}));
       s.page=d.Media.siteUrl;
-      [lib[id],current[id]].forEach(o=>{if(o){o.links=s.links;o.page=s.page}});
+      const seen={};
+      s.authors=d.Media.staff.edges.filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full,role:e.role}));
+      s.studios=d.Media.studios.edges.filter(e=>e.isMain).map(e=>({id:e.node.id,name:e.node.name}));
+      [lib[id],current[id]].forEach(o=>{if(o)Object.assign(o,{links:s.links,page:s.page,authors:s.authors,studios:s.studios})});
       if(lib[id])save();
-    }catch(e){s.links=[]}
+    }catch(e){s.links=s.links||[];s.authors=s.authors||[];s.studios=s.studios||[]}
+  }
+  const cr=$('#credits');
+  if(cr){
+    const RL={'Original Creator':'Criador original','Original Story':'História original','Story & Art':'História e arte','Story':'História','Art':'Arte','Creator':'Criador'};
+    const btn=(t,x,extra)=>`<button class="lk" style="border:0;cursor:pointer" data-t="${t}" data-id="${x.id}" data-n="${x.name.replace(/"/g,'&quot;')}">${x.name}${extra||''}</button>`;
+    let h='';
+    if(s.authors.length)h+=`<div class="wh"><b>${s.type==='MANGA'?'Autor e criador':'Criador e autor original'}</b><div class="gen">${s.authors.map(a=>btn('staff',a,' ('+(RL[a.role]||a.role)+')')).join('')}</div></div>`;
+    if(s.type!=='MANGA'&&s.studios.length)h+=`<div class="wh"><b>Estúdio</b><div class="gen">${s.studios.map(x=>btn('studio',x)).join('')}</div></div>`;
+    if(h)h+='<small>Toque em um nome para ver todas as obras.</small>';
+    cr.innerHTML=h;cr.style.display=h?'':'none';
+    cr.onclick=e=>{const b=e.target.closest('button');if(b)openWorks(b.dataset.t,b.dataset.id,b.dataset.n)};
   }
   const el=$('#where');if(!el)return;
   const g={free:[],part:[],paid:[],other:[]};
@@ -284,77 +318,66 @@ async function showWhere(id){
   el.innerHTML=h;
 }
 
-/* ---------- login Google + sincronização (Google Drive, pasta privada do app) ---------- */
-let tok=null,tc=null,fileId=null,pushT;
-let user=null;try{user=JSON.parse(localStorage.getItem('otaku-user')||'null')}catch(e){}
+/* ---------- sincronização por código (JSONBlob, sem conta) ---------- */
+const JB='https://jsonblob.com/api/jsonBlob';
+let code='',ready=false,pushT,dels={};
+try{code=localStorage.getItem('otaku-code')||'';dels=JSON.parse(localStorage.getItem('otaku-del')||'{}')}catch(e){}
+const payload=()=>JSON.stringify({scale:5,items:Object.fromEntries(Object.entries(lib).map(([k,v])=>{const {syn,pt,links,page,authors,studios,...r}=v;return[k,r]})),del:dels});
 function setStatus(t){const e=$('#sync');if(e)e.textContent=t}
-function renderUser(){
-  $('#user').innerHTML=!user?'<button class="btn" id="login">Entrar com Google</button>'
-   :tok?`<img src="${user.pic}" alt="" referrerpolicy="no-referrer"><span>${user.name}</span><span id="sync"></span><button class="chip" id="out">Sair</button>`
-   :`<button class="btn" id="login">Reconectar como ${user.name}</button><button class="chip" id="out">Sair</button>`;
-}
-$('#user').onclick=e=>{if(e.target.id==='login')login();if(e.target.id==='out')logout()};
-function login(){
-  if(!GOOGLE_CLIENT_ID){showSetup();return}
-  if(!window.google||!google.accounts){alert('O login do Google ainda está carregando. Tente de novo em alguns segundos.');return}
-  if(!tc)tc=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'openid profile email https://www.googleapis.com/auth/drive.appdata',callback:onTok});
-  tc.requestAccessToken();
-}
-async function onTok(r){
-  if(r.error)return;
-  tok=r.access_token;
-  try{
-    const u=await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+tok}})).json();
-    user={name:u.given_name||u.name||'Conta Google',pic:u.picture||''};
-    localStorage.setItem('otaku-user',JSON.stringify(user));
-  }catch(e){}
-  renderUser();pull();
-}
-function logout(){if(tok&&window.google)google.accounts.oauth2.revoke(tok,()=>{});tok=null;fileId=null;user=null;try{localStorage.removeItem('otaku-user')}catch(e){}renderUser()}
-async function gf(url,o={}){
-  const r=await fetch(url,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});
-  if(r.status===401){tok=null;renderUser();throw new Error('401')}
-  if(!r.ok)throw new Error(r.status);return r;
-}
-async function pull(){
-  try{
-    setStatus('Sincronizando...');
-    const f=(await (await gf('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id)&q='+encodeURIComponent("name='biblioteca.json'"))).json()).files||[];
-    if(f[0]){
-      fileId=f[0].id;
-      const c=await (await gf('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media')).json();
-      Object.entries(c).forEach(([k,v])=>{if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]=v});
-    }
-    save();refresh();
-  }catch(e){if(tok)setStatus('Erro ao sincronizar')}
-}
-function schedulePush(){if(!tok)return;clearTimeout(pushT);pushT=setTimeout(push,1500)}
+function renderUser(){$('#user').innerHTML=`<span id="sync">${code?'Sincronizado ✓':''}</span><button class="btn" id="sbtn">Sincronizar aparelhos</button>`}
+$('#user').onclick=e=>{if(e.target.id==='sbtn')showSync()};
+function schedulePush(){if(!code||!ready)return;clearTimeout(pushT);pushT=setTimeout(push,2000)}
 async function push(){
-  if(!tok)return;
-  try{
-    setStatus('Salvando...');
-    const data=JSON.stringify(lib);
-    if(fileId){await gf('https://www.googleapis.com/upload/drive/v3/files/'+fileId+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:data})}
-    else{
-      const b='otakuB';
-      const r=await gf('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body:`--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify({name:'biblioteca.json',parents:['appDataFolder']})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${data}\r\n--${b}--`});
-      fileId=(await r.json()).id;
-    }
-    setStatus('Sincronizado ✓');
-  }catch(e){if(tok)setStatus('Erro ao salvar na nuvem')}
+  try{setStatus('Salvando...');
+    const r=await fetch(JB+'/'+code,{method:'PUT',headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload()});
+    if(!r.ok)throw new Error(r.status);setStatus('Sincronizado ✓')}
+  catch(e){setStatus('Erro ao salvar na nuvem')}
 }
-function showSetup(){
-  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div>
-  <h2>Ativar o login com Google</h2>
-  <p class="sub">O login precisa de um Client ID gratuito, criado por você. Ele guarda sua biblioteca no seu Google Drive (numa pasta privada do app) e sincroniza entre aparelhos. Só funciona no site publicado (https), não com o arquivo aberto do computador.</p>
-  <ol>
-  <li>Acesse <b>console.cloud.google.com</b> e crie um projeto.</li>
-  <li>Em <b>APIs e serviços › Biblioteca</b>, ative a <b>Google Drive API</b>.</li>
-  <li>Em <b>Tela de permissão OAuth</b>, escolha <b>Externo</b>, preencha o nome do app e seu e-mail. Adicione seu e-mail em <b>Usuários de teste</b> (ou publique o app).</li>
-  <li>Em <b>Credenciais › Criar credenciais › ID do cliente OAuth</b>, tipo <b>Aplicativo da Web</b>. Em <b>Origens JavaScript autorizadas</b>, coloque <code>https://SEU-USUARIO.github.io</code> (sem barra no final).</li>
-  <li>Copie o Client ID e cole em <code>const GOOGLE_CLIENT_ID=''</code> no começo do script do arquivo. Depois envie o arquivo de novo ao GitHub.</li>
-  </ol></div>`;
+async function pullSync(){
+  setStatus('Sincronizando...');
+  const r=await fetch(JB+'/'+code,{headers:{Accept:'application/json'}});
+  if(!r.ok)throw new Error(r.status);
+  const c=await r.json();
+  if(c.scale!==5)to5(c.items||{});
+  Object.entries(c.del||{}).forEach(([k,t])=>{dels[k]=Math.max(dels[k]||0,t);if(lib[k]&&(lib[k].upd||0)<t)delete lib[k]});
+  Object.entries(c.items||{}).forEach(([k,v])=>{if(dels[k]&&dels[k]>(v.upd||0))return;if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]={...lib[k],...v}});
+  ready=true;save();refresh();setStatus('Sincronizado ✓');
+}
+function startSync(){if(code)pullSync().catch(()=>setStatus('Sem conexão com a nuvem'))}
+function showSync(){
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div style="flex:1">
+  <h2>Sincronizar aparelhos</h2>
+  ${code?`<p class="sub">Seu código de sincronização:</p><p><code style="font-size:15px;word-break:break-all">${code}</code></p>
+    <p class="sub">Em outro aparelho, toque em "Sincronizar aparelhos" e cole este código. Quem tiver o código consegue ver e alterar sua lista, então não compartilhe.</p>
+    <div class="row"><button class="btn" id="cp">Copiar código</button><button class="btn" id="now">Sincronizar agora</button><button class="btn d" id="off">Desconectar</button></div>`
+  :`<p class="sub">Guarde sua lista na nuvem e abra em qualquer aparelho com um código, sem criar conta.</p>
+    <div class="row"><button class="btn" id="mk">Criar código com a minha lista</button></div>
+    <p class="sub" style="margin-top:16px">Já tem um código de outro aparelho?</p>
+    <div class="row"><input id="ci" placeholder="Cole o código aqui" style="flex:1"><button class="btn" id="cn">Conectar</button></div>`}
+  <p id="ss" class="sub"></p>
+  <p class="sub">A lista fica guardada num serviço gratuito de terceiros (JSONBlob). Sem capas grandes nem sinopses, só seus dados. Faça Exportar de vez em quando como backup.</p></div>`;
   $('#modal').classList.add('on');
+  const say=t=>{$('#ss').textContent=t};
+  const done=()=>{localStorage.setItem('otaku-code',code);renderUser();showSync()};
+  if(code){
+    $('#cp').onclick=()=>{navigator.clipboard.writeText(code).then(()=>say('Código copiado.'),()=>say('Copie o código manualmente.'))};
+    $('#now').onclick=()=>{say('Sincronizando...');pullSync().then(()=>say('Pronto.'),()=>say('Não foi possível sincronizar. Verifique a internet.'))};
+    $('#off').onclick=()=>{code='';ready=false;localStorage.removeItem('otaku-code');renderUser();showSync()};
+  }else{
+    $('#mk').onclick=async()=>{
+      say('Criando...');
+      try{const r=await fetch(JB,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload()});
+        if(!r.ok)throw new Error(r.status);
+        code=r.headers.get('Location').split('/').pop();ready=true;done()}
+      catch(e){say('Não foi possível criar o código agora. Tente de novo.')}
+    };
+    $('#cn').onclick=()=>{
+      const c=$('#ci').value.trim();
+      if(!/^[\w-]{8,}$/.test(c)){say('Código inválido.');return}
+      code=c;say('Conectando...');
+      pullSync().then(done,()=>{code='';say('Código não encontrado ou sem conexão.')});
+    };
+  }
 }
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
@@ -396,11 +419,11 @@ $('#lfav').onclick=e=>{favOnly=!favOnly;e.target.classList.toggle('on',favOnly);
 
 $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
 $('#imp').onclick=()=>$('#file').click();
-$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{Object.assign(lib,JSON.parse(r.result));save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{{const o=JSON.parse(r.result);if(Object.values(o).some(l=>l.rating>5))to5(o);Object.assign(lib,o)}save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
 
 (function init(){
   const f=k=>{kind=k;chips($('#kinds'),kind,f);search(true)};
-  chips($('#kinds'),kind,f);save();renderUser();search(true);
+  chips($('#kinds'),kind,f);save();renderUser();startSync();search(true);
 })();
 </script>
 </body>
