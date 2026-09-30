@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Minha Biblioteca Otaku</title>
+<title>Biblioteca Otaku</title>
+<meta name="description" content="Organize seus animes, mangás, manhwas, manhuas, donghuas e aenis: marque o que já viu, dê nota, favorite e veja onde assistir ou ler.">
+<meta property="og:title" content="Biblioteca Otaku"><meta property="og:description" content="Sua biblioteca pessoal de animes, mangás, manhwas, manhuas, donghuas e aenis.">
+<meta name="theme-color" content="#15131f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
 <style>
 :root{--bg:#15131f;--panel:#201d30;--panel2:#2a2640;--tx:#eeeaf8;--mut:#9d97b8;--ac:#4fe0c5;--star:#ffc857;--red:#ff6b8b;--r:10px}
 *{box-sizing:border-box}
@@ -60,16 +64,18 @@ input[type=search]{flex:1;min-width:200px}
 @media(max-width:640px){.box{flex-direction:column}.box img{width:150px}}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <header>
-  <div class="top"><h1>Minha Biblioteca Otaku</h1><div id="user"></div></div>
+  <div class="top"><h1>Biblioteca Otaku</h1><div id="user"></div></div>
   <nav>
     <button id="t-search" class="on">Descobrir</button>
     <button id="t-lib">Minha biblioteca (<span id="cnt">0</span>)</button>
   </nav>
 </header>
 <main>
+  <div id="tip" class="stats" style="display:none;background:var(--panel);padding:10px 14px;border-radius:10px">Sua lista fica salva <b>neste navegador</b>. Para não perder e levar para outros aparelhos, use <b>Entrar</b> (canto superior, com Google ou GitHub) ou <b>Exportar</b> na aba Minha biblioteca. <button class="chip" id="tipx">Entendi</button></div>
   <section id="v-search">
     <div class="bar">
       <input type="search" id="q" placeholder="Buscar por título (ou deixe vazio para ver os mais populares)">
@@ -97,6 +103,7 @@ input[type=search]{flex:1;min-width:200px}
     <div class="grid" id="libgrid"></div>
   </section>
 </main>
+<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados, capas e notas vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios.</footer>
 
 <div id="modal"><div class="box" id="box"></div></div>
 
@@ -107,6 +114,18 @@ const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
 let src=null,favOnly=false,curOrder=[],lib={},kind='all',lkind='all',page=1,loading=false,current={};
 
+function safe(v){
+  const t=x=>String(x??'').replace(/[<>]/g,''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number(x)||0;
+  const o={id:n(v.id),type:v.type==='MANGA'?'MANGA':'ANIME',kind:KINDS[v.kind]?v.kind:'anime',title:t(v.title),native:t(v.native),cover:u(v.cover),
+   genres:(v.genres||[]).slice(0,20).map(t),year:t(v.year),eps:n(v.eps)||null,ch:n(v.ch)||null,vol:n(v.vol)||null,avg:n(v.avg)||null,st:t(v.st),
+   status:STATUS.includes(v.status)?v.status:STATUS[0],rating:Math.min(5,Math.max(0,Math.round(n(v.rating)))),prog:t(v.prog),note:t(v.note),
+   fav:!!v.fav,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
+   links:Array.isArray(v.links)?v.links.slice(0,40).map(x=>({site:t(x.site),url:u(x.url),lang:t(x.lang)})).filter(x=>x.url):undefined,
+   authors:Array.isArray(v.authors)?v.authors.slice(0,8).map(x=>({id:n(x.id),name:t(x.name),role:t(x.role)})):undefined,
+   studios:Array.isArray(v.studios)?v.studios.slice(0,8).map(x=>({id:n(x.id),name:t(x.name)})):undefined};
+  Object.keys(o).forEach(k=>{if(o[k]===undefined||((k==='syn'||k==='pt'||k==='page')&&!o[k]))delete o[k]});
+  return o;
+}
 function to5(o){Object.values(o).forEach(l=>{if(l&&l.rating)l.rating=Math.max(1,Math.ceil(l.rating/2))})}
 try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}');if(localStorage.getItem('otaku-scale')!=='5'){to5(lib);localStorage.setItem('otaku-scale','5')}}catch(e){lib={}}
 function save(l){if(l)l.upd=Date.now();try{localStorage.setItem('otaku-lib',JSON.stringify(lib));localStorage.setItem('otaku-del',JSON.stringify(dels))}catch(e){}$('#cnt').textContent=Object.keys(lib).length;schedulePush()}
@@ -118,7 +137,7 @@ function kindOf(m){
 }
 const title=m=>m.title.english||m.title.romaji||m.title.native;
 const clean=t=>(t||'Sem sinopse disponível.').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');
-function slim(m){return{id:m.id,type:m.type,kind:kindOf(m),title:title(m),native:m.title.native,cover:m.coverImage.large,syn:clean(m.description),genres:m.genres||[],year:m.seasonYear||(m.startDate&&m.startDate.year)||'',eps:m.episodes,ch:m.chapters,vol:m.volumes,avg:m.averageScore,st:m.status}}
+function slim(m){return{id:m.id,type:m.type,kind:kindOf(m),title:title(m).replace(/[<>]/g,''),native:(m.title.native||'').replace(/[<>]/g,''),cover:m.coverImage.large,syn:clean(m.description),genres:m.genres||[],year:m.seasonYear||(m.startDate&&m.startDate.year)||'',eps:m.episodes,ch:m.chapters,vol:m.volumes,avg:m.averageScore,st:m.status}}
 
 function chips(el,cur,fn){
   el.innerHTML=Object.entries(KINDS).map(([k,v])=>`<button class="chip ${k===cur?'on':''}" data-k="${k}">${v}</button>`).join('');
@@ -286,10 +305,10 @@ async function showWhere(id){
   if(!s.links||!s.authors){
     try{
       const d=await gql('query($id:Int){Media(id:$id){siteUrl externalLinks{site url type language isDisabled} staff(perPage:25,sort:RELEVANCE){edges{role node{id name{full}}}} studios{edges{isMain node{id name}}}}}',{id:+id});
-      s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled).map(x=>({site:x.site,url:x.url,lang:x.language}));
+      s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled&&/^https?:\/\//i.test(x.url)).map(x=>({site:x.site,url:x.url,lang:x.language}));
       s.page=d.Media.siteUrl;
       const seen={};
-      s.authors=d.Media.staff.edges.filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full,role:e.role}));
+      s.authors=d.Media.staff.edges.filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
       s.studios=d.Media.studios.edges.filter(e=>e.isMain).map(e=>({id:e.node.id,name:e.node.name}));
       [lib[id],current[id]].forEach(o=>{if(o)Object.assign(o,{links:s.links,page:s.page,authors:s.authors,studios:s.studios})});
       if(lib[id])save();
@@ -318,68 +337,175 @@ async function showWhere(id){
   el.innerHTML=h;
 }
 
-/* ---------- sincronização por código (JSONBlob, sem conta) ---------- */
-const JB='https://jsonblob.com/api/jsonBlob';
-let code='',ready=false,pushT,dels={};
-try{code=localStorage.getItem('otaku-code')||'';dels=JSON.parse(localStorage.getItem('otaku-del')||'{}')}catch(e){}
+/* ---------- login (Google Drive ou GitHub Gist) + sincronização ---------- */
+/* >>> COLE AQUI o Client ID criado no Google Cloud Console <<< */
+const GCID='COLE_SEU_CLIENT_ID.apps.googleusercontent.com';
+const GSC='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile';
+const GH='https://api.github.com',GF='biblioteca-otaku.json',DR='https://www.googleapis.com/drive/v3',UP='https://www.googleapis.com/upload/drive/v3';
+let tk='',gid='',ghu=null,prov='',ready=false,pushT,dels={};
+try{tk=localStorage.getItem('otaku-tk')||'';gid=localStorage.getItem('otaku-gid')||'';ghu=JSON.parse(localStorage.getItem('otaku-ghu')||'null');prov=localStorage.getItem('otaku-prov')||(tk?'github':'');dels=JSON.parse(localStorage.getItem('otaku-del')||'{}')}catch(e){}
+if(prov==='google')tk=''; /* token do Google dura 1h e não é guardado */
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const payload=()=>JSON.stringify({scale:5,items:Object.fromEntries(Object.entries(lib).map(([k,v])=>{const {syn,pt,links,page,authors,studios,...r}=v;return[k,r]})),del:dels});
 function setStatus(t){const e=$('#sync');if(e)e.textContent=t}
-function renderUser(){$('#user').innerHTML=`<span id="sync">${code?'Sincronizado ✓':''}</span><button class="btn" id="sbtn">Sincronizar aparelhos</button>`}
+function renderUser(){const on=prov&&ghu;$('#user').innerHTML=on?`<img src="${esc(ghu.avatar)}" alt="" referrerpolicy="no-referrer"><span>${esc(ghu.login)}</span><span id="sync">${ready?'Sincronizado ✓':(prov==='google'&&!tk?'Reconectar':'')}</span><button class="chip" id="sbtn">Conta</button>`:'<button class="btn" id="sbtn">Entrar</button>'}
 $('#user').onclick=e=>{if(e.target.id==='sbtn')showSync()};
-function schedulePush(){if(!code||!ready)return;clearTimeout(pushT);pushT=setTimeout(push,2000)}
+function persist(){try{localStorage.setItem('otaku-prov',prov);localStorage.setItem('otaku-gid',gid);localStorage.setItem('otaku-ghu',JSON.stringify(ghu));if(prov==='github')localStorage.setItem('otaku-tk',tk)}catch(e){}}
+
+/* --- GitHub --- */
+async function gh(path,o={}){
+  const r=await fetch(GH+path,{...o,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk,...(o.body?{'Content-Type':'application/json'}:{})}});
+  if(r.status===401)throw new Error('Token inválido ou expirado');
+  if(!r.ok)throw new Error('O GitHub respondeu com erro '+r.status);
+  return r;
+}
+async function connectGH(t){
+  tk=t;prov='github';
+  try{
+    const u=await (await gh('/user')).json();
+    ghu={login:u.login,avatar:u.avatar_url};
+    let g=null;
+    for(let pg=1;pg<=3&&!g;pg++){const l=await (await gh('/gists?per_page=100&page='+pg)).json();g=l.find(x=>x.files&&x.files[GF]);if(l.length<100)break}
+    if(g){gid=g.id;await pullSync()}
+    else{
+      const r=await gh('/gists',{method:'POST',body:JSON.stringify({description:'Biblioteca Otaku (dados do site, não apague)',public:false,files:{[GF]:{content:payload()}}})});
+      gid=(await r.json()).id;ready=true;
+    }
+    persist();
+  }catch(e){tk='';gid='';ghu=null;prov='';throw e}
+}
+
+/* --- Google (Drive, pasta escondida do app) --- */
+function gAuth(prompt){return new Promise((res,rej)=>{
+  if(GCID.startsWith('COLE_'))return rej(new Error('Falta colocar o Client ID do Google no código do site'));
+  if(!window.google||!google.accounts||!google.accounts.oauth2)return rej(new Error('O script do Google não carregou. Verifique a internet'));
+  google.accounts.oauth2.initTokenClient({client_id:GCID,scope:GSC,prompt,
+    callback:r=>r.error?rej(new Error(r.error)):res(r.access_token),
+    error_callback:e=>rej(new Error(e&&e.type||'erro'))}).requestAccessToken();
+})}
+async function gd(url,o={}){
+  const r=await fetch(url,{...o,headers:{Authorization:'Bearer '+tk,...(o.headers||{})}});
+  if(r.status===401){tk='';renderUser();throw new Error('Sessão do Google expirou')}
+  if(!r.ok)throw new Error('O Google respondeu com erro '+r.status);
+  return r;
+}
+async function gCreate(){
+  const b='otkbound',body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:GF,parents:['appDataFolder']})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${payload()}\r\n--${b}--`;
+  const r=await gd(UP+'/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body});
+  return (await r.json()).id;
+}
+async function connectGoogle(){
+  tk=await gAuth('');prov='google';
+  try{
+    const u=await (await gd('https://www.googleapis.com/oauth2/v3/userinfo')).json();
+    ghu={login:u.name||u.email||'Google',avatar:u.picture||''};
+    const l=await (await gd(DR+'/files?spaces=appDataFolder&fields=files(id)&q='+encodeURIComponent("name='"+GF+"'"))).json();
+    if(l.files&&l.files[0]){gid=l.files[0].id;await pullSync()}
+    else{gid=await gCreate();ready=true}
+    persist();
+  }catch(e){tk='';gid='';ghu=null;prov='';throw e}
+}
+
+/* --- comum --- */
+function mergeData(c){
+  if(c.scale!==5)to5(c.items||{});
+  Object.entries(c.del||{}).forEach(([k,t])=>{dels[k]=Math.max(dels[k]||0,t);if(lib[k]&&(lib[k].upd||0)<t)delete lib[k]});
+  Object.values(c.items||{}).forEach(raw=>{const v=safe(raw),k=v.id;if(!k)return;if(dels[k]&&dels[k]>(v.upd||0))return;if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]={...lib[k],...v}});
+}
+function schedulePush(){if(!prov||!tk||!gid||!ready)return;clearTimeout(pushT);pushT=setTimeout(push,2000)}
 async function push(){
-  try{setStatus('Salvando...');
-    const r=await fetch(JB+'/'+code,{method:'PUT',headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload()});
-    if(!r.ok)throw new Error(r.status);setStatus('Sincronizado ✓')}
-  catch(e){setStatus('Erro ao salvar na nuvem')}
+  try{
+    setStatus('Salvando...');
+    if(prov==='google')await gd(UP+'/files/'+gid+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:payload()});
+    else await gh('/gists/'+gid,{method:'PATCH',body:JSON.stringify({files:{[GF]:{content:payload()}}})});
+    setStatus('Sincronizado ✓');
+  }catch(e){setStatus(prov==='google'&&!tk?'Reconectar':'Erro ao salvar: '+e.message)}
 }
 async function pullSync(){
   setStatus('Sincronizando...');
-  const r=await fetch(JB+'/'+code,{headers:{Accept:'application/json'}});
-  if(!r.ok)throw new Error(r.status);
-  const c=await r.json();
-  if(c.scale!==5)to5(c.items||{});
-  Object.entries(c.del||{}).forEach(([k,t])=>{dels[k]=Math.max(dels[k]||0,t);if(lib[k]&&(lib[k].upd||0)<t)delete lib[k]});
-  Object.entries(c.items||{}).forEach(([k,v])=>{if(dels[k]&&dels[k]>(v.upd||0))return;if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]={...lib[k],...v}});
+  let txt;
+  if(prov==='google'){txt=await (await gd(DR+'/files/'+gid+'?alt=media')).text()}
+  else{
+    const g=await (await gh('/gists/'+gid)).json();
+    const f=g.files[GF];txt=f.content;
+    if(f.truncated)txt=await (await fetch(f.raw_url)).text();
+  }
+  mergeData(JSON.parse(txt||'{}'));
   ready=true;save();refresh();setStatus('Sincronizado ✓');
 }
-function startSync(){if(code)pullSync().catch(()=>setStatus('Sem conexão com a nuvem'))}
+async function resync(){if(prov==='google'&&!tk)tk=await gAuth('');await pullSync()}
+function startSync(){
+  if(!prov||!gid)return;
+  if(prov==='google'){
+    const go=()=>gAuth('none').then(t=>{tk=t;return pullSync()}).catch(()=>setStatus('Reconectar'));
+    if(window.google&&google.accounts)go();else window.addEventListener('load',go);
+  }else pullSync().catch(e=>setStatus(String(e.message).startsWith('Token')?'Token expirou. Entre de novo.':'Sem conexão com o GitHub'));
+}
+function logout(){tk='';gid='';ghu=null;prov='';ready=false;['otaku-tk','otaku-gid','otaku-ghu','otaku-prov'].forEach(k=>localStorage.removeItem(k));renderUser()}
+async function pack(){
+  const str=payload();let bytes;
+  if(window.CompressionStream){bytes=new Uint8Array(await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer())}
+  else bytes=new TextEncoder().encode(str);
+  let bin='';for(let i=0;i<bytes.length;i+=8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+8000));
+  return (window.CompressionStream?'OTK1:':'OTK0:')+btoa(bin);
+}
+async function unpack(t){
+  t=t.trim();const z=t.startsWith('OTK1:');
+  if(!z&&!t.startsWith('OTK0:'))throw new Error('texto inválido');
+  const bytes=Uint8Array.from(atob(t.slice(5)),c=>c.charCodeAt(0));
+  const txt=z?await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text():new TextDecoder().decode(bytes);
+  return JSON.parse(txt);
+}
 function showSync(){
-  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div style="flex:1">
-  <h2>Sincronizar aparelhos</h2>
-  ${code?`<p class="sub">Seu código de sincronização:</p><p><code style="font-size:15px;word-break:break-all">${code}</code></p>
-    <p class="sub">Em outro aparelho, toque em "Sincronizar aparelhos" e cole este código. Quem tiver o código consegue ver e alterar sua lista, então não compartilhe.</p>
-    <div class="row"><button class="btn" id="cp">Copiar código</button><button class="btn" id="now">Sincronizar agora</button><button class="btn d" id="off">Desconectar</button></div>`
-  :`<p class="sub">Guarde sua lista na nuvem e abra em qualquer aparelho com um código, sem criar conta.</p>
-    <div class="row"><button class="btn" id="mk">Criar código com a minha lista</button></div>
-    <p class="sub" style="margin-top:16px">Já tem um código de outro aparelho?</p>
-    <div class="row"><input id="ci" placeholder="Cole o código aqui" style="flex:1"><button class="btn" id="cn">Conectar</button></div>`}
+  const on=prov&&ghu,goo=prov==='google';
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div style="flex:1;min-width:0">
+  ${on?`<h2>Conta conectada</h2><p>Você está logado como <b>${esc(ghu.login)}</b> (${goo?'Google':'GitHub'}). ${goo?'Sua lista fica numa pasta escondida do seu Google Drive':'Sua lista fica num Gist privado da sua conta'} e sincroniza sozinha a cada mudança.</p>
+    ${goo&&!tk?'<p class="sub">Por segurança, o Google pede para reconectar de tempos em tempos. Toque em Sincronizar agora.</p>':''}
+    <div class="row"><button class="btn" id="now">${goo&&!tk?'Reconectar e sincronizar':'Sincronizar agora'}</button>${goo?'':`<a class="lk" target="_blank" rel="noopener" href="https://gist.github.com/${esc(ghu.login)}/${esc(gid)}">Ver meu Gist</a>`}<button class="btn d" id="off">Sair</button></div>`
+  :`<h2>Entrar</h2>
+    <p class="sub">Guarde sua lista na nuvem e sincronize entre aparelhos. Escolha uma opção:</p>
+    <p><b>Google</b> (mais fácil)</p>
+    <div class="row"><button class="btn" id="gg">Entrar com Google</button></div>
+    <p class="sub">Sua lista fica numa pasta escondida do seu Google Drive. Só este site enxerga essa pasta e ela não ocupa nada visível no seu Drive.</p>
+    <p style="margin-top:16px"><b>GitHub</b> (com token, uma única vez, uns 2 minutos)</p>
+    <ol><li>Abra <a class="lk" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=gist&description=Biblioteca%20Otaku">esta página do GitHub</a> e faça login se pedir.</li>
+    <li>Em <b>Expiration</b>, escolha <b>No expiration</b>. Deixe marcada só a opção <b>gist</b>.</li>
+    <li>Role até o fim, clique em <b>Generate token</b> e copie o código que começa com <code>ghp_</code>.</li>
+    <li>Cole abaixo e toque em Entrar.</li></ol>
+    <div class="row"><input id="ti" type="password" placeholder="ghp_..." autocomplete="off" style="flex:1"><button class="btn" id="tc">Entrar</button></div>
+    <p class="sub">O token fica só neste navegador e dá acesso apenas aos seus gists. Trate-o como uma senha.</p>`}
   <p id="ss" class="sub"></p>
-  <p class="sub">A lista fica guardada num serviço gratuito de terceiros (JSONBlob). Sem capas grandes nem sinopses, só seus dados. Faça Exportar de vez em quando como backup.</p></div>`;
+  <p class="sub" style="margin-top:14px"><b>Alternativa sem conta:</b> transfira por texto.</p>
+  <div class="row"><button class="btn" id="tcp">Copiar minha lista como texto</button></div>
+  <div class="row"><textarea id="tin" rows="2" placeholder="Cole aqui o texto vindo do outro aparelho" style="flex:1;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit"></textarea><button class="btn" id="tim">Importar texto</button></div></div>`;
   $('#modal').classList.add('on');
   const say=t=>{$('#ss').textContent=t};
-  const done=()=>{localStorage.setItem('otaku-code',code);renderUser();showSync()};
-  if(code){
-    $('#cp').onclick=()=>{navigator.clipboard.writeText(code).then(()=>say('Código copiado.'),()=>say('Copie o código manualmente.'))};
-    $('#now').onclick=()=>{say('Sincronizando...');pullSync().then(()=>say('Pronto.'),()=>say('Não foi possível sincronizar. Verifique a internet.'))};
-    $('#off').onclick=()=>{code='';ready=false;localStorage.removeItem('otaku-code');renderUser();showSync()};
+  if(on){
+    $('#now').onclick=()=>{say('Sincronizando...');resync().then(()=>{renderUser();say('Pronto.')},e=>say('Não foi possível sincronizar: '+e.message))};
+    $('#off').onclick=()=>{logout();showSync()};
   }else{
-    $('#mk').onclick=async()=>{
-      say('Criando...');
-      try{const r=await fetch(JB,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload()});
-        if(!r.ok)throw new Error(r.status);
-        const loc=r.headers.get('Location')||r.headers.get('X-jsonblob')||'';
-        if(!loc)throw new Error('o navegador não conseguiu ler o código devolvido pelo serviço (CORS)');
-        code=loc.split('/').pop();ready=true;done()}
-      catch(e){say('Não foi possível criar o código. Motivo: '+(e.message==='Failed to fetch'?'sem conexão com o serviço JSONBlob (rede bloqueada, serviço fora do ar, ou você abriu o arquivo dentro do Claude)':e.message)+'. Enquanto isso, use Exportar e Importar na aba Minha biblioteca.')}
+    $('#gg').onclick=async()=>{
+      say('Abrindo o Google...');
+      try{await connectGoogle();renderUser();showSync();$('#ss').textContent='Conectado. Sua lista já está na nuvem.'}
+      catch(e){say(/popup_closed|access_denied/.test(e.message)?'Login cancelado.':'Não deu certo: '+e.message)}
     };
-    $('#cn').onclick=()=>{
-      const c=$('#ci').value.trim();
-      if(!/^[\w-]{8,}$/.test(c)){say('Código inválido.');return}
-      code=c;say('Conectando...');
-      pullSync().then(done,()=>{code='';say('Código não encontrado ou sem conexão.')});
+    $('#tc').onclick=async()=>{
+      const t=$('#ti').value.trim();
+      if(!t){say('Cole o token primeiro.');return}
+      say('Entrando...');
+      try{await connectGH(t);renderUser();showSync();$('#ss').textContent='Conectado. Sua lista já está na nuvem.'}
+      catch(e){say(e.message==='Failed to fetch'?'Sem conexão com o GitHub. Verifique a internet e se você abriu o site fora do Claude.':'Não deu certo: '+e.message)}
     };
   }
+  $('#tcp').onclick=async()=>{
+    const t=await pack();
+    try{await navigator.clipboard.writeText(t);say('Texto copiado. Mande para você mesmo e cole no outro aparelho.')}
+    catch(e){$('#tin').value=t;say('Copie o texto da caixa abaixo e cole no outro aparelho.')}
+  };
+  $('#tim').onclick=async()=>{
+    try{const c=await unpack($('#tin').value);mergeData(c);save();refresh();say('Lista importada. Você tem '+Object.keys(lib).length+' títulos.')}
+    catch(e){say('Não consegui ler esse texto. Copie de novo, inteiro.')}
+  };
 }
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
@@ -421,11 +547,13 @@ $('#lfav').onclick=e=>{favOnly=!favOnly;e.target.classList.toggle('on',favOnly);
 
 $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
 $('#imp').onclick=()=>$('#file').click();
-$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{{const o=JSON.parse(r.result);if(Object.values(o).some(l=>l.rating>5))to5(o);Object.assign(lib,o)}save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{{const o=JSON.parse(r.result);if(Object.values(o).some(l=>l.rating>5))to5(o);Object.values(o).forEach(x=>{const v=safe(x);if(v.id)lib[v.id]=v})}save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
 
 (function init(){
   const f=k=>{kind=k;chips($('#kinds'),kind,f);search(true)};
-  chips($('#kinds'),kind,f);save();renderUser();startSync();search(true);
+  chips($('#kinds'),kind,f);save();renderUser();startSync();
+  try{if(!localStorage.getItem('otaku-seen')){$('#tip').style.display='';$('#tipx').onclick=()=>{$('#tip').style.display='none';localStorage.setItem('otaku-seen','1')}}}catch(e){}
+  search(true);
 })();
 </script>
 </body>
