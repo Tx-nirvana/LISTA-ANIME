@@ -48,13 +48,22 @@ input[type=search]{flex:1;min-width:200px}
 .btn.d{background:var(--panel2);color:var(--red)}
 .gen{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .gen span{background:var(--panel2);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--mut)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.top h1{margin:0}
+#user{display:flex;align-items:center;gap:8px;font-size:14px}#user img{width:28px;height:28px;border-radius:50%}#sync{color:var(--mut);font-size:12px}
+.heart{position:absolute;top:34px;left:6px;background:rgba(21,19,31,.85);border:0;color:var(--tx);border-radius:50%;width:30px;height:30px;font-size:17px;cursor:pointer;line-height:1}
+.heart.on,#fav.on{color:var(--red)}
+.mine{color:var(--star);font-size:12px;font-weight:600;margin-top:2px}
+.where{margin-top:14px;border-top:1px solid var(--panel2);padding-top:10px}.where .wh{margin-top:8px}.where small{color:var(--mut);display:block;margin-top:8px}
+.lk{background:var(--panel2);color:var(--ac);border-radius:6px;padding:3px 10px;font-size:13px;text-decoration:none}
+.lk:hover{background:var(--ac);color:#0d2b26}
+.box ol{padding-left:20px;color:#d5d0e6}.box code{background:var(--panel2);padding:1px 6px;border-radius:4px}
 @media(max-width:640px){.box{flex-direction:column}.box img{width:150px}}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 </style>
 </head>
 <body>
 <header>
-  <h1>Minha Biblioteca Otaku</h1>
+  <div class="top"><h1>Minha Biblioteca Otaku</h1><div id="user"></div></div>
   <nav>
     <button id="t-search" class="on">Descobrir</button>
     <button id="t-lib">Minha biblioteca (<span id="cnt">0</span>)</button>
@@ -76,6 +85,7 @@ input[type=search]{flex:1;min-width:200px}
     <div class="bar">
       <input type="search" id="lq" placeholder="Buscar na minha biblioteca">
       <select id="lstatus"><option value="">Todos os status</option><option>Quero ver/ler</option><option>Em andamento</option><option>Completo</option><option>Abandonado</option></select>
+      <button class="chip" id="lfav">♥ Só favoritos</button><select id="lmin"><option value="0">Qualquer nota</option><option value="5">Minha nota 5+</option><option value="7">Minha nota 7+</option><option value="9">Minha nota 9+</option><option value="10">Minha nota 10</option></select>
       <select id="lsort"><option value="added">Adicionados por último</option><option value="rating">Minha nota</option><option value="title">Título (A–Z)</option></select>
       <button class="btn" id="exp">Exportar</button>
       <button class="btn" id="imp">Importar</button>
@@ -89,15 +99,17 @@ input[type=search]{flex:1;min-width:200px}
 
 <div id="modal"><div class="box" id="box"></div></div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
+const GOOGLE_CLIENT_ID=''; // cole aqui o seu Client ID do Google (veja as instruções no botão Entrar com Google)
 const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua'};
 const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN']};
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
-let lib={},kind='all',lkind='all',page=1,loading=false,current={};
+let favOnly=false,curOrder=[],lib={},kind='all',lkind='all',page=1,loading=false,current={};
 
 try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}')}catch(e){lib={}}
-function save(){try{localStorage.setItem('otaku-lib',JSON.stringify(lib))}catch(e){}$('#cnt').textContent=Object.keys(lib).length}
+function save(l){if(l)l.upd=Date.now();try{localStorage.setItem('otaku-lib',JSON.stringify(lib))}catch(e){}$('#cnt').textContent=Object.keys(lib).length;schedulePush()}
 
 function kindOf(m){
   const c=m.countryOfOrigin;
@@ -127,11 +139,11 @@ async function fetchPage(q,k,p,sort){
 
 async function search(reset){
   if(loading) return; loading=true;
-  if(reset){page=1;$('#results').innerHTML='';current={}}
+  if(reset){page=1;$('#results').innerHTML='';current={};curOrder=[]}
   $('#smsg').textContent='Carregando...';$('#more').style.display='none';
   try{
     const d=await fetchPage($('#q').value.trim(),kind,page,$('#sort').value);
-    d.media.forEach(m=>{const s=slim(m);current[s.id]=s;$('#results').insertAdjacentHTML('beforeend',card(s))});
+    d.media.forEach(m=>{const s=slim(m);current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s))});
     $('#smsg').textContent=d.media.length||page>1?'':'Nada encontrado. Tente outro título ou tipo.';
     $('#more').style.display=d.pageInfo.hasNextPage?'block':'none';
   }catch(e){$('#smsg').textContent=(String(e.message).startsWith('API')?'O AniList recusou a busca ('+e.message+'). Tente de novo em instantes.':'Sem conexão com o AniList. Se você abriu este arquivo dentro do Claude, baixe e abra direto no navegador (Chrome, Edge, Firefox). Detalhe: '+e.message)}
@@ -143,9 +155,10 @@ function card(s){
   return `<div class="card" data-id="${s.id}" tabindex="0">
     <span class="tag">${KINDS[s.kind]}</span>
     ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?`<span class="badge g">✓</span>`:''}
+    <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
     <img loading="lazy" src="${s.cover}" alt="Capa de ${s.title.replace(/"/g,'')}">
     <div class="i"><div class="t">${s.title}</div>
-    <div class="m">${s.year||''} ${s.avg?'· AniList '+s.avg/10:''}</div></div></div>`;
+    <div class="m">${s.year||''} ${s.avg?'· AniList '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★ '+l.rating+'/10':'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
 }
 
 function openModal(id){
@@ -154,7 +167,7 @@ function openModal(id){
   const size=s.type==='MANGA'?[s.ch&&s.ch+' capítulos',s.vol&&s.vol+' volumes']:[s.eps&&s.eps+' episódios'];
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button>
     <img src="${s.cover}" alt="">
-    <div style="flex:1;min-width:0"><h2>${s.title}</h2>
+    <div style="flex:1;min-width:0"><h2>${s.title}</h2><button class="chip ${l&&l.fav?'on':''}" id="fav">${l&&l.fav?'♥ Favorito':'♡ Favoritar'}</button>
     <div class="sub">${[KINDS[s.kind],s.year,...size,s.avg&&'Nota AniList '+s.avg/10,s.native].filter(Boolean).join(' · ')}</div>
     <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
     <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
@@ -165,17 +178,18 @@ function openModal(id){
       <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${(l.note||'').replace(/</g,'&lt;')}</textarea>
       <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`
      :`<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>`}
+    <div class="where" id="where">Buscando onde ${s.type==='MANGA'?'ler':'assistir'}...</div>
     </div>`;
   $('#modal').classList.add('on');
-  showSyn(id);
+  showSyn(id);showWhere(id);$('#fav').onclick=()=>toggleFav(id);
   if(l){
-    $('#mst').onchange=e=>{l.status=e.target.value;save();refresh()};
-    $('#mprog').onchange=e=>{l.prog=e.target.value;save()};
-    $('#mnote').onchange=e=>{l.note=e.target.value;save()};
-    $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save();openModal(id);refresh()};
+    $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
+    $('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
+    $('#mnote').onchange=e=>{l.note=e.target.value;save(l)};
+    $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save(l);openModal(id);refresh()};
     $('#rm').onclick=()=>{delete lib[id];save();closeModal();refresh()};
   }else{
-    $('#add').onclick=()=>{lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',added:Date.now()};save();openModal(id);refresh()};
+    $('#add').onclick=()=>{lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()};save(lib[id]);openModal(id);refresh()};
   }
 }
 function splitText(t,max){
@@ -235,21 +249,128 @@ async function showSyn(id){
   }
   if($('#syn')&&$('#syn').dataset.id===String(id)){tg.style.display=pt===s.syn?'none':'';paint()}
 }
+
+function toggleFav(id){
+  let l=lib[id];
+  if(!l){const s=current[id];if(!s)return;l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()}}
+  l.fav=!l.fav;save(l);refresh();
+  if($('#modal').classList.contains('on'))openModal(id);
+}
+
+/* ---------- onde assistir / ler ---------- */
+const TIERS=[['free',/youtube|tubi|pluto|retrocrush|ani-?one|muse/i],['part',/manga ?plus|webtoon|tapas|comikey|shonen jump|viz|bilibili|viki|iqiyi|wetv|tappytoon|lezhin|pocket comics|mangamo|azuki|inkr|k manga|kakao|naver|manta|toomics/i],['paid',/netflix|amazon|prime|disney|hulu|hbo|\bmax\b|hidive|funimation|crunchyroll|apple|kindle|bookwalker|comixology|google play|paramount/i]];
+const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns capítulos/episódios)',paid:'Pago (assinatura ou compra)',other:'Outros (veja o preço no site)'};
+async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
+async function showWhere(id){
+  const s=lib[id]||current[id];if(!s||!$('#where'))return;
+  if(!s.links){
+    try{
+      const d=await gql('query($id:Int){Media(id:$id){siteUrl externalLinks{site url type language isDisabled}}}',{id:+id});
+      s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled).map(x=>({site:x.site,url:x.url,lang:x.language}));
+      s.page=d.Media.siteUrl;
+      [lib[id],current[id]].forEach(o=>{if(o){o.links=s.links;o.page=s.page}});
+      if(lib[id])save();
+    }catch(e){s.links=[]}
+  }
+  const el=$('#where');if(!el)return;
+  const g={free:[],part:[],paid:[],other:[]};
+  s.links.forEach(x=>{const t=TIERS.find(t=>t[1].test(x.site));g[t?t[0]:'other'].push(x)});
+  const verb=s.type==='MANGA'?'Onde ler':'Onde assistir';
+  let h=`<b>${verb}</b>`;
+  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
+  const q=encodeURIComponent(s.title);
+  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
+  h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
+  el.innerHTML=h;
+}
+
+/* ---------- login Google + sincronização (Google Drive, pasta privada do app) ---------- */
+let tok=null,tc=null,fileId=null,pushT;
+let user=null;try{user=JSON.parse(localStorage.getItem('otaku-user')||'null')}catch(e){}
+function setStatus(t){const e=$('#sync');if(e)e.textContent=t}
+function renderUser(){
+  $('#user').innerHTML=!user?'<button class="btn" id="login">Entrar com Google</button>'
+   :tok?`<img src="${user.pic}" alt="" referrerpolicy="no-referrer"><span>${user.name}</span><span id="sync"></span><button class="chip" id="out">Sair</button>`
+   :`<button class="btn" id="login">Reconectar como ${user.name}</button><button class="chip" id="out">Sair</button>`;
+}
+$('#user').onclick=e=>{if(e.target.id==='login')login();if(e.target.id==='out')logout()};
+function login(){
+  if(!GOOGLE_CLIENT_ID){showSetup();return}
+  if(!window.google||!google.accounts){alert('O login do Google ainda está carregando. Tente de novo em alguns segundos.');return}
+  if(!tc)tc=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'openid profile email https://www.googleapis.com/auth/drive.appdata',callback:onTok});
+  tc.requestAccessToken();
+}
+async function onTok(r){
+  if(r.error)return;
+  tok=r.access_token;
+  try{
+    const u=await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+tok}})).json();
+    user={name:u.given_name||u.name||'Conta Google',pic:u.picture||''};
+    localStorage.setItem('otaku-user',JSON.stringify(user));
+  }catch(e){}
+  renderUser();pull();
+}
+function logout(){if(tok&&window.google)google.accounts.oauth2.revoke(tok,()=>{});tok=null;fileId=null;user=null;try{localStorage.removeItem('otaku-user')}catch(e){}renderUser()}
+async function gf(url,o={}){
+  const r=await fetch(url,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});
+  if(r.status===401){tok=null;renderUser();throw new Error('401')}
+  if(!r.ok)throw new Error(r.status);return r;
+}
+async function pull(){
+  try{
+    setStatus('Sincronizando...');
+    const f=(await (await gf('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id)&q='+encodeURIComponent("name='biblioteca.json'"))).json()).files||[];
+    if(f[0]){
+      fileId=f[0].id;
+      const c=await (await gf('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media')).json();
+      Object.entries(c).forEach(([k,v])=>{if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]=v});
+    }
+    save();refresh();
+  }catch(e){if(tok)setStatus('Erro ao sincronizar')}
+}
+function schedulePush(){if(!tok)return;clearTimeout(pushT);pushT=setTimeout(push,1500)}
+async function push(){
+  if(!tok)return;
+  try{
+    setStatus('Salvando...');
+    const data=JSON.stringify(lib);
+    if(fileId){await gf('https://www.googleapis.com/upload/drive/v3/files/'+fileId+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:data})}
+    else{
+      const b='otakuB';
+      const r=await gf('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body:`--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify({name:'biblioteca.json',parents:['appDataFolder']})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${data}\r\n--${b}--`});
+      fileId=(await r.json()).id;
+    }
+    setStatus('Sincronizado ✓');
+  }catch(e){if(tok)setStatus('Erro ao salvar na nuvem')}
+}
+function showSetup(){
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div>
+  <h2>Ativar o login com Google</h2>
+  <p class="sub">O login precisa de um Client ID gratuito, criado por você. Ele guarda sua biblioteca no seu Google Drive (numa pasta privada do app) e sincroniza entre aparelhos. Só funciona no site publicado (https), não com o arquivo aberto do computador.</p>
+  <ol>
+  <li>Acesse <b>console.cloud.google.com</b> e crie um projeto.</li>
+  <li>Em <b>APIs e serviços › Biblioteca</b>, ative a <b>Google Drive API</b>.</li>
+  <li>Em <b>Tela de permissão OAuth</b>, escolha <b>Externo</b>, preencha o nome do app e seu e-mail. Adicione seu e-mail em <b>Usuários de teste</b> (ou publique o app).</li>
+  <li>Em <b>Credenciais › Criar credenciais › ID do cliente OAuth</b>, tipo <b>Aplicativo da Web</b>. Em <b>Origens JavaScript autorizadas</b>, coloque <code>https://SEU-USUARIO.github.io</code> (sem barra no final).</li>
+  <li>Copie o Client ID e cole em <code>const GOOGLE_CLIENT_ID=''</code> no começo do script do arquivo. Depois envie o arquivo de novo ao GitHub.</li>
+  </ol></div>`;
+  $('#modal').classList.add('on');
+}
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 document.onkeydown=e=>{if(e.key==='Escape')closeModal()};
 
-function clickCard(e){const c=e.target.closest('.card');if(c)openModal(c.dataset.id)}
+function clickCard(e){const h=e.target.closest('.heart');if(h){toggleFav(+h.dataset.h);return}const c=e.target.closest('.card');if(c)openModal(c.dataset.id)}
 $('#results').onclick=clickCard;$('#libgrid').onclick=clickCard;
 
 function refresh(){
-  $('#results').innerHTML=Object.values(current).map(card).join('');
+  $('#results').innerHTML=curOrder.map(i=>card(current[i])).join('');
   renderLib();
 }
 
 function renderLib(){
   const q=$('#lq').value.toLowerCase(),st=$('#lstatus').value,so=$('#lsort').value;
-  let items=Object.values(lib).filter(s=>(lkind==='all'||s.kind===lkind)&&(!st||s.status===st)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
+  let items=Object.values(lib).filter(s=>(lkind==='all'||s.kind===lkind)&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
   items.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
   const rated=items.filter(s=>s.rating);
   const avg=rated.length?(rated.reduce((a,s)=>a+s.rating,0)/rated.length).toFixed(1):'–';
@@ -270,7 +391,8 @@ let tm;
 $('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>search(true),450)};
 $('#sort').onchange=()=>search(true);
 $('#more').onclick=()=>{page++;search(false)};
-['#lq','#lstatus','#lsort'].forEach(s=>$(s).oninput=renderLib);
+['#lq','#lstatus','#lsort','#lmin'].forEach(s=>$(s).oninput=renderLib);
+$('#lfav').onclick=e=>{favOnly=!favOnly;e.target.classList.toggle('on',favOnly);renderLib()};
 
 $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
 $('#imp').onclick=()=>$('#file').click();
@@ -278,7 +400,7 @@ $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
 
 (function init(){
   const f=k=>{kind=k;chips($('#kinds'),kind,f);search(true)};
-  chips($('#kinds'),kind,f);save();search(true);
+  chips($('#kinds'),kind,f);save();renderUser();search(true);
 })();
 </script>
 </body>
