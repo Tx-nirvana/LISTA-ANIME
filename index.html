@@ -120,7 +120,7 @@ nav{overflow-x:auto}nav button{white-space:nowrap}
 
   <section id="v-stats" style="display:none"></section>
 </main>
-<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados de anime/mangá vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. WEB Novels vêm principalmente do <a class="lk" target="_blank" rel="noopener" href="https://kitsu.io">Kitsu</a> (capa, sinopse, nota e gêneros), com o catálogo sincronizado de NovelFull. Livros: <a class="lk" target="_blank" rel="noopener" href="https://books.google.com">Google Livros</a> e <a class="lk" target="_blank" rel="noopener" href="https://openlibrary.org">Open Library</a>. Filmes: <a class="lk" target="_blank" rel="noopener" href="https://www.themoviedb.org">TMDB</a> (este produto usa a API do TMDB, mas não é endossado nem certificado por ele), com disponibilidade por JustWatch. Jogos: <a class="lk" target="_blank" rel="noopener" href="https://rawg.io">RAWG</a> e <a class="lk" target="_blank" rel="noopener" href="https://www.cheapshark.com">CheapShark</a>.com, NovelFull.net e Wuxiaworld como complemento de links de leitura. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
+<footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados de anime/mangá vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. WEB Novels vêm principalmente do <a class="lk" target="_blank" rel="noopener" href="https://kitsu.io">Kitsu</a> (capa, sinopse, nota e gêneros), com o catálogo sincronizado de NovelFull. Livros: <a class="lk" target="_blank" rel="noopener" href="https://books.google.com">Google Livros</a> e <a class="lk" target="_blank" rel="noopener" href="https://openlibrary.org">Open Library</a>. Filmes: <a class="lk" target="_blank" rel="noopener" href="https://www.themoviedb.org">TMDB</a> (este produto usa a API do TMDB, mas não é endossado nem certificado por ele), com disponibilidade por JustWatch. Jogos: <a class="lk" target="_blank" rel="noopener" href="https://rawg.io">RAWG</a> e <a class="lk" target="_blank" rel="noopener" href="https://www.cheapshark.com">CheapShark</a>, Wikidata e Wikipédia.com, NovelFull.net e Wuxiaworld como complemento de links de leitura. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios. As fontes de novels são links para os sites de origem; o site não copia os capítulos.</footer>
 
 <div id="modal"><div class="box" id="box"></div></div>
 
@@ -1136,7 +1136,15 @@ async function fCheap(st,p){
   const items=r.map(d=>({id:6e9+Number(d.gameID),ref:'c'+d.gameID,kind:'game',type:'ANIME',title:T(d.title),native:'',cover:d.steamAppID&&d.steamAppID!=='0'?'https://cdn.cloudflare.steamstatic.com/steam/apps/'+d.steamAppID+'/header.jpg':U(d.thumb),syn:'',genres:[],year:d.releaseDate?String(new Date(d.releaseDate*1000).getFullYear()):'',avg:Number(d.metacriticScore)||Number(d.steamRatingPercent)||0,by:'',pl:'PC',url:''}));
   return {items,more:r.length===24};
 }
-async function fGame(st,p){if(!key('rawg'))return fCheap(st,p);
+async function fWiki(st,p){
+  const qs=st.q.replace(/["\\]/g,' '),nw=st.sort==='new'&&!qs;
+  const sr=qs?`SERVICE wikibase:mwapi{bd:serviceParam wikibase:api "EntitySearch";wikibase:endpoint "www.wikidata.org";mwapi:search "${qs}";mwapi:language "pt";wikibase:limit 100 . ?g wikibase:apiOutputItem mwapi:item.}`:'';
+  const q=`SELECT ?g (SAMPLE(?lb) AS ?l) (SAMPLE(?im) AS ?img) (MIN(?dt) AS ?d) (MAX(?s) AS ?sl) WHERE{${sr}?g wdt:P31 wd:Q7889;wikibase:sitelinks ?s.${qs?'':'FILTER(?s>='+(nw?6:12)+')'}${qs?'OPTIONAL':''}{?g wdt:P18 ?im}OPTIONAL{?g wdt:P577 ?dt}${nw?'FILTER(BOUND(?dt)&&?dt<=NOW())':''}SERVICE wikibase:label{bd:serviceParam wikibase:language "pt,en".?g rdfs:label ?lb}}GROUP BY ?g ORDER BY ${nw?'DESC(?d)':'DESC(?sl)'} LIMIT 24 OFFSET ${(p-1)*24}`;
+  const r=await jget('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q));
+  const items=r.results.bindings.map(b=>{const qid=b.g.value.split('/').pop();return {id:7e9+Number(qid.slice(1)),ref:'w'+qid,kind:'game',type:'ANIME',title:T(b.l&&b.l.value),native:'',cover:b.img?U(b.img.value.replace('http:','https:').replace(/'/g,'%27')+'?width=400'):'',syn:'',genres:[],year:b.d?b.d.value.slice(0,4):'',avg:0,by:'',pl:'',url:''}}).filter(x=>x.title&&!/^Q\d+$/.test(x.title));
+  return {items,more:items.length>=20};
+}
+async function fGame(st,p){if(!key('rawg')){try{const r=await fWiki(st,p);if(r.items.length||p>1)return r}catch(e){}return fCheap(st,p)}
   const o={page:p,page_size:24,exclude_additions:'true'};
   if(st.q)o.search=st.q;
   else{o.ordering={pop:'-added',score:'-metacritic',new:'-released'}[st.sort];if(st.sort==='score')o.metacritic='70,100';if(st.sort==='new')o.dates='2000-01-01,'+today()}
@@ -1171,6 +1179,12 @@ async function fBook(st,p){
 /* ---------- detalhes (sinopse, direção, onde assistir...) ---------- */
 const curX={},ext=new Map(),done=new Set();let curM=0;
 const put=(id,o)=>[lib[id],curX[id]].forEach(x=>x&&Object.assign(x,o));
+const csStores=async id=>{
+  const g=await jget('https://www.cheapshark.com/api/1.0/games?id='+id);
+  if(!SID.size)try{(await jget('https://www.cheapshark.com/api/1.0/stores')).forEach(z=>SID.set(z.storeID,T(z.storeName)))}catch(e){}
+  return (g.deals||[]).sort((a,b)=>a.price-b.price).slice(0,8).map(z=>({site:(SID.get(z.storeID)||'Loja')+' · US$ '+z.price,url:'https://www.cheapshark.com/redirect?dealID='+encodeURIComponent(z.dealID)}));
+};
+const wd=o=>jget('https://www.wikidata.org/w/api.php?'+new URLSearchParams({action:'wbgetentities',format:'json',origin:'*',...o}));
 async function load(s){
   const o={},x={};
   if(s.kind==='movie'){
@@ -1185,9 +1199,17 @@ async function load(s){
     const w=((m['watch/providers']||{}).results||{}).BR||{};
     x.wp={};['flatrate','free','ads','rent','buy'].forEach(k=>x.wp[k]=(w[k]||[]).map(p=>T(p.provider_name)));
   }else if(s.kind==='game'&&s.ref[0]==='c'){
-    const g=await jget('https://www.cheapshark.com/api/1.0/games?id='+s.ref.slice(1));
-    if(!SID.size)try{(await jget('https://www.cheapshark.com/api/1.0/stores')).forEach(z=>SID.set(z.storeID,T(z.storeName)))}catch(e){}
-    x.stores=(g.deals||[]).sort((a,b)=>a.price-b.price).slice(0,8).map(z=>({site:(SID.get(z.storeID)||'Loja')+' · US$ '+z.price,url:'https://www.cheapshark.com/redirect?dealID='+encodeURIComponent(z.dealID)}));
+    x.stores=await csStores(s.ref.slice(1));
+  }else if(s.kind==='game'&&s.ref[0]==='w'){
+    const qid=s.ref.slice(1),e=(await wd({ids:qid,props:'claims|sitelinks',sitefilter:'ptwiki|enwiki'})).entities[qid]||{};
+    const ids=c=>((e.claims||{})[c]||[]).map(z=>z.mainsnak&&z.mainsnak.datavalue&&z.mainsnak.datavalue.value&&z.mainsnak.datavalue.value.id).filter(Boolean);
+    const gi=ids('P136'),pi=ids('P400'),di=ids('P178'),all=[...new Set([...gi,...pi,...di])].slice(0,50),lab={};
+    if(all.length)try{Object.entries((await wd({ids:all.join('|'),props:'labels',languages:'pt|en'})).entities).forEach(([k,v])=>lab[k]=T(((v.labels||{}).pt||(v.labels||{}).en||{}).value))}catch(z){}
+    const L=a=>a.map(i=>lab[i]).filter(Boolean);
+    o.genres=L(gi).slice(0,6);o.pl=L(pi).slice(0,8).join(', ');o.by=L(di).slice(0,3).join(', ');
+    const sl=e.sitelinks||{},pg=sl.ptwiki||sl.enwiki;
+    if(pg)try{const r=await jget('https://'+(sl.ptwiki?'pt':'en')+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(pg.title.replace(/ /g,'_')));o.syn=T(r.extract);if(!sl.ptwiki)o.en=1}catch(z){}
+    try{const c=await jget('https://www.cheapshark.com/api/1.0/games?limit=5&title='+encodeURIComponent(s.title)),m=c.find(z=>z.external.toLowerCase()===s.title.toLowerCase());if(m)x.stores=await csStores(m.gameID)}catch(z){}
   }else if(s.kind==='game'){
     const g=await rw('games/'+s.ref,{});
     o.syn=T(g.description_raw||html2txt(g.description));o.genres=(g.genres||[]).map(z=>GGN[z.slug]||T(z.name));
@@ -1203,7 +1225,7 @@ async function load(s){
 }
 async function paintSyn(s){
   const el=$('#syn'),tg=$('#tg');if(!el)return;
-  const need=s.syn&&(s.kind==='game'||s.en||(s.kind==='book'&&s.lang!=='pt'));
+  const need=s.syn&&((s.kind==='game'&&/^\d/.test(s.ref))||s.en||(s.kind==='book'&&s.lang!=='pt'));
   el.textContent=need?(s.pt||'Traduzindo sinopse para português...'):(s.syn||'Sem sinopse disponível.');
   if(!need)return;
   try{if(!s.pt)put(s.id,{pt:await translate(s.syn)})}
@@ -1285,7 +1307,7 @@ function streams(h){
   return S;
 }
 function keyBox(h){
-  if(h.id==='jg'&&!key('rawg')&&!h.need.size){h.ban.innerHTML='<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">Modo sem chave: jogos de PC (via CheapShark), sem gêneros e sem sinopse. Para o catálogo completo (consoles, gêneros), cole uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="https://rawg.io/apidocs">RAWG</a>: <input data-kn="rawg" placeholder="sua chave (opcional)" style="width:240px"> <button class="btn" data-ks="rawg">Salvar</button></div>';return}
+  if(h.id==='jg'&&!key('rawg')&&!h.need.size){h.ban.innerHTML='<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">Modo sem chave: catálogo da Wikidata (sem nota; gêneros, sinopse e preços aparecem ao abrir o jogo). Se quiser o catálogo completo (consoles, gêneros, nota), cole uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="https://rawg.io/apidocs">RAWG</a>: <input data-kn="rawg" placeholder="sua chave (opcional)" style="width:240px"> <button class="btn" data-ks="rawg">Salvar</button></div>';return}
   h.ban.innerHTML=[...h.need].map(n=>`<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">${lsKey(n)?'<b style="color:var(--red)">A chave salva foi recusada.</b> Confira se copiou inteira e sem espaços.<br>':''}Para buscar <b>${n==='tmdb'?'filmes':'jogos'}</b> é preciso uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="${n==='tmdb'?'https://www.themoviedb.org/settings/api':'https://rawg.io/apidocs'}">${n==='tmdb'?'TMDB':'RAWG'}</a> (cadastro rápido). Cole aqui: <input data-kn="${n}" placeholder="sua chave" style="width:260px"> <button class="btn" data-ks="${n}">Salvar</button></div>`).join('');
 }
 async function run(h,reset){
