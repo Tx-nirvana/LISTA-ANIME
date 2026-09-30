@@ -58,6 +58,8 @@ input[type=search]{flex:1;min-width:200px}
 .heart.on,#fav.on{color:var(--red)}
 .mine{color:var(--star);font-size:12px;font-weight:600;margin-top:2px}
 .where{margin-top:14px;border-top:1px solid var(--panel2);padding-top:10px}.where .wh{margin-top:8px}.where small{color:var(--mut);display:block;margin-top:8px}
+.bar2{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}.bar2 .n{width:150px;flex:none;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bar2 .b{height:14px;background:var(--ac);border-radius:4px;flex:none}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}.sc{background:var(--panel);border-radius:var(--r);padding:14px;color:var(--mut)}.sc b{display:block;font-size:26px;color:var(--tx)}.sec{background:var(--panel);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}.sec h3{margin:0 0 8px;font-size:16px}
 .gdet{margin:8px 0}.gdet summary{cursor:pointer;color:var(--ac);font-size:14px;padding:4px 0}.gdet .chips{margin-top:8px}
 .lk{background:var(--panel2);color:var(--ac);border-radius:6px;padding:3px 10px;font-size:13px;text-decoration:none}
 .lk:hover{background:var(--ac);color:#0d2b26}
@@ -73,6 +75,7 @@ input[type=search]{flex:1;min-width:200px}
   <nav>
     <button id="t-search" class="on">Descobrir</button>
     <button id="t-lib">Minha biblioteca (<span id="cnt">0</span>)</button>
+    <button id="t-stats">Estatísticas</button>
   </nav>
 </header>
 <main>
@@ -81,11 +84,14 @@ input[type=search]{flex:1;min-width:200px}
     <div class="bar">
       <input type="search" id="q" placeholder="Buscar por título ou autor (vazio = mais populares)">
       <select id="sort"><option value="POPULARITY_DESC">Mais populares</option><option value="SCORE_DESC">Melhor avaliados</option><option value="TRENDING_DESC">Em alta</option><option value="START_DATE_DESC">Mais recentes</option></select>
+      <button class="btn" id="rnd">🎲 Me surpreenda</button><button class="btn" id="rec">✨ Recomendados</button>
     </div>
     <div id="banner" class="stats" style="display:none"></div>
     <div id="authors" style="display:none"></div>
     <div class="chips" id="kinds"></div>
     <details class="gdet" id="gsearch"></details>
+    <details class="gdet" id="fsearch"></details>
+    <div id="recs" style="display:none;margin-bottom:16px"></div>
     <div class="grid" id="results"></div>
     <div id="smsg" class="msg"></div>
     <button class="more" id="more" style="display:none">Carregar mais</button>
@@ -103,9 +109,12 @@ input[type=search]{flex:1;min-width:200px}
     </div>
     <div class="chips" id="lkinds"></div>
     <details class="gdet" id="glib"></details>
+    <div class="chips" id="ltags"></div>
     <div class="stats" id="stats"></div>
     <div class="grid" id="libgrid"></div>
   </section>
+
+  <section id="v-stats" style="display:none"></section>
 </main>
 <footer style="max-width:1200px;margin:auto;padding:0 20px 40px;color:var(--mut);font-size:13px">Dados, capas e notas vêm do <a class="lk" target="_blank" rel="noopener" href="https://anilist.co">AniList</a>. Cada pessoa tem a sua própria lista, guardada no próprio navegador. Site gratuito e sem anúncios.</footer>
 
@@ -116,14 +125,14 @@ const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mang�
 const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN']};
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
-let src=null,favOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},page=1,loading=false,current={};
+let src=null,favOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
 
 function safe(v){
   const t=x=>String(x??'').replace(/[<>]/g,''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number(x)||0;
   const o={id:n(v.id),type:v.type==='MANGA'?'MANGA':'ANIME',kind:KINDS[v.kind]?v.kind:'anime',title:t(v.title),native:t(v.native),cover:u(v.cover),
    genres:(v.genres||[]).slice(0,20).map(t),year:t(v.year),eps:n(v.eps)||null,ch:n(v.ch)||null,vol:n(v.vol)||null,avg:n(v.avg)||null,st:t(v.st),
    status:STATUS.includes(v.status)?v.status:STATUS[0],rating:Math.min(5,Math.max(0,Math.round(n(v.rating)))),prog:t(v.prog),note:t(v.note),
-   fav:!!v.fav,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
+   tags:(Array.isArray(v.tags)?v.tags:[]).slice(0,20).map(x=>t(x).trim().slice(0,30)).filter(Boolean),fav:!!v.fav,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
    links:Array.isArray(v.links)?v.links.slice(0,40).map(x=>({site:t(x.site),url:u(x.url),lang:t(x.lang)})).filter(x=>x.url):undefined,
    authors:Array.isArray(v.authors)?v.authors.slice(0,8).map(x=>({id:n(x.id),name:t(x.name),role:t(x.role)})):undefined,
    studios:Array.isArray(v.studios)?v.studios.slice(0,8).map(x=>({id:n(x.id),name:t(x.name)})):undefined};
@@ -166,11 +175,11 @@ function genreBox(el,set,mode,fn){
 }
 const genOk=(arr,set,all)=>!set.size||(all?[...set].every(g=>(arr||[]).includes(g)):[...set].some(g=>(arr||[]).includes(g)));
 
-const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:[String]){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,countryOfOrigin:$c,sort:$o,genre_in:$g,isAdult:false){id type countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
+const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:[String],$f:[MediaFormat],$stt:MediaStatus,$gt:FuzzyDateInt,$lt:FuzzyDateInt,$ms:Int){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,countryOfOrigin:$c,sort:$o,genre_in:$g,format_in:$f,status:$stt,startDate_greater:$gt,startDate_lesser:$lt,averageScore_greater:$ms,isAdult:false){id type countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
 
 async function fetchPage(q,k,p,sort,g){
   const [t,c]=k==='all'?[undefined,undefined]:SPEC[k];
-  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:g&&g.length?g:undefined};
+  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:g&&g.length?g:undefined,f:F.fmt?F.fmt.split(','):undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
   const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
   const j=await r.json().catch(()=>null);
   if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
@@ -194,7 +203,7 @@ async function authorsFor(q){
 }
 async function search(reset){
   if(loading) return; loading=true;
-  if(reset){page=1;pgs={};mores={};$('#results').innerHTML='';current={};curOrder=[];authorsFor(src?'':$('#q').value.trim())}
+  if(reset){$('#recs').style.display='none';page=1;pgs={};mores={};$('#results').innerHTML='';current={};curOrder=[];authorsFor(src?'':$('#q').value.trim())}
   $('#smsg').textContent='Carregando...';$('#more').style.display='none';
   try{
     const addCard=m=>{const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
@@ -239,13 +248,107 @@ async function fetchSrc(p){
 }
 function setSrc(v){
   src=v;
-  ['.bar','#kinds','#gsearch'].forEach(x=>{const e=$('#v-search '+x);if(e)e.style.display=v?'none':''});
+  ['.bar','#kinds','#gsearch','#fsearch','#recs'].forEach(x=>{const e=$('#v-search '+x);if(e)e.style.display=v?'none':''});
   const b=$('#banner');b.style.display=v?'':'none';
-  b.innerHTML=v?`<button class="chip" id="bk">← Voltar</button> <b>Obras de ${v.name}</b> (das mais populares às menos)`:'';
+  b.innerHTML=v?`<button class="chip" id="bk">← Voltar</button> <b>Obras de ${esc(v.name)}</b> (das mais populares às menos)`:'';
   if(v)$('#bk').onclick=()=>{setSrc(null)};
   search(true);
 }
 function openWorks(type,id,name){closeModal();tab('s');setSrc({type,id:+id,name})}
+
+/* ---------- filtros extras ---------- */
+const FMT=[['','Qualquer formato'],['TV,TV_SHORT','Série de TV'],['MOVIE','Filme'],['OVA,ONA,SPECIAL','OVA / ONA / Especial'],['MANGA','Mangá (capítulos)'],['NOVEL','Novel'],['ONE_SHOT','One-shot']];
+const STS=[['','Qualquer situação'],['RELEASING','Em andamento'],['FINISHED','Finalizado'],['NOT_YET_RELEASED','Ainda não lançado'],['HIATUS','Em hiato']];
+const MINS=[[0,'Qualquer nota AniList'],[60,'Nota AniList 6+'],[70,'Nota AniList 7+'],[80,'Nota AniList 8+'],[90,'Nota AniList 9+']];
+const fCount=()=>[F.fmt,F.st,F.from,F.to,F.min].filter(x=>x&&x!=='0').length;
+function filterBox(){
+  const el=$('#fsearch'),opt=(a,v)=>a.map(([k,l])=>`<option value="${k}" ${String(k)===String(v)?'selected':''}>${l}</option>`).join('');
+  el.innerHTML=`<summary>Mais filtros${fCount()?' ('+fCount()+')':''}</summary><div class="bar" style="margin-top:8px">
+    <select id="ffmt">${opt(FMT,F.fmt)}</select><select id="fst">${opt(STS,F.st)}</select><select id="fmin">${opt(MINS,F.min)}</select>
+    <input id="ffrom" type="number" min="1950" max="2100" placeholder="Ano de" value="${F.from}" style="width:100px"><input id="fto" type="number" min="1950" max="2100" placeholder="até" value="${F.to}" style="width:100px">
+    <button class="chip" id="fclr">Limpar filtros</button></div>`;
+  const go=()=>{F.fmt=$('#ffmt').value;F.st=$('#fst').value;F.min=+$('#fmin').value;F.from=$('#ffrom').value.trim();F.to=$('#fto').value.trim();
+    el.querySelector('summary').textContent='Mais filtros'+(fCount()?' ('+fCount()+')':'');search(true)};
+  ['#ffmt','#fst','#fmin','#ffrom','#fto'].forEach(x=>$(x).onchange=go);
+  $('#fclr').onclick=()=>{F={fmt:'',st:'',from:'',to:'',min:0};const o=el.open;filterBox();el.open=o;search(true)};
+}
+
+/* ---------- me surpreenda ---------- */
+async function surprise(){
+  const b=$('#rnd');b.disabled=true;b.textContent='Sorteando...';
+  try{
+    const keys=kSet.size?[...kSet]:['all'],gs=[...gSet],all=gMode.all&&gs.length>1;
+    let pick=null;
+    for(let t=0;t<4&&!pick;t++){
+      const k=keys[Math.floor(Math.random()*keys.length)];
+      const d=await fetchPage('',k,1+Math.floor(Math.random()*(t?3:25)),'POPULARITY_DESC',gs);
+      const c=d.media.filter(m=>!m.isAdult&&(!all||genOk(m.genres,gSet,true)));
+      const fresh=c.filter(m=>!lib[m.id]),pool=fresh.length?fresh:c;
+      if(pool.length)pick=pool[Math.floor(Math.random()*pool.length)];
+    }
+    if(pick){const x=slim(pick);current[x.id]=x;openModal(x.id)}
+    else alert('Não achei nada com esses filtros. Tente afrouxar um pouco.');
+  }catch(e){alert('Não consegui sortear agora: '+e.message)}
+  b.disabled=false;b.textContent='🎲 Me surpreenda';
+}
+
+/* ---------- recomendados ---------- */
+async function showRecs(){
+  const box=$('#recs');
+  if(box.style.display===''){box.style.display='none';return}
+  box.style.display='';box.onclick=clickCard;
+  const seeds=Object.values(lib).filter(x=>x.rating>=4||x.fav).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
+  if(!seeds.length){box.innerHTML='<div class="msg" style="padding:16px">Para receber recomendações, adicione títulos à biblioteca e dê nota 4 ou 5 (ou favorite). Assim o site sabe do que você gosta.</div>';return}
+  box.innerHTML='<div class="msg" style="padding:16px">Buscando recomendações...</div>';
+  try{
+    const d=await gql('query{'+seeds.map((x,i)=>`a${i}:Media(id:${+x.id}){recommendations(sort:RATING_DESC,perPage:10){nodes{rating mediaRecommendation{${MF}}}}}`).join('')+'}',{});
+    if(!d)throw new Error('sem resposta');
+    const acc={};
+    seeds.forEach((x,i)=>{const nodes=(d['a'+i]&&d['a'+i].recommendations.nodes)||[];nodes.forEach(n=>{const m=n.mediaRecommendation;if(!m||m.isAdult||lib[m.id]||(n.rating||0)<1)return;const a=acc[m.id]||(acc[m.id]={m,n:0,sc:0});a.n++;a.sc+=n.rating})});
+    const list=Object.values(acc).sort((a,b)=>b.n-a.n||b.sc-a.sc).slice(0,18);
+    if(!list.length){box.innerHTML='<div class="msg" style="padding:16px">Ainda não achei recomendações novas. Dê nota a mais títulos e tente de novo.</div>';return}
+    list.forEach(a=>{const x=slim(a.m);current[x.id]=x});
+    box.innerHTML=`<div class="stats"><b>Recomendados para você</b> · baseado em: ${esc(seeds.map(x=>x.title).join(', '))}</div><div class="grid">${list.map(a=>card(current[a.m.id])).join('')}</div>`;
+  }catch(e){box.innerHTML='<div class="msg" style="padding:16px">Não consegui buscar agora ('+esc(e.message)+'). Tente de novo em instantes.</div>'}
+}
+
+/* ---------- listas / etiquetas ---------- */
+const allTags=()=>[...new Set(Object.values(lib).flatMap(x=>x.tags||[]))].sort((a,b)=>a.localeCompare(b));
+function drawTags(l){$('#mtags').innerHTML=(l.tags||[]).map(t=>`<button class="chip on" data-x="${esc(t)}" title="Remover">${esc(t)} ×</button>`).join('')||'<small style="margin:0">nenhuma ainda</small>'}
+
+/* ---------- estatísticas ---------- */
+function renderStats(){
+  const v=$('#v-stats'),items=Object.values(lib);
+  if(!items.length){v.innerHTML='<div class="msg">Adicione títulos à biblioteca para ver suas estatísticas.</div>';return}
+  const cnt=(arr,f)=>{const o={};arr.forEach(x=>{const k=f(x);if(k!=null&&k!=='')o[k]=(o[k]||0)+1});return o};
+  const bars=(o,label,max)=>{const e=Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,max||10),m=Math.max(1,...e.map(x=>x[1]));return e.map(([k,n])=>`<div class="bar2"><span class="n">${esc(label?label(k):k)}</span><span class="b" style="width:${Math.max(2,n/m*55)}%"></span><span>${n}</span></div>`).join('')||'<small>Sem dados.</small>'};
+  const num=x=>Number(String(x||'').replace(/\D/g,''))||0;
+  let eps=0,chs=0;items.forEach(x=>{const p=num(x.prog);if(x.type==='MANGA')chs+=x.status==='Completo'?Math.max(p,x.ch||0):p;else eps+=x.status==='Completo'?Math.max(p,x.eps||0):p});
+  const rated=items.filter(x=>x.rating),avg=rated.length?(rated.reduce((a,x)=>a+x.rating,0)/rated.length).toFixed(1):'–';
+  const gc=cnt(items.flatMap(x=>x.genres||[]),g=>g);
+  const gr={};rated.forEach(x=>(x.genres||[]).forEach(g=>{(gr[g]=gr[g]||[]).push(x.rating)}));
+  const bestG={};Object.entries(gr).filter(([g,a])=>a.length>=2).forEach(([g,a])=>{bestG[g]=+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)});
+  const bestRows=Object.entries(bestG).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([g,n])=>`<div class="bar2"><span class="n">${esc(GEN[g]||g)}</span><span class="b" style="width:${n/5*55}%"></span><span>${n} ★</span></div>`).join('')||'<small>Precisa de pelo menos 2 títulos com nota no mesmo gênero.</small>';
+  const key=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+  const now=new Date(),months=[];for(let i=11;i>=0;i--)months.push(key(new Date(now.getFullYear(),now.getMonth()-i,1)));
+  const mc=cnt(items.filter(x=>x.added),x=>key(x.added));
+  const mm=Math.max(1,...months.map(m=>mc[m]||0));
+  const monthRows=months.map(m=>`<div class="bar2"><span class="n">${m.slice(5)}/${m.slice(0,4)}</span><span class="b" style="width:${Math.max(1,(mc[m]||0)/mm*55)}%"></span><span>${mc[m]||0}</span></div>`).join('');
+  const stars=cnt(rated,x=>x.rating),sm=Math.max(1,...Object.values(stars));
+  const box=(t,inner)=>`<div class="sec"><h3>${t}</h3>${inner}</div>`;
+  v.innerHTML=`<div class="sgrid">
+    <div class="sc"><b>${items.length}</b>títulos</div><div class="sc"><b>${items.filter(x=>x.status==='Completo').length}</b>completos</div>
+    <div class="sc"><b>${items.filter(x=>x.fav).length}</b>favoritos</div><div class="sc"><b>${avg}</b>sua nota média</div>
+    <div class="sc"><b>${eps}</b>episódios (~${Math.round(eps*24/60)} h)</div><div class="sc"><b>${chs}</b>capítulos lidos</div></div>
+    ${box('Por tipo',bars(cnt(items,x=>x.kind),k=>KINDS[k]||k))}
+    ${box('Por situação',bars(cnt(items,x=>x.status)))}
+    ${box('Suas notas',[5,4,3,2,1].map(n=>`<div class="bar2"><span class="n">${'★'.repeat(n)}</span><span class="b" style="width:${Math.max(2,(stars[n]||0)/sm*55)}%"></span><span>${stars[n]||0}</span></div>`).join('')+(rated.length?'':'<small>Você ainda não deu notas.</small>'))}
+    ${box('Gêneros mais frequentes',bars(gc,g=>GEN[g]||g,10))}
+    ${box('Gêneros em que você dá as melhores notas',bestRows)}
+    ${box('Títulos adicionados nos últimos 12 meses',monthRows)}
+    <small style="color:var(--mut)">Horas estimadas com 24 min por episódio. Episódios contam o que você marcou como visto e o total dos títulos completos.</small>`;
+}
+
 function openModal(id){
   const s=lib[id]||current[id]; if(!s) return;
   const l=lib[id]; const stars=l?l.rating||0:0;
@@ -261,6 +364,8 @@ function openModal(id){
       <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
       <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/5':'sem nota'}</span></div>
       <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${(l.note||'').replace(/</g,'&lt;')}</textarea>
+      <div class="row" style="align-items:flex-start"><b>Listas:</b><div id="mtags" class="gen"></div></div>
+      <div class="row"><input id="mtin" list="taglist" maxlength="30" placeholder="Nova lista ou etiqueta (Enter para adicionar)" style="flex:1"><datalist id="taglist">${allTags().map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>
       <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`
      :`<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>`}
     <div class="where" id="credits"></div>
@@ -272,10 +377,13 @@ function openModal(id){
     $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
     $('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
     $('#mnote').onchange=e=>{l.note=e.target.value;save(l)};
+    drawTags(l);
+    $('#mtags').onclick=e=>{const b=e.target.closest('button');if(!b)return;l.tags=(l.tags||[]).filter(t=>t!==b.dataset.x);save(l);drawTags(l);renderLib()};
+    $('#mtin').onkeydown=e=>{if(e.key!=='Enter')return;const t=e.target.value.replace(/[<>]/g,'').trim().slice(0,30);if(!t)return;l.tags=l.tags||[];if(!l.tags.some(x=>x.toLowerCase()===t.toLowerCase()))l.tags.push(t);e.target.value='';save(l);drawTags(l);renderLib()};
     $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save(l);openModal(id);refresh()};
     $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
   }else{
-    $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()};save(lib[id]);openModal(id);refresh()};
+    $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};save(lib[id]);openModal(id);refresh()};
   }
 }
 function splitText(t,max){
@@ -342,7 +450,7 @@ async function showSyn(id){
 
 function toggleFav(id){
   let l=lib[id];
-  if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',fav:false,added:Date.now()}}
+  if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()}}
   l.fav=!l.fav;save(l);refresh();
   if($('#modal').classList.contains('on'))openModal(id);
 }
@@ -577,7 +685,10 @@ function refresh(){
 
 function renderLib(){
   const q=$('#lq').value.toLowerCase(),st=$('#lstatus').value,so=$('#lsort').value;
-  let items=Object.values(lib).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
+  const tc={};Object.values(lib).forEach(x=>(x.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));
+  [...lgTags].forEach(t=>{if(!tc[t])lgTags.delete(t)});
+  $('#ltags').innerHTML=Object.keys(tc).sort((a,b)=>a.localeCompare(b)).map(t=>`<button class="chip ${lgTags.has(t)?'on':''}" data-t="${esc(t)}">🏷 ${esc(t)} (${tc[t]})</button>`).join('');
+  let items=Object.values(lib).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&[...lgTags].every(t=>(s.tags||[]).includes(t))&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
   items.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
   const rated=items.filter(s=>s.rating);
   const avg=rated.length?(rated.reduce((a,s)=>a+s.rating,0)/rated.length).toFixed(1):'–';
@@ -587,11 +698,12 @@ function renderLib(){
 }
 
 function tab(t){
-  $('#v-search').style.display=t==='s'?'':'none';$('#v-lib').style.display=t==='l'?'':'none';
-  $('#t-search').classList.toggle('on',t==='s');$('#t-lib').classList.toggle('on',t==='l');
-  if(t==='l')renderLib();
+  $('#v-search').style.display=t==='s'?'':'none';$('#v-lib').style.display=t==='l'?'':'none';$('#v-stats').style.display=t==='x'?'':'none';
+  $('#t-search').classList.toggle('on',t==='s');$('#t-lib').classList.toggle('on',t==='l');$('#t-stats').classList.toggle('on',t==='x');
+  if(t==='l')renderLib();if(t==='x')renderStats();
 }
-$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');
+$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;
+$('#ltags').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.t;lgTags.has(t)?lgTags.delete(t):lgTags.add(t);renderLib()};
 
 let tm;
 $('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>search(true),450)};
@@ -607,7 +719,7 @@ $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
 (function init(){
   multiKinds($('#kinds'),kSet,()=>search(true));genreBox($('#gsearch'),gSet,gMode,()=>search(true));
   multiKinds($('#lkinds'),lkSet,renderLib);genreBox($('#glib'),lgSet,lgMode,renderLib);
-  save();renderUser();startSync();
+  filterBox();save();renderUser();startSync();
   try{if(!localStorage.getItem('otaku-seen')){$('#tip').style.display='';$('#tipx').onclick=()=>{$('#tip').style.display='none';localStorage.setItem('otaku-seen','1')}}}catch(e){}
   search(true);
 })();
