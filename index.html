@@ -1443,7 +1443,31 @@ const _tab=tab;tab=function(t){
   }
 };
 mount('lf');mount('jg');
+
+/* Garantia de navegação das abas extras: não depende da função tab original. */
+function openExtraTab(id){
+  const h=HUBS[id];
+  if(!h||!h.sec)return;
+  $('#v-search').style.display='none';
+  $('#v-lib').style.display='none';
+  $('#v-stats').style.display='none';
+  Object.values(HUBS).forEach(x=>{
+    x.sec.style.display=x===h?'':'none';
+    if(x.btn)x.btn.classList.toggle('on',x===h);
+  });
+  $('#t-search').classList.remove('on');
+  $('#t-lib').classList.remove('on');
+  $('#t-stats').classList.remove('on');
+  if(!h.started){
+    h.started=1;
+    h.msg.textContent='Carregando catálogo...';
+    setTimeout(()=>run(h,true),0);
+  }
+}
+$('#t-lf').onclick=()=>openExtraTab('lf');
+$('#t-jg').onclick=()=>openExtraTab('jg');
 })();
+
 </script>
 </body>
 
