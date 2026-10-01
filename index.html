@@ -2356,7 +2356,7 @@ setTimeout(boot4,3000);
 'use strict';
 const C5={cfg:'otaku-supabase-config-v1',session:'otaku-supabase-session-v1',table:'biblioteca_otaku_sync'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cfg=()=>{try{return JSON.parse(localStorage.getItem(C5.cfg)||'{}')}catch(e){return {}}};
+const DEFAULT_SUPABASE={url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'};\nconst cfg=()=>{try{const saved=JSON.parse(localStorage.getItem(C5.cfg)||'{}');return {url:saved.url||DEFAULT_SUPABASE.url,key:saved.key||DEFAULT_SUPABASE.key}}catch(e){return DEFAULT_SUPABASE}};
 const setCfg=x=>localStorage.setItem(C5.cfg,JSON.stringify(x));
 const sess=()=>{try{return JSON.parse(localStorage.getItem(C5.session)||'null')}catch(e){return null}};
 const setSess=x=>x?localStorage.setItem(C5.session,JSON.stringify(x)):localStorage.removeItem(C5.session);
@@ -2452,7 +2452,7 @@ window.OtakuSupabase={config:cfg,setConfig:setCfg,login:()=>sign5('login'),signu
 (function(){
 'use strict';
 const C6={table:'biblioteca_otaku_sync',timer:null};
-const cfg=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}')}catch(e){return {}}};
+const cfg=()=>{try{const saved=JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}');return {url:saved.url||'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:saved.key||'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}catch(e){return {url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}};
 const sess=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
 const base=()=>String(cfg().url||'').replace(/\/$/,'');
 const snapshot=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
@@ -2548,7 +2548,7 @@ const R7={
  channel:null,client:null,busy:false,lastRemote:0,retry:0,timer:null,connecting:false,
  maxRetry:30000
 };
-const cfg7=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}')}catch(e){return {}}};
+const cfg7=()=>{try{const saved=JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}');return {url:saved.url||'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:saved.key||'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}catch(e){return {url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}};
 const sess7=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
 const saveSess7=s=>{try{localStorage.setItem('otaku-supabase-session-v1',JSON.stringify(s))}catch(e){}};
 const base7=()=>String(cfg7().url||'').replace(/\/$/,'');
