@@ -275,6 +275,7 @@ function renderStats(){
 
 function openModal(id){
   const s=lib[id]||current[id]; if(!s) return;
+  window.__openOtakuId=String(id);
   const l=lib[id]; const stars=l?l.rating||0:0;
   const size=s.type==='MANGA'?[s.ch&&s.ch+' capítulos',s.vol&&s.vol+' volumes']:[s.eps&&s.eps+' episódios'];
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button>
