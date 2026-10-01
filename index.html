@@ -1938,4 +1938,143 @@ watchLfMount();
 })();
 </script>
 
+<script>
+/* ===== CAMADA 2 — motor de recomendação por perfil + busca global ===== */
+(function(){
+'use strict';
+const R2={page:0,items:[],mode:'',source:'',kind:'all',genre:''};
+const e2=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n2=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const all2=()=>Object.values(lib||{});
+const known2=x=>all2().some(l=>String(l.id)===String(x.id));
+const star2=n=>'★'.repeat(Math.max(0,Math.min(5,Number(n)||0)))+'☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
+function profile2(){
+ const rated=all2().filter(x=>x.rating>0), g={},authors={},k={};
+ rated.forEach(x=>{
+   k[x.kind]=(k[x.kind]||0)+x.rating;
+   (x.genres||[]).forEach(v=>{if(v)g[v]=(g[v]||0)+x.rating});
+   const by=x.by||x.author||''; by.split(',').map(s=>s.trim()).filter(Boolean).forEach(a=>authors[a]=(authors[a]||0)+x.rating);
+ });
+ return {g,authors,k};
+}
+function score2(x,p){
+ let s=0,genres=x.genres||[];
+ genres.forEach(g=>s+=(p.g[g]||0)*2);
+ const by=(x.by||x.author||'').split(',').map(s=>s.trim());
+ by.forEach(a=>s+=(p.authors[a]||0)*3);
+ s+=(p.k[x.kind]||0);
+ if(x.avg)s+=Number(x.avg)/10;
+ if(x.fav)s+=5;
+ return s;
+}
+function kindOk2(x){
+ if(R2.kind==='all')return true;
+ return String(x.kind)===R2.kind;
+}
+function genreOk2(x){
+ if(!R2.genre)return true;
+ return (x.genres||[]).some(g=>n2(g)===n2(R2.genre));
+}
+async function build2(mode){
+ const p=profile2(),out=new Map();
+ const add=x=>{
+   if(!x||!x.id||known2(x)||!kindOk2(x)||!genreOk2(x)||x.isAdult)return;
+   const z={x,score:score2(x,p)}; if(mode==='surprise')z.score=Math.random()*100;
+   const id=String(x.id);if(!out.has(id)||out.get(id).score<z.score)out.set(id,z);
+ };
+ const seeds=all2().filter(x=>x.rating>=4||x.fav).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
+ for(const s of seeds){
+   if(isOtaku(s)){
+     try{
+       const d=await gql('query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:30){nodes{rating mediaRecommendation{'+MF+'}}}}}',{id:+s.id});
+       (d.Media?.recommendations?.nodes||[]).forEach(z=>{if(z.mediaRecommendation){const x=slim(z.mediaRecommendation);x.avg=(z.rating||0)*10;add(x)}});
+     }catch(e){}
+   }
+ }
+ if(R2.kind==='all'||isOtaku({kind:R2.kind})){
+   const ks=R2.kind==='all'?['anime','manga','manhwa','manhua','donghua','aeni','novel']: [R2.kind];
+   for(const k of ks){
+     if(k==='webnovel')continue;
+     try{const d=await fetchPage('',k,1,'POPULARITY_DESC',R2.genre?[R2.genre]:[]);(d.media||[]).forEach(m=>{if(!m.isAdult)add(slim(m))})}catch(e){}
+   }
+ }
+ if(R2.kind==='webnovel'||R2.kind==='all'){
+   try{
+    if(!novelCatalogLoaded)await loadNovelCatalog();
+    (novelCatalog||[]).forEach(v=>add({id:novelId(v),kind:'webnovel',type:'MANGA',title:v.title||v.name||'',cover:v.cover||v.image||'',syn:v.synopsis||v.syn||'',genres:v.genres||[],avg:Number(v.rating||v.averageRating||0)}));
+   }catch(e){}
+ }
+ let a=[...out.values()].sort((a,b)=>b.score-a.score).map(z=>z.x);
+ if(mode==='surprise')a.sort(()=>Math.random()-.5);
+ return a.slice(0,50);
+}
+function paint2(){
+ const box=q5('#bo5-recs2');if(!box)return;
+ const total=Math.max(1,Math.ceil(R2.items.length/5)),p=Math.min(R2.page,total-1);
+ const items=R2.items.slice(p*5,p*5+5);
+ box.innerHTML='<div class="bo5-card"><div class="rec-head"><div><b>'+(R2.mode==='surprise'?'🎲 Me surpreenda':'✨ Recomendados')+'</b><div class="bo5-muted">Baseado nas suas notas, favoritos, gêneros e obras semelhantes.</div></div></div><div class="rec-track">'+(items.length?items.map(x=>card(x)).join(''):'<div class="msg" style="grid-column:1/-1;padding:18px">Não encontrei novas obras com esses filtros.</div>')+'</div><div class="rec-nav"><button id="r2p">←</button><span>'+(p+1)+' / '+total+'</span><button id="r2n">→</button></div></div>';
+ box.querySelectorAll('.card').forEach(c=>c.onclick=clickCard);
+ box.querySelector('#r2p').onclick=()=>{if(R2.page>0){R2.page--;paint2()}};
+ box.querySelector('#r2n').onclick=()=>{if(R2.page<total-1){R2.page++;paint2()}};
+ box.querySelector('#r2p').disabled=p===0;box.querySelector('#r2n').disabled=p>=total-1;
+}
+async function run2(mode){
+ const box=q5('#bo5-recs2');if(!box)return;
+ box.innerHTML='<div class="bo5-card"><div class="msg" style="padding:20px">🧠 Analisando sua biblioteca e procurando obras compatíveis...</div></div>';
+ R2.mode=mode;R2.page=0;R2.items=await build2(mode);paint2();
+}
+function mountRec2(){
+ const sec=q5('#v-search');if(!sec||q5('#bo5-recs2'))return;
+ const b=document.createElement('div');b.id='bo5-recs2';b.style.marginBottom='14px';
+ const k=document.createElement('div');k.className='chips';
+ k.innerHTML='<span class="bo5-muted" style="align-self:center">Recomendação por perfil:</span>';
+ Object.entries(KINDS).forEach(([v,l])=>{const z=document.createElement('button');z.className='chip'+(v==='all'?' on':'');z.dataset.r2k=v;z.textContent=l;k.appendChild(z)});
+ const g=document.createElement('select');g.style.marginLeft='6px';g.innerHTML='<option value="">Todos os gêneros</option>'+Object.keys(GEN||{}).map(x=>'<option value="'+e2(x)+'">'+e2(gname(x))+'</option>').join('');
+ k.appendChild(g);b.appendChild(k);
+ const a=document.createElement('div');a.className='bo5-actions';a.innerHTML='<button class="btn" id="bo5-rec-go">✨ Recomendados</button><button class="btn" id="bo5-rnd-go">🎲 Me surpreenda</button>';b.appendChild(a);
+ const out=document.createElement('div');out.id='bo5-recs2';b.appendChild(out);
+ sec.insertBefore(b,sec.firstElementChild?.nextSibling||sec.firstElementChild);
+ b.onclick=e=>{
+   const z=e.target.closest('[data-r2k]');
+   if(z){R2.kind=z.dataset.r2k;k.querySelectorAll('[data-r2k]').forEach(x=>x.classList.toggle('on',x===z))}
+ };
+ g.onchange=()=>{R2.genre=g.value};
+ b.querySelector('#bo5-rec-go').onclick=()=>run2('recommended');
+ b.querySelector('#bo5-rnd-go').onclick=()=>run2('surprise');
+}
+function mountGlobalAuthor(){
+ const q=q5('#q'),a=q5('#authors');if(!q||!a)return;
+ let t;
+ q.addEventListener('input',()=>{
+   clearTimeout(t);const v=q.value.trim();
+   if(v.length<3)return;
+   t=setTimeout(async()=>{
+     try{
+       const d=await gql('query($s:String){Page(perPage:8){staff(search:$s,sort:SEARCH_MATCH){id name{full native} primaryOccupations}}}',{s:v});
+       const ws=n2(v).split(/\s+/).filter(Boolean);
+       const list=(d.Page.staff||[]).filter(x=>{const z=n2(x.name.full+' '+(x.name.native||''));return ws.every(w=>z.includes(w))}).slice(0,5);
+       if(!list.length){a.style.display='none';return}
+       a.style.display='block';a.innerHTML='<div class="bo5-card"><b>✍ Autores encontrados</b><div class="chips" style="margin-top:8px">'+list.map(x=>'<button class="chip" data-author2="'+e2(x.name.full)+'">'+e2(x.name.full)+'</button>').join('')+'</div></div>';
+       a.querySelectorAll('[data-author2]').forEach(b=>b.onclick=()=>author2(b.dataset.author2));
+     }catch(e){a.style.display='none'}
+   },350);
+ });
+}
+async function author2(name){
+ const box=q5('#results'),msg=q5('#smsg'),q=q5('#q');q.value=name;
+ box.innerHTML='';msg.textContent='Buscando obras de '+name+'...';
+ try{
+  const d=await gql('query($s:String){Page(perPage:24,sort:SEARCH_MATCH){media(search:$s){id type format countryOfOrigin title{romaji english native} coverImage{large} description(asHtml:false) genres seasonYear startDate{year} episodes chapters volumes averageScore status}}}',{s:name});
+  const arr=(d.Page.media||[]).filter(x=>!x.isAdult).map(slim);
+  arr.forEach(x=>current[x.id]=x);
+  box.innerHTML=arr.length?arr.map(card).join(''):'<div class="msg" style="grid-column:1/-1">Nenhuma obra encontrada para este autor.</div>';
+  box.onclick=clickCard;msg.textContent=arr.length?arr.length+' obra(s) encontrada(s).':'';
+ }catch(e){msg.textContent='Não foi possível pesquisar este autor agora.'}
+}
+function bootR2(){mountRec2();mountGlobalAuthor()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootR2,900));else setTimeout(bootR2,900);
+setTimeout(bootR2,1800);
+})();
+</script>
+
 </html>
