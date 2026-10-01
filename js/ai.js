@@ -28,8 +28,8 @@ function collections(){
 }
 function feedbackPanel(id){
  const v=store().ai.feedback?.[String(id)]||'';
- const d=document.createElement('div');d.className='ai-panel';
- d.innerHTML='<b>Como essa obra te marcou?</b><div class="ai-actions ai-tags-row">'+
+ const d=document.createElement('div');d.className='ai-panel ai-feedback';
+ d.innerHTML='<div class="ai-actions ai-tags-row">'+
  ['love|🥲 Me destruiu emocionalmente','like|👍 Gostei','dislike|👎 Não gostei','avoid|🚫 Não recomendar','seen|👁 Já conheço'].map(x=>{const [a,b]=x.split('|');return '<button class="chip '+(v===a?'on':'')+'" data-f="'+a+'">'+b+'</button>'}).join('')+'</div>';
  d.onclick=e=>{
    const b=e.target.closest('[data-f]');if(!b)return;
@@ -51,8 +51,7 @@ function attachFeedback(){
  const id=box.querySelector('[data-id]')?.dataset.id||window.__openOtakuId;
  if(!id||box.querySelector('.ai-feedback'))return;
  const w=works().find(x=>String(x.id)===String(id));if(!w)return;
- const d=feedbackPanel(id);d.classList.add('ai-feedback');
- const anchor=box.querySelector('.bo-cover-wrap');
+ const d=feedbackPanel(id);const anchor=box.querySelector('.bo-cover-wrap');
  if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(d,anchor.nextSibling);
  else box.appendChild(d);
 }
