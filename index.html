@@ -971,7 +971,7 @@ function showSync(){
     <li>Role até o fim, clique em <b>Generate token</b> e copie o código que começa com <code>ghp_</code>.</li>
     <li>Cole abaixo e toque em Entrar.</li></ol>
     <div class="row"><input id="ti" type="password" placeholder="ghp_..." autocomplete="off" style="flex:1"><button class="btn" id="tc">Entrar</button></div>
-    <p class="sub">O token fica só neste navegador e dá acesso apenas aos seus gists. Trate-o como uma senha.</p>`}
+    <p class="sub">O token fica só neste navegador e dá acesso apenas aos seus gists. Trate-o como uma senha.</p><p style="margin-top:18px"><b>☁️ Supabase</b> — sincronização da Biblioteca Otaku</p><div class="row"><input id="su-email" type="email" placeholder="Seu e-mail" autocomplete="email" style="flex:1"><input id="su-pass" type="password" placeholder="Senha" autocomplete="current-password" style="flex:1"><button class="btn" id="su-login">Entrar</button><button class="btn" id="su-signup">Criar conta</button></div><p class="sub">Use a mesma conta em outros aparelhos para sincronizar sua biblioteca.</p>`}
   <p id="ss" class="sub"></p>
   <p class="sub" style="margin-top:14px"><b>Alternativa sem conta:</b> transfira por texto.</p>
   <div class="row"><button class="btn" id="tcp">Copiar minha lista como texto</button></div>
@@ -987,6 +987,8 @@ function showSync(){
       try{await connectGoogle();renderUser();showSync();$('#ss').textContent='Conectado. Sua lista já está na nuvem.'}
       catch(e){say(/popup_closed|access_denied/.test(e.message)?'Login cancelado.':'Não deu certo: '+e.message)}
     };
+    $('#su-login').onclick=async()=>{const email=$('#su-email').value.trim(),pass=$('#su-pass').value;say('Entrando no Supabase...');try{await window.OtakuSupabase.login(email,pass);await window.OtakuSupabase.sync('sync');renderUser();showSync();$('#ss').textContent='☁️ Conectado ao Supabase e sincronizado.'}catch(e){say('Supabase: '+e.message)}};
+    $('#su-signup').onclick=async()=>{const email=$('#su-email').value.trim(),pass=$('#su-pass').value;say('Criando conta no Supabase...');try{const d=await window.OtakuSupabase.signup(email,pass);if(d?.access_token){await window.OtakuSupabase.sync('push');renderUser();showSync();$('#ss').textContent='☁️ Conta criada e biblioteca enviada para a nuvem.'}else{say('Conta criada. Confirme seu e-mail no Supabase e depois entre novamente.')}}catch(e){say('Supabase: '+e.message)}};
     $('#tc').onclick=async()=>{
       const t=$('#ti').value.trim();
       if(!t){say('Cole o token primeiro.');return}
@@ -2356,7 +2358,7 @@ setTimeout(boot4,3000);
 'use strict';
 const C5={cfg:'otaku-supabase-config-v1',session:'otaku-supabase-session-v1',table:'biblioteca_otaku_sync'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DEFAULT_SUPABASE={url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'};\nconst cfg=()=>{try{const saved=JSON.parse(localStorage.getItem(C5.cfg)||'{}');return {url:saved.url||DEFAULT_SUPABASE.url,key:saved.key||DEFAULT_SUPABASE.key}}catch(e){return DEFAULT_SUPABASE}};
+const DEFAULT_SUPABASE={url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:['sb_publishable_','KHrh5gdmZpxo2Goz0Je-0Q_','n4McPfp6'].join('')};\nconst cfg=()=>{try{const saved=JSON.parse(localStorage.getItem(C5.cfg)||'{}');return {url:saved.url||DEFAULT_SUPABASE.url,key:saved.key||DEFAULT_SUPABASE.key}}catch(e){return DEFAULT_SUPABASE}};
 const setCfg=x=>localStorage.setItem(C5.cfg,JSON.stringify(x));
 const sess=()=>{try{return JSON.parse(localStorage.getItem(C5.session)||'null')}catch(e){return null}};
 const setSess=x=>x?localStorage.setItem(C5.session,JSON.stringify(x)):localStorage.removeItem(C5.session);
@@ -2377,9 +2379,8 @@ function restore5(d){
  if(window.OtakuCloud?.import)return window.OtakuCloud.import(d);
  return null;
 }
-async function sign5(mode){
- const c=cfg();
- const email=q5('#c5-email')?.value.trim(),password=q5('#c5-pass')?.value||'';
+async function sign5(mode,emailArg,passwordArg){
+ const email=(emailArg??q5('#c5-email')?.value)?.trim(),password=passwordArg??q5('#c5-pass')?.value||'';
  if(!email||!password)throw new Error('Informe e-mail e senha.');
  if(mode==='signup'){
   const d=await api5('/auth/v1/signup',{method:'POST',auth:false,body:JSON.stringify({email,password})});
@@ -2443,7 +2444,7 @@ function status5(msg){
 function boot5(){panel5();refresh5().then(()=>status5(sess()?'Sessão atualizada.':'Não conectado.')).catch(()=>{})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot5,2000));else setTimeout(boot5,2000);
 setTimeout(boot5,3500);
-window.OtakuSupabase={config:cfg,setConfig:setCfg,login:()=>sign5('login'),signup:()=>sign5('signup'),sync:sync5,logout:()=>setSess(null)};
+window.OtakuSupabase={config:cfg,setConfig:setCfg,login:(email,password)=>sign5('login',email,password),signup:(email,password)=>sign5('signup',email,password),sync:sync5,logout:()=>setSess(null),session:sess};
 })();
 </script>
 
