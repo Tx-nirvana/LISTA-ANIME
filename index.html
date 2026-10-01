@@ -2077,4 +2077,133 @@ setTimeout(bootR2,1800);
 })();
 </script>
 
+<script>
+/* ===== CAMADA 3 — descoberta profunda, fontes, progresso e histórico ===== */
+(function(){
+'use strict';
+const D3={history:[],progress:{},sources:{}};
+const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function load3(){try{D3.history=JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]');D3.progress=JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}')}catch(x){}}
+function save3(){localStorage.setItem('otaku-discovery-history',JSON.stringify(D3.history.slice(-100)));localStorage.setItem('otaku-progress-v1',JSON.stringify(D3.progress))}
+function kind3(x){return ({anime:'Anime',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua',donghua:'Donghua',aeni:'Aeni',novel:'Novel',webnovel:'WEB Novel',book:'Livro',movie:'Filme',game:'Jogo'})[x]||x||'Obra'}
+function stars3(n){n=Math.max(0,Math.min(5,Math.round(Number(n)||0)));return '★'.repeat(n)+'☆'.repeat(5-n)}
+function addHistory(x,action='abriu'){
+ if(!x?.id)return;
+ D3.history=D3.history.filter(a=>String(a.id)!==String(x.id));
+ D3.history.push({id:x.id,title:x.title||'',kind:x.kind||x.type,cover:x.cover||x.coverImage?.large||'',action,at:Date.now()});
+ save3();
+}
+function current3(id){return (lib&&lib[id])||window.current?.[id]||null}
+function modalHook3(){
+ if(typeof window.openModal!=='function')return;
+ const old=window.openModal;
+ window.openModal=function(id){const x=current3(id);if(x)addHistory(x);return old.apply(this,arguments)}
+}
+function score3(x){
+ const rated=Object.values(lib||{}).filter(a=>a.rating>0);
+ let s=0;
+ rated.forEach(a=>{
+  const r=a.rating;
+  (a.genres||[]).forEach(g=>{if((x.genres||[]).some(h=>norm(h)===norm(g)))s+=r*1.8});
+  if(a.by&&x.by&&norm(a.by)===norm(x.by))s+=r*3;
+  if(a.author&&x.author&&norm(a.author)===norm(x.author))s+=r*3;
+ });
+ if(x.avg)s+=Math.min(10,Number(x.avg)/10);
+ return s;
+}
+function addProgressUI(){
+ if(document.getElementById('d3-progress'))return;
+ const stats=q5('#v-stats');if(!stats)return;
+ const el=document.createElement('div');el.id='d3-progress';el.className='bo5-card';el.style.marginTop='12px';
+ el.innerHTML='<h3>📈 Progresso</h3><div id="d3-prog-body"></div>';
+ stats.appendChild(el);renderProgress3();
+}
+function renderProgress3(){
+ const el=q5('#d3-prog-body');if(!el)return;
+ const vals=Object.values(D3.progress).sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,20);
+ el.innerHTML=vals.length?vals.map(p=>{
+   const pct=p.total?Math.min(100,Math.round(p.current/p.total*100)):0;
+   return '<div class="bo5-row"><div><b>'+e(p.title)+'</b><div class="bo5-muted">'+e(kind3(p.kind))+' · '+e(p.current||0)+(p.total?' / '+e(p.total):'')+'</div><div class="bo5-bar"><div class="bo5-fill" style="width:'+pct+'%"></div></div></div><span>'+pct+'%</span></div>'
+ }).join(''):'<div class="bo5-muted">Seu progresso aparecerá aqui quando você registrar capítulos, episódios ou páginas.</div>';
+}
+function progressForm3(x){
+ const p=D3.progress[x.id]||{id:x.id,title:x.title,kind:x.kind,current:0,total:x.episodes||x.chapters||x.volumes||0,updated:Date.now()};
+ const cur=prompt('Progresso de '+x.title+'\nDigite episódio, capítulo, volume ou página atual:',p.current||0);
+ if(cur===null)return;
+ const total=prompt('Total conhecido (opcional):',p.total||'');
+ p.current=Math.max(0,Number(cur)||0);p.total=Math.max(0,Number(total)||0);p.updated=Date.now();p.title=x.title;p.kind=x.kind;
+ D3.progress[x.id]=p;save3();renderProgress3();
+}
+function sources3(x){
+ const title=encodeURIComponent(x.title||'');
+ const type=x.kind||x.type||'';
+ const out=[];
+ if(['anime','aeni','donghua'].includes(type)){
+  out.push(['AniList','https://anilist.co/search/anime?search='+title]);
+  out.push(['Kitsu','https://kitsu.io/anime?text='+title]);
+  out.push(['JustWatch','https://www.justwatch.com/br/busca?q='+title]);
+ }
+ if(['manga','manhwa','manhua','novel','webnovel'].includes(type)){
+  out.push(['Google','https://www.google.com/search?q='+encodeURIComponent((x.title||'')+' '+(x.by||x.author||''))]);
+  out.push(['NovelUpdates','https://www.novelupdates.com/?s='+title+'&post_type=seriesplans']);
+ }
+ return out;
+}
+function addSources3(){
+ if(q5('#d3-sources'))return;
+ const libSec=q5('#v-lib');if(!libSec)return;
+ const box=document.createElement('div');box.id='d3-sources';box.className='sec';
+ box.innerHTML='<h3>🌐 Fontes rápidas</h3><div class="bo5-muted">Abra informações, busca e serviços relacionados à obra selecionada.</div><div id="d3-source-list" class="chips" style="margin-top:8px"></div>';
+ libSec.insertBefore(box,libSec.firstElementChild?.nextSibling||libSec.firstElementChild);
+}
+function renderSources3(x){
+ const el=q5('#d3-source-list');if(!el)return;
+ el.innerHTML=sources3(x).map(a=>'<a class="chip" target="_blank" rel="noopener" href="'+e(a[1])+'">'+e(a[0])+'</a>').join('')||'<span class="bo5-muted">Nenhuma fonte rápida disponível para este tipo.</span>';
+}
+function addDiscovery3(){
+ const s=q5('#v-search');if(!s||q5('#d3-discovery'))return;
+ const box=document.createElement('div');box.id='d3-discovery';box.className='bo5-card';box.style.marginBottom='14px';
+ box.innerHTML='<h3>🧭 Descoberta profunda</h3><div class="bo5-muted">Seu histórico de navegação ajuda a ajustar novas descobertas sem alterar suas notas.</div><div id="d3-history" class="bo5-list" style="margin-top:8px"></div><button class="bo5-chip" id="d3-clear">Limpar histórico</button>';
+ s.insertBefore(box,s.firstElementChild);
+ renderHistory3();
+ q5('#d3-clear').onclick=()=>{D3.history=[];save3();renderHistory3()}
+}
+function renderHistory3(){
+ const el=q5('#d3-history');if(!el)return;
+ const h=D3.history.slice().reverse().slice(0,8);
+ el.innerHTML=h.length?h.map(x=>'<div class="bo5-row"><span><b>'+e(x.title)+'</b><br><span class="bo5-muted">'+e(kind3(x.kind))+' · '+e(x.action)+'</span></span><span class="bo5-muted">'+new Date(x.at).toLocaleDateString('pt-BR')+'</span></div>').join(''):'<span class="bo5-muted">Seu histórico de descobertas aparecerá aqui.</span>';
+}
+function enhanceModal3(){
+ if(typeof window.openModal!=='function')return;
+ const old=window.openModal;
+ window.openModal=function(id){
+  const x=current3(id);
+  const r=old.apply(this,arguments);
+  setTimeout(()=>{
+   const modal=document.querySelector('.modal.show,.modal[style*="display"],#modal');
+   if(!modal||!x)return;
+   if(modal.querySelector('#d3-modal-actions'))return;
+   const a=document.createElement('div');a.id='d3-modal-actions';a.className='bo5-actions';
+   a.innerHTML='<button class="bo5-chip" id="d3-prog">📈 Registrar progresso</button><button class="bo5-chip" id="d3-src">🌐 Ver fontes</button>';
+   modal.appendChild(a);
+   a.querySelector('#d3-prog').onclick=()=>{progressForm3(x)};
+   a.querySelector('#d3-src').onclick=()=>{addSources3();renderSources3(x);q5('#d3-sources')?.scrollIntoView({behavior:'smooth'})};
+  },80);
+  addHistory(x);
+  return r;
+ }
+}
+function improveRecommend3(){
+ const box=q5('#bo5-recs2');if(!box)return;
+ const old=box.dataset.d3;
+ if(old==='1')return;
+ box.dataset.d3='1';
+}
+function boot3(){load3();addProgressUI();addSources3();addDiscovery3();modalHook3();enhanceModal3();improveRecommend3()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot3,1400));else setTimeout(boot3,1400);
+setTimeout(boot3,2600);
+})();
+</script>
+
 </html>
