@@ -1418,4 +1418,211 @@ mount('lf');mount('jg');
 })();
 </script>
 </body>
+
+<script>
+/* ===== Sistema novo de recomendações: 5 resultados + filtros ===== */
+(function(){
+'use strict';
+const recCSS=document.createElement('style');
+recCSS.textContent=`
+#recs{background:var(--panel);border-radius:12px;padding:14px}
+.rec-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.rec-head b{font-size:17px}.rec-sub{color:var(--mut);font-size:12px}
+.rec-nav{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:12px}
+.rec-nav button{background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
+.rec-nav button:disabled{opacity:.35;cursor:not-allowed}
+.rec-track{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.rec-track .card{min-width:0}
+.rec-track .card .t{font-size:13px}
+@media(max-width:900px){.rec-track{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.rec-track{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rec-filter{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.rec-filter .chip{font-size:12px}
+#lf-rec{background:var(--panel);border-radius:12px;padding:14px;margin:0 0 16px}
+`;
+document.head.appendChild(recCSS);
+
+let mainRecItems=[],mainRecPage=0,mainRecMode='recommended';
+const escR=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const normR=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const wantedKinds=()=>kSet.size?[...kSet]:Object.keys(KINDS).filter(x=>x!=='all');
+const matchesKind=(x,ks)=>ks.includes('all')||ks.includes(x.kind);
+const matchesGenres=(x)=>genOk(x.genres||[],gSet,gMode.all);
+const notInLib=x=>!lib[x.id];
+
+function recPanelHTML(title,sub){
+  return `<div class="rec-head"><div><b>${title}</b><div class="rec-sub">${sub}</div></div></div><div class="rec-track" id="rec-track"></div><div class="rec-nav"><button id="rec-prev">←</button><span id="rec-page">1 / 1</span><button id="rec-next">→</button></div>`;
+}
+function paintMainRec(){
+  const box=$('#recs');if(!box)return;
+  if(!mainRecItems.length){box.innerHTML='<div class="msg" style="padding:18px">Não encontrei 5 obras novas com esses filtros. Tente selecionar menos gêneros ou mais tipos.</div>';return}
+  const total=Math.ceil(mainRecItems.length/5)||1;
+  mainRecPage=Math.max(0,Math.min(mainRecPage,total-1));
+  const pageItems=mainRecItems.slice(mainRecPage*5,mainRecPage*5+5);
+  pageItems.forEach(x=>current[x.id]=x);
+  box.innerHTML=recPanelHTML(mainRecMode==='surprise'?'🎲 Me surpreenda':'✨ Recomendados',
+    `Filtros: ${wantedKinds().map(k=>KINDS[k]||k).join(' + ')} · ${gSet.size?[...gSet].map(g=>gname(g)).join(gMode.all?' + ':' / '):'todos os gêneros'}`);
+  $('#rec-track').innerHTML=pageItems.map(x=>card(x)).join('');
+  $('#rec-page').textContent=(mainRecPage+1)+' / '+total;
+  $('#rec-prev').disabled=mainRecPage===0;
+  $('#rec-next').disabled=mainRecPage>=total-1;
+  $('#rec-prev').onclick=()=>{mainRecPage--;paintMainRec()};
+  $('#rec-next').onclick=()=>{mainRecPage++;paintMainRec()};
+  $('#rec-track').onclick=clickCard;
+}
+async function collectMainCandidates(mode){
+  const ks=wantedKinds(),out=new Map(),rated=Object.values(lib).filter(isOtaku).filter(x=>x.rating||x.fav);
+  const seeds=rated.sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
+  const add=x=>{
+    if(!x||!x.id||lib[x.id]||!matchesKind(x,ks)||!matchesGenres(x))return;
+    const key=String(x.id);if(!out.has(key))out.set(key,{x,score:0});
+    const a=out.get(key);a.score+=(x.rating||0);if(mode==='surprise')a.score=Math.random();
+  };
+  /* Obras relacionadas aos títulos que o usuário avaliou */
+  if(seeds.length){
+    for(const s of seeds.slice(0,5)){
+      try{
+        const d=await gql(`query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:30){nodes{rating mediaRecommendation{${MF}}}}}}`,{id:+s.id});
+        (d.Media&&d.Media.recommendations&&d.Media.recommendations.nodes||[]).forEach(n=>{
+          const m=n.mediaRecommendation;if(!m||m.isAdult)return;
+          const x=slim(m);add(x);if(out.has(String(x.id)))out.get(String(x.id)).score+=(s.rating||1)*((n.rating||1)/10);
+        });
+      }catch(e){}
+    }
+  }
+  /* Completa com catálogo filtrado */
+  for(const k of ks){
+    if(k==='webnovel'){
+      if(!novelCatalogLoaded){try{await loadNovelCatalog()}catch(e){}}
+      (novelCatalog||[]).forEach(n=>{
+        const id=novelId(n),x={id,kind:'webnovel',type:'MANGA',title:n.title||n.name||'',native:n.alternative||'',cover:n.cover||n.image||'',syn:n.synopsis||n.syn||'',genres:n.genres||[],year:n.year||'',avg:n.rating||n.averageRating||0,st:n.status||''};
+        add(x);
+      });
+    }else{
+      try{
+        const d=await fetchPage('',k,1,'POPULARITY_DESC',[...gSet]);
+        (d.media||[]).forEach(m=>{if(!m.isAdult){const x=slim(m);if(matchesGenres(x))add(x)}});
+      }catch(e){}
+    }
+  }
+  let arr=[...out.values()];
+  arr.sort((a,b)=>mode==='surprise'?Math.random()-.5:b.score-a.score);
+  return arr.map(a=>a.x).slice(0,40);
+}
+async function runMainRec(mode){
+  const box=$('#recs');if(!box)return;
+  box.style.display='';
+  box.innerHTML='<div class="msg" style="padding:18px">Buscando 5 recomendações...</div>';
+  mainRecMode=mode;mainRecPage=0;
+  mainRecItems=await collectMainCandidates(mode);
+  paintMainRec();
+}
+$('#rec').onclick=()=>runMainRec('recommended');
+$('#rnd').onclick=()=>runMainRec('surprise');
+
+/* Reabre a lista de recomendações quando filtros de tipo/gênero mudarem. */
+const oldSearch=window.search;
+if(typeof oldSearch==='function'){
+  /* não substitui a busca normal; apenas limpa recomendações antigas */
+  const oldK=document.querySelector('#kinds');
+  if(oldK)oldK.addEventListener('click',()=>{mainRecItems=[];mainRecPage=0});
+}
+
+/* ===== Recomendações de Livros e Filmes ===== */
+function movieGenreIds(){return typeof MG!=='undefined'?MG:[]}
+function recLfCard(x){
+  const l=lib[x.id];
+  return `<div class="card" data-id="${x.id}" tabindex="0">
+    <span class="tag">${x.kind==='movie'?'Filme':'Livro'}</span>
+    ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:''}
+    <button class="heart ${l&&l.fav?'on':''}" data-h="${x.id}">${l&&l.fav?'♥':'♡'}</button>
+    <img loading="lazy" src="${escR(x.cover||PH)}" alt="">
+    <div class="i"><div class="t">${escR(x.title)}</div>
+    <div class="m">${escR([x.year,x.by].filter(Boolean).join(' · '))}${x.avg?' · ★ '+(Number(x.avg)/20).toFixed(1):''}</div>
+    ${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'}</div>`:''}</div>
+  </div>`;
+}
+let lfRecItems=[],lfRecPage=0,lfRecType='all',lfRecGenre='';
+function lfGenreOptions(){
+  const base=typeof BG!=='undefined'?BG.map(x=>x[0]):['Ficção','Suspense','Mistério','Romance','Fantasia','Terror','Aventura'];
+  return [...new Set(base)].map(g=>'<button class="chip '+(lfRecGenre===g?'on':'')+'" data-rg="'+escR(g)+'">'+escR(g)+'</button>').join('');
+}
+function mountLfRec(){
+  const sec=document.querySelector('#v-lf');if(!sec||document.querySelector('#lf-rec'))return;
+  const anchor=sec.firstElementChild;
+  const box=document.createElement('div');box.id='lf-rec';
+  box.innerHTML=`<div class="rec-head"><div><b>✨ Recomendar</b><div class="rec-sub">Livros e filmes · baseado nas suas notas e favoritos</div></div><button class="btn" id="lf-rec-go">Recomendar</button></div>
+    <div class="rec-filter"><button class="chip on" data-rt="all">Livros + Filmes</button><button class="chip" data-rt="book">Só livros</button><button class="chip" data-rt="movie">Só filmes</button></div>
+    <details class="gdet" id="lf-rec-g"><summary>Gênero</summary><div class="chips" id="lf-rec-gen">${lfGenreOptions()}</div></details>
+    <div id="lf-rec-out" style="display:none"></div>`;
+  sec.insertBefore(box,anchor);
+  box.onclick=e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.rt){lfRecType=b.dataset.rt;box.querySelectorAll('[data-rt]').forEach(x=>x.classList.toggle('on',x===b));}
+    if(b.dataset.rg!==undefined){lfRecGenre=b.dataset.rg;box.querySelector('#lf-rec-gen').innerHTML=lfGenreOptions();}
+    if(b.id==='lf-rec-go')runLfRec();
+    const c=b.closest('.card');if(c&&c.dataset.id)openModal(c.dataset.id);
+  };
+}
+function lfMatches(x){
+  if(lfRecType!=='all'&&x.kind!==lfRecType)return false;
+  if(lfRecGenre&&!(x.genres||[]).some(g=>normR(g)===normR(lfRecGenre)))return false;
+  return !lib[x.id];
+}
+function lfSeeds(kind){
+  return Object.values(lib).filter(x=>x.kind===kind&&(x.rating||x.fav)).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
+}
+async function bookRecs(){
+  const seeds=lfSeeds('book'),terms=[];
+  seeds.forEach(s=>{if(s.title)terms.push(s.title);if(s.by)terms.push(String(s.by).split(',')[0])});
+  const q=terms[0]||'fiction';
+  let data=[];
+  try{
+    const r=await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=40&q='+encodeURIComponent(q));
+    const j=await r.json();data=(j.items||[]).map(v=>{const a=v.volumeInfo||{};return{id:7e9+Number(String(v.id).replace(/\D/g,'').slice(-8)||Math.floor(Math.random()*1e8)),kind:'book',type:'BOOK',ref:'g'+v.id,title:a.title||'',native:a.subtitle||'',cover:(a.imageLinks&&a.imageLinks.thumbnail||'').replace('http:','https:'),syn:a.description||'',genres:a.categories||[],year:(a.publishedDate||'').slice(0,4),avg:a.averageRating?Number(a.averageRating)*20:0,by:(a.authors||[]).join(', '),url:a.infoLink||''}}).filter(lfMatches);
+  }catch(e){}
+  return data;
+}
+async function movieRecs(){
+  const key=localStorage.getItem('otaku-key-tmdb')||'';
+  if(!key)return [];
+  const seeds=lfSeeds('movie'),terms=seeds.map(x=>x.title).filter(Boolean);
+  const base=terms[0]||'';
+  let url='https://api.themoviedb.org/3/discover/movie?language=pt-BR&include_adult=false&page=1&sort_by=popularity.desc';
+  if(lfRecGenre&&typeof MG!=='undefined'){const hit=MG.find(x=>normR(x[1])===normR(lfRecGenre));if(hit)url+='&with_genres='+hit[0]}
+  if(base)url='https://api.themoviedb.org/3/search/movie?language=pt-BR&include_adult=false&page=1&query='+encodeURIComponent(base);
+  try{
+    const r=await fetch(url,{headers:{Authorization:'Bearer '+key,Accept:'application/json'}});
+    if(!r.ok)return [];
+    const j=await r.json();return (j.results||[]).map(m=>({id:3e9+m.id,kind:'movie',type:'MOVIE',ref:String(m.id),title:m.title||'',native:m.original_title||'',cover:m.poster_path?'https://image.tmdb.org/t/p/w342'+m.poster_path:'',syn:m.overview||'',genres:(m.genre_ids||[]).map(i=>(typeof MGN!=='undefined'?MGN[i]:'' )).filter(Boolean),year:(m.release_date||'').slice(0,4),avg:m.vote_average?m.vote_average*20:0,by:''})).filter(lfMatches);
+  }catch(e){return []}
+}
+async function runLfRec(){
+  mountLfRec();
+  const out=document.querySelector('#lf-rec-out');if(!out)return;
+  out.style.display='';out.innerHTML='<div class="msg" style="padding:16px">Buscando 5 recomendações...</div>';
+  let arr=[];
+  if(lfRecType==='book')arr=await bookRecs();
+  else if(lfRecType==='movie')arr=await movieRecs();
+  else{const [b,m]=await Promise.all([bookRecs(),movieRecs()]);arr=b.concat(m)}
+  arr=arr.slice(0,25);lfRecItems=arr;lfRecPage=0;
+  if(!arr.length){out.innerHTML='<div class="msg" style="padding:16px">'+(lfRecType!=='book'&&!localStorage.getItem('otaku-key-tmdb')?'Para recomendar filmes, configure a chave TMDB na aba de filmes.':'Não encontrei 5 obras novas com esses filtros.')+'</div>';return}
+  const render=()=>{
+    const total=Math.ceil(lfRecItems.length/5)||1,p=Math.min(lfRecPage,total-1),items=lfRecItems.slice(p*5,p*5+5);
+    items.forEach(x=>current[x.id]=x);
+    out.innerHTML=recPanelHTML('✨ Recomendações',`Filtros: ${lfRecType==='all'?'Livros + Filmes':lfRecType==='book'?'Livros':'Filmes'} · ${lfRecGenre||'todos os gêneros'}`);
+    out.querySelector('#rec-track').innerHTML=items.map(recLfCard).join('');
+    out.querySelector('#rec-page').textContent=(p+1)+' / '+total;
+    out.querySelector('#rec-prev').disabled=p===0;out.querySelector('#rec-next').disabled=p>=total-1;
+    out.querySelector('#rec-prev').onclick=()=>{lfRecPage--;render()};out.querySelector('#rec-next').onclick=()=>{lfRecPage++;render()};
+    out.querySelector('#rec-track').onclick=e=>{const h=e.target.closest('.heart');if(h){toggleFav(+h.dataset.h);return}const c=e.target.closest('.card');if(c)openModal(c.dataset.id)};
+  };render();
+}
+function watchLfMount(){
+  if(document.querySelector('#v-lf'))mountLfRec();
+  else setTimeout(watchLfMount,100);
+}
+watchLfMount();
+})();
+</script>
 </html>
