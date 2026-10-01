@@ -1458,11 +1458,22 @@ function paintMainRec(){
 }
 async function collectMainCandidates(mode){
   const ks=wantedKinds(),out=new Map(),rated=Object.values(lib).filter(isOtaku).filter(x=>x.rating||x.fav);
+  const ai=(()=>{try{return JSON.parse(localStorage.getItem('otaku-ai-v2')||'{}')}catch(e){return{}}})();
+  const ratedGenres={};rated.forEach(r=>(r.genres||[]).forEach(g=>ratedGenres[g]=(ratedGenres[g]||0)+Number(r.rating||1)));
   const seeds=rated.sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
   const add=x=>{
     if(!x||!x.id||lib[x.id]||!matchesKind(x,ks)||!matchesGenres(x))return;
-    const key=String(x.id);if(!out.has(key))out.set(key,{x,score:0});
-    const a=out.get(key);a.score+=(x.rating||0);if(mode==='surprise')a.score=Math.random();
+    const id=String(x.id),fb=ai.feedback?.[id];
+    if(ai.noRecommend?.[id]||fb==='avoid'||fb==='dislike')return;
+    if(!out.has(id))out.set(id,{x,score:0});
+    const a=out.get(id);
+    a.score+=(x.rating||0);
+    (x.genres||[]).forEach(g=>a.score+=(ratedGenres[g]||0)*1.5);
+    if(x.avg)a.score+=Number(x.avg)/10;
+    if(ai.history?.some(h=>String(h.id)===id))a.score-=7;
+    if(ai.recommended?.[id])a.score-=5;
+    if(fb==='like')a.score+=8;if(fb==='love')a.score+=14;
+    if(mode==='surprise')a.score=a.score*0.45+Math.random()*18;
   };
   /* Obras relacionadas aos títulos que o usuário avaliou */
   if(seeds.length){
@@ -1492,7 +1503,7 @@ async function collectMainCandidates(mode){
     }
   }
   let arr=[...out.values()];
-  arr.sort((a,b)=>mode==='surprise'?Math.random()-.5:b.score-a.score);
+  arr.sort((a,b)=>b.score-a.score);
   return arr.map(a=>a.x).slice(0,40);
 }
 async function runMainRec(mode){
