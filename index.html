@@ -147,7 +147,7 @@ let novelCatalog=[];let novelCatalogLoaded=false;let novelCatalogUpdated='';
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
 const KX={book:'Livro',movie:'Filme',game:'Jogo'},isOtaku=x=>!KX[x.kind];
-let src=null,favOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
+let src=null,favOnly=false,recOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
 
 function safe(v){
   const t=x=>String(x??'').replace(/[<>]/g,''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number(x)||0;
@@ -1072,7 +1072,7 @@ function dashboardFilter(t){
  favOnly=false;$('#lmin').value='';
  const status=$('#lstatus');lkSet.clear();
  if(t==='fav'){favOnly=true}
- if(t==='recommend')$('#lmin').value=4;
+ if(t==='recommend'){recOnly=true}
  if(t==='abandon')status.value='Abandonado';
  if(t==='ten')$('#lmin').value=5;
  if(t==='read'){status.value='Quero ver/ler';['manga','manhwa','manhua','novel','webnovel'].forEach(k=>lkSet.add(k))}
@@ -1086,7 +1086,7 @@ function renderLib(){
   const tc={};Object.values(lib).filter(isOtaku).forEach(x=>(x.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));
   [...lgTags].forEach(t=>{if(!tc[t])lgTags.delete(t)});
   $('#ltags').innerHTML=Object.keys(tc).sort((a,b)=>a.localeCompare(b)).map(t=>`<button class="chip ${lgTags.has(t)?'on':''}" data-t="${esc(t)}">🏷 ${esc(t)} (${tc[t]})</button>`).join('');
-  let items=Object.values(lib).filter(isOtaku).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&[...lgTags].every(t=>(s.tags||[]).includes(t))&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
+  let items=Object.values(lib).filter(isOtaku).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&[...lgTags].every(t=>(s.tags||[]).includes(t))&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!recOnly||s.rec)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
   items.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
   const rated=items.filter(s=>s.rating);
   const avg=rated.length?(rated.reduce((a,s)=>a+s.rating,0)/rated.length).toFixed(1):'–';
