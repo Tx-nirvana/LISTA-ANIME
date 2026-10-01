@@ -100,7 +100,7 @@ function renderDashboard(){
  const ag=p.querySelector('#ai-authors');
  if(authors.length)authors.forEach(a=>{const b=document.createElement('button');b.className='ai-author';b.textContent='★ '+a.name;b.onclick=()=>authorPage(a.name);ag.appendChild(b)});
  else ag.innerHTML='<span class="ai-sub">Use "Buscar autor" e favorite autores para criar sua lista.</span>';
- p.querySelectorAll('[data-aic]').forEach(b=>b.onclick=()=>{const arr=c[b.dataset.aic]||[];window.libFilterAI=arr.map(x=>x.id);if(typeof renderLib==='function')renderLib()});
+ p.querySelectorAll('[data-aic]').forEach(b=>b.onclick=()=>applyCollection(c[b.dataset.aic]||[]));
 }
 function addDiscoveryPanel(){
  if(document.getElementById('ai-discovery'))return;
@@ -122,12 +122,34 @@ function cardFeedback(){
   card.appendChild(d);
  });
 }
+function applyCollection(arr){
+ const ids=new Set((arr||[]).map(x=>String(x.id)));
+ if(typeof renderLib==='function')renderLib();
+ document.querySelectorAll('#libgrid .card').forEach(card=>{card.style.display=ids.has(String(card.dataset.id))?'':'none'});
+}
+function renderAdvancedStats(){
+ const box=document.querySelector('#v-stats');if(!box||!works().length)return;
+ let p=document.getElementById('ai-stats');if(p)p.remove();
+ p=document.createElement('div');p.id='ai-stats';p.className='ai-panel';
+ const w=works(),rated=w.filter(x=>Number(x.rating)>0),avg=rated.length?(rated.reduce((a,x)=>a+Number(x.rating),0)/rated.length).toFixed(2):'—';
+ const kinds={};w.forEach(x=>kinds[x.kind]=(kinds[x.kind]||0)+1);
+ const fb={like:0,love:0,dislike:0,avoid:0,seen:0};Object.values(A.feedback).forEach(v=>{if(fb[v]!=null)fb[v]++});
+ const hist=A.history.length;
+ p.innerHTML='<div class="ai-title">📊 Inteligência da biblioteca</div><div class="ai-grid">'+
+ '<div class="ai-mini"><b>Média das suas notas</b><span>★ '+avg+'/5</span></div>'+
+ '<div class="ai-mini"><b>Obras avaliadas</b><span>'+rated.length+' de '+w.length+'</span></div>'+
+ '<div class="ai-mini"><b>Feedbacks</b><span>👍 '+fb.like+' · ❤️ '+fb.love+' · 👎 '+fb.dislike+' · 🚫 '+fb.avoid+'</span></div>'+
+ '<div class="ai-mini"><b>Recomendações vistas</b><span>'+hist+'</span></div></div>'+
+ '<div class="ai-sub" style="margin-top:10px">'+Object.entries(kinds).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>label(x[0])+': '+x[1]).join(' · ')+'</div>';
+ box.appendChild(p);
+}
+
 function boot(){
  styles();addDiscoveryPanel();
  const old=window.renderLibraryDashboard;
  if(typeof old==='function'&&!old.__aiV2){const f=function(){old.apply(this,arguments);setTimeout(renderDashboard,20)};f.__aiV2=true;window.renderLibraryDashboard=f}
- const observer=new MutationObserver(()=>{attachFeedback();cardFeedback()});observer.observe(document.body,{childList:true,subtree:true});
- setTimeout(()=>{renderDashboard();cardFeedback()},500);
+ const oldStats=window.renderStats;if(typeof oldStats==='function'&&!oldStats.__aiV2){const sf=function(){oldStats.apply(this,arguments);setTimeout(renderAdvancedStats,20)};sf.__aiV2=true;window.renderStats=sf}const observer=new MutationObserver(()=>{attachFeedback();cardFeedback()});observer.observe(document.body,{childList:true,subtree:true});
+ setTimeout(()=>{renderDashboard();cardFeedback();renderAdvancedStats()},500);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.OtakuAI={profile,dna,collections,authorSearch,authorPage,history:()=>A.history.slice(),block:id=>{A.noRecommend[id]=Date.now();save()},reset:()=>{A={feedback:{},authors:{},recommended:{},history:[],noRecommend:{}};save()}};
