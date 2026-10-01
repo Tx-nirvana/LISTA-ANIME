@@ -1967,6 +1967,7 @@ function paint2(){
  box.querySelector('#r2p').disabled=p===0;box.querySelector('#r2n').disabled=p>=total-1;
 }
 async function run2(mode){
+ window.__r2mode=mode;
  const box=q5('#bo5-recs2');if(!box)return;
  box.innerHTML='<div class="bo5-card"><div class="msg" style="padding:20px">🧠 Analisando sua biblioteca e procurando obras compatíveis...</div></div>';
  R2.mode=mode;R2.page=0;R2.items=await build2(mode);paint2();
