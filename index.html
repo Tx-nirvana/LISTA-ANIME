@@ -362,8 +362,8 @@ async function showRecs(){
   const box=$('#recs');
   if(box.style.display===''){box.style.display='none';return}
   box.style.display='';box.onclick=clickCard;
-  const seeds=Object.values(lib).filter(isOtaku).filter(x=>x.rating>=4||x.fav||x.rec).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
-  if(!seeds.length){box.innerHTML='<div class="msg" style="padding:16px">Para receber recomendações, adicione títulos à biblioteca e dê nota 4 ou 5 (ou favorite). Assim o site sabe do que você gosta.</div>';return}
+  const seeds=Object.values(lib).filter(isOtaku).filter(x=>x.rec).slice(0,6);
+  if(!seeds.length){box.innerHTML='<div class="msg" style="padding:16px">Marque títulos como “Recomendo” pelo botão da sinopse para receber recomendações.</div>';return}
   box.innerHTML='<div class="msg" style="padding:16px">Buscando recomendações...</div>';
   try{
     const d=await gql('query{'+seeds.map((x,i)=>`a${i}:Media(id:${+x.id}){recommendations(sort:RATING_DESC,perPage:10){nodes{rating mediaRecommendation{${MF}}}}}`).join('')+'}',{});
@@ -1055,7 +1055,7 @@ function refresh(){
 function renderLibraryDashboard(){
  const box=document.querySelector('#bo-lib-dashboard');if(!box)return;
  const all=Object.values(lib).filter(isOtaku),countKind=k=>all.filter(x=>x.kind===k).length;
- const fav=all.filter(x=>x.fav),recommend=all.filter(x=>x.fav||x.rating>=4),abandon=all.filter(x=>x.status==='Abandonado'),ten=all.filter(x=>x.rating===5),ongoing=all.filter(x=>x.status==='Em andamento');
+ const fav=all.filter(x=>x.fav),recommend=all.filter(x=>x.rec),abandon=all.filter(x=>x.status==='Abandonado'),ten=all.filter(x=>x.rating===5),ongoing=all.filter(x=>x.status==='Em andamento');
  const read=all.filter(x=>x.status==='Quero ver/ler'&&['manga','manhwa','manhua','novel','webnovel'].includes(x.kind));
  const watch=all.filter(x=>x.status==='Quero ver/ler'&&['anime','donghua','aeni'].includes(x.kind));
  const rated=all.filter(x=>x.rating>0),gs={};rated.forEach(x=>(x.genres||[]).forEach(g=>gs[g]=(gs[g]||0)+x.rating));
