@@ -57,6 +57,20 @@ input[type=search]{flex:1;min-width:200px}
 #user{display:flex;align-items:center;gap:8px;font-size:14px}#user img{width:28px;height:28px;border-radius:50%}#sync{color:var(--mut);font-size:12px}
 .heart{position:absolute;top:34px;left:6px;background:rgba(2,2,2,.85);border:0;color:var(--tx);border-radius:50%;width:30px;height:30px;font-size:17px;cursor:pointer;line-height:1}
 .heart.on,#fav.on{color:var(--red)}
+.bo-cover-actions{display:flex;gap:7px;margin-top:8px}
+.bo-cover-actions .bo-action{flex:1;border:1px solid var(--panel2);border-radius:9px;padding:8px 7px;background:var(--panel2);color:var(--tx);font:600 13px inherit;cursor:pointer;white-space:nowrap}
+.bo-cover-actions .bo-action.on{background:var(--ac);border-color:var(--ac);color:#020202}
+.bo-cover-actions .bo-action.fav.on{background:var(--red);border-color:var(--red);color:#020202}
+#bo-level{display:flex;align-items:center;gap:9px;min-width:240px;cursor:pointer}
+#bo-level .bo-lv-name{font-weight:700;color:var(--ac);white-space:nowrap}
+#bo-level .bo-xp{font-size:11px;color:var(--mut);white-space:nowrap}
+#bo-level .bo-lv-track{height:6px;width:110px;background:var(--panel2);border-radius:99px;overflow:hidden}
+#bo-level .bo-lv-fill{height:100%;background:var(--ac);border-radius:99px}
+.bo-xp-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.bo-xp-detail>div{background:var(--panel2);border-radius:9px;padding:9px}
+.bo-xp-detail b{display:block;color:var(--tx);font-size:18px}
+.bo-xp-detail small{color:var(--mut)}
+@media(max-width:640px){#bo-level{min-width:0;width:100%}.bo-cover-actions{flex-direction:column}.bo-cover-actions .bo-action{width:100%}}
 .mine{color:var(--star);font-size:12px;font-weight:600;margin-top:2px}
 .where{margin-top:14px;border-top:1px solid var(--panel2);padding-top:10px}.where .wh{margin-top:8px}.where small{color:var(--mut);display:block;margin-top:8px}
 .bar2{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}.bar2 .n{width:150px;flex:none;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bar2 .b{height:14px;background:var(--ac);border-radius:4px;flex:none}
@@ -140,7 +154,7 @@ function safe(v){
   const o={id:n(v.id),type:v.type==='MANGA'?'MANGA':'ANIME',kind:KINDS[v.kind]?v.kind:'anime',title:t(v.title),native:t(v.native),cover:u(v.cover),
    genres:(v.genres||[]).slice(0,20).map(t),year:t(v.year),eps:n(v.eps)||null,ch:n(v.ch)||null,vol:n(v.vol)||null,avg:n(v.avg)||null,st:t(v.st),
    status:STATUS.includes(v.status)?v.status:STATUS[0],rating:Math.min(5,Math.max(0,Math.round(n(v.rating)))),prog:t(v.prog),note:t(v.note),
-   tags:(Array.isArray(v.tags)?v.tags:[]).slice(0,20).map(x=>t(x).trim().slice(0,30)).filter(Boolean),tr:/^((youtube|dailymotion):[\w-]{5,20}|-)$/.test(v.tr||'')?v.tr:undefined,fav:!!v.fav,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
+   tags:(Array.isArray(v.tags)?v.tags:[]).slice(0,20).map(x=>t(x).trim().slice(0,30)).filter(Boolean),tr:/^((youtube|dailymotion):[\w-]{5,20}|-)$/.test(v.tr||'')?v.tr:undefined,fav:!!v.fav,rec:!!v.rec,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
    links:Array.isArray(v.links)?v.links.slice(0,40).map(x=>({site:t(x.site),url:u(x.url),lang:t(x.lang)})).filter(x=>x.url):undefined,
    authors:Array.isArray(v.authors)?v.authors.slice(0,8).map(x=>({id:n(x.id),name:t(x.name),role:t(x.role)})):undefined,
    studios:Array.isArray(v.studios)?v.studios.slice(0,8).map(x=>({id:n(x.id),name:t(x.name)})):undefined};
@@ -348,7 +362,7 @@ async function showRecs(){
   const box=$('#recs');
   if(box.style.display===''){box.style.display='none';return}
   box.style.display='';box.onclick=clickCard;
-  const seeds=Object.values(lib).filter(isOtaku).filter(x=>x.rating>=4||x.fav).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
+  const seeds=Object.values(lib).filter(isOtaku).filter(x=>x.rating>=4||x.fav||x.rec).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
   if(!seeds.length){box.innerHTML='<div class="msg" style="padding:16px">Para receber recomendações, adicione títulos à biblioteca e dê nota 4 ou 5 (ou favorite). Assim o site sabe do que você gosta.</div>';return}
   box.innerHTML='<div class="msg" style="padding:16px">Buscando recomendações...</div>';
   try{
@@ -405,8 +419,8 @@ function openModal(id){
   const l=lib[id]; const stars=l?l.rating||0:0;
   const size=s.type==='MANGA'?[s.ch&&s.ch+' capítulos',s.vol&&s.vol+' volumes']:[s.eps&&s.eps+' episódios'];
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button>
-    <img src="${s.cover}" alt="">
-    <div style="flex:1;min-width:0"><h2>${s.title}</h2><button class="chip ${l&&l.fav?'on':''}" id="fav">${l&&l.fav?'♥ Favorito':'♡ Favoritar'}</button>
+    <div class="bo-cover-wrap"><img src="${s.cover}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
+    <div style="flex:1;min-width:0"><h2>${s.title}</h2>
     <div class="sub">${[KINDS[s.kind],s.year,...size,s.avg&&'Nota '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10,s.native].filter(Boolean).join(' · ')}</div>
     <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
     <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
@@ -423,7 +437,7 @@ function openModal(id){
     <div class="where" id="where">Buscando onde ${s.type==='MANGA'?'ler':'assistir'}...</div>
     </div>`;
   $('#modal').classList.add('on');
-  showSyn(id);showWhere(id);$('#fav').onclick=()=>toggleFav(id);
+  showSyn(id);showWhere(id);$('#fav').onclick=()=>toggleFav(id);$('#recbtn').onclick=()=>toggleRec(id);
   if(l){
     $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
     $('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
@@ -770,6 +784,17 @@ function toggleFav(id){
   if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};attachNovelSources(l)}
   l.fav=!l.fav;save(l);refresh();
   if($('#modal').classList.contains('on'))openModal(id);
+}
+function toggleRec(id){
+  let l=lib[id],source=current[id]||(typeof curX!=='undefined'?curX[id]:null);
+  if(!l){
+    if(!source)return;
+    delete dels[id];
+    l=lib[id]={...source,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,rec:false,added:Date.now()};
+    if(typeof attachNovelSources==='function')attachNovelSources(l);
+  }
+  l.rec=!l.rec;save(l);refresh();
+  if($('#modal').classList.contains('on'))(typeof KX!=='undefined'&&KX[l.kind]?openX(id,1):openModal(id));
 }
 
 /* ---------- onde assistir / ler ---------- */
@@ -1344,8 +1369,8 @@ function openX(id,re){
   const s=lib[id]||curX[id];if(!s)return;
   curM=id;
   const l=lib[id],k=s.kind,n=l&&l.rating||0,pr=k==='book'?'Página atual':k==='game'?'Horas jogadas':'';
-  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><img src="${s.cover||PH}" alt="">
-  <div style="flex:1;min-width:0"><h2>${s.title}</h2><button class="chip ${l&&l.fav?'on':''}" id="fav">${l&&l.fav?'♥ Favorito':'♡ Favoritar'}</button>
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div class="bo-cover-wrap"><img src="${s.cover||PH}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
+  <div style="flex:1;min-width:0"><h2>${s.title}</h2>
   <div class="sub">${[KX[k],s.year,s.by,s.rt&&s.rt+' min',k==='book'&&s.pg&&s.pg+' págs',s.avg&&'Nota '+(s.avg/20).toFixed(1)+'/5',s.native].filter(Boolean).join(' · ')}</div>
   ${k==='game'&&s.pl?`<div class="sub">${s.pl}</div>`:''}${s.cast?`<div class="sub">Elenco: ${s.cast}</div>`:''}
   <div class="gen">${(s.genres||[]).map(g=>`<span>${g}</span>`).join('')}</div>
@@ -1357,7 +1382,7 @@ function openX(id,re){
   <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`:'<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>'}
   <div class="where" id="where"><b>Buscando detalhes...</b></div></div>`;
   $('#modal').classList.add('on');
-  $('#fav').onclick=()=>toggleFav(id);
+  $('#fav').onclick=()=>toggleFav(id);$('#recbtn').onclick=()=>toggleRec(id);
   if(l){
     $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
     if(pr)$('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
@@ -1474,6 +1499,13 @@ const _tf=toggleFav;toggleFav=function(id){
   let l=lib[id];
   if(!l){delete dels[id];l=lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()}}
   l.fav=!l.fav;save(l);refresh();
+  if($('#modal').classList.contains('on'))openX(id,1);
+};
+const _tr=toggleRec;toggleRec=function(id){
+  const s=lib[id]||curX[id];if(!s||!KX[s.kind])return _tr(id);
+  let l=lib[id];
+  if(!l){delete dels[id];l=lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,rec:false,added:Date.now()}}
+  l.rec=!l.rec;save(l);refresh();
   if($('#modal').classList.contains('on'))openX(id,1);
 };
 const _rf=refresh;refresh=function(){_rf();Object.values(HUBS).forEach(redraw)};
@@ -2721,5 +2753,69 @@ window.OtakuRealtime={
 };
 })();
 </script>>
-
+<script>
+/* ===== CAMADA 8 — nível único por tempo + XP ===== */
+(function(){
+'use strict';
+const LV8={
+  cat:{anime:'Anime/Donghua',donghua:'Anime/Donghua',aeni:'Anime/Donghua',manga:'Mangá/Manhwa/Manhua',manhwa:'Mangá/Manhwa/Manhua',manhua:'Mangá/Manhwa/Manhua',novel:'Novel',webnovel:'WEB Novel',book:'Livros',movie:'Filmes',game:'Jogos'},
+  mins(l){
+    const k=l.kind,p=Number(String(l.prog||'').replace(',','.'))||0;
+    if(k==='anime'||k==='donghua'||k==='aeni')return p*24;
+    if(k==='manga'||k==='manhwa'||k==='manhua')return p*5;
+    if(k==='novel'||k==='webnovel')return p*10;
+    if(k==='book')return p*1.5;
+    if(k==='movie')return Number(l.rt)||0;
+    if(k==='game')return p*60;
+    return 0;
+  },
+  titleBonus(l){return ['Completo','Lido','Assistido','Zerado'].includes(l.status)?100:0},
+  xp(l){return Math.floor(this.mins(l))+this.titleBonus(l)+(Number(l.rating)>0?20:0)+(l.note&&String(l.note).trim()?10:0)+(l.added?5:0)},
+  needed(n){return Math.floor(100*Math.pow(Math.max(1,n),1.5))},
+  totalTo(n){let t=0;for(let i=1;i<=n;i++)t+=this.needed(i);return t},
+  calc(){
+    const cats={};let total=0;
+    Object.values(lib||{}).forEach(l=>{
+      const x=this.xp(l);total+=x;const c=this.cat[l.kind]||'Outros';cats[c]=(cats[c]||0)+x;
+    });
+    let level=1;while(total>=this.totalTo(level+1)&&level<999)level++;
+    const prev=this.totalTo(level),next=this.totalTo(level+1),cur=Math.max(0,total-prev);
+    const name=level<10?'Novato':level<20?'Leitor':level<30?'Otaku':level<40?'Veterano':'Sensei';
+    return {total,level,name,prev,next,cur,pct:Math.max(0,Math.min(100,cur/Math.max(1,next-prev)*100)),cats};
+  }
+};
+function draw8(){
+  if(typeof lib==='undefined')return;
+  const d=LV8.calc(),host=document.querySelector('#user');
+  if(host){
+    let el=document.querySelector('#bo-level');
+    if(!el){el=document.createElement('div');el.id='bo-level';host.prepend(el)}
+    el.innerHTML='<span class="bo-lv-name">Nv. '+d.level+' · '+d.name+'</span><span class="bo-lv-track"><i class="bo-lv-fill" style="width:'+d.pct+'%"></i></span><span class="bo-xp">'+d.total+' XP</span>';
+    el.onclick=()=>show8();
+  }
+  const st=document.querySelector('#v-stats');
+  if(st&&!document.querySelector('#bo-level-stats')){
+    const box=document.createElement('div');box.id='bo-level-stats';box.className='sec';box.innerHTML='<h3>🏆 Nível</h3><div id="bo-level-detail"></div>';st.prepend(box);
+  }
+  const det=document.querySelector('#bo-level-detail');
+  if(det){
+    const entries=Object.entries(d.cats).sort((a,b)=>b[1]-a[1]);
+    det.innerHTML='<div><b>NV. '+d.level+' · '+d.name+'</b> · '+d.total+' XP</div><div class="stats" style="margin-top:5px">Próximo nível: '+Math.max(0,d.next-d.total)+' XP</div><div class="bo-xp-detail">'+(entries.map(([k,v])=>'<div><b>'+v+' XP</b><small>'+k+'</small></div>').join('')||'<div><b>0 XP</b><small>Sem categorias ainda</small></div>')+'</div>'+entries.map(([k,v])=>'<div class="bar2"><span class="n">'+k+'</span><span class="b" style="width:'+Math.max(2,(v/Math.max(1,d.total))*55)+'%"></span><span>'+v+' XP</span></div>').join('');
+  }
+}
+function show8(){
+  const st=document.querySelector('#v-stats');if(!st)return;
+  document.querySelectorAll('#v-search,#v-lib').forEach(x=>x.style.display='none');
+  st.style.display='';document.querySelectorAll('#t-search,#t-lib,#t-stats').forEach(x=>x.classList.remove('on'));
+  document.querySelector('#t-stats')?.classList.add('on');draw8();st.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.OtakuLevel={calc:()=>LV8.calc(),redraw:draw8};
+const oldSave8=window.save;
+if(typeof oldSave8==='function')window.save=function(l){const r=oldSave8.apply(this,arguments);setTimeout(draw8,30);return r};
+const oldRefresh8=window.refresh;
+if(typeof oldRefresh8==='function')window.refresh=function(){const r=oldRefresh8.apply(this,arguments);setTimeout(draw8,30);return r};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(draw8,250));else setTimeout(draw8,250);
+setTimeout(draw8,1500);
+})();
+</script>
 </html>
