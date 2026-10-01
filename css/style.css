@@ -76,3 +76,9 @@ nav{overflow-x:auto}nav button{white-space:nowrap}
 /* Botão Não recomendar no modal */
 .bo-cover-wrap .bo-avoid{display:block;width:50%;margin:7px auto 0;border:1px solid var(--panel2);border-radius:9px;padding:8px 7px;background:var(--panel2);color:var(--tx);font:600 13px inherit;cursor:pointer;box-sizing:border-box;}
 .bo-cover-wrap .bo-avoid.on{background:var(--red);border-color:var(--red);color:#020202;}
+
+/* Layout definitivo dos botões do modal */
+.bo-cover-wrap{display:flex;flex-direction:column;align-items:center;}
+.bo-cover-wrap>img{display:block;}
+.bo-cover-wrap>.bo-cover-actions{width:100%;display:flex;gap:7px;margin-top:8px;}
+.bo-cover-wrap>.bo-avoid{display:block!important;width:50%!important;max-width:220px!important;flex:0 0 auto!important;margin:8px auto 0!important;box-sizing:border-box!important;}
