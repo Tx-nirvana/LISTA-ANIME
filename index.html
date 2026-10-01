@@ -1065,12 +1065,25 @@ function renderLibraryDashboard(){
  const prefs=rules.map(r=>({label:r[0],hits:r[1].reduce((n,k)=>n+(text.split(k).length-1),0)})).filter(x=>x.hits).sort((a,b)=>b.hits-a.hits).slice(0,5);
  const sc=(e,label,n)=>'<button class="lib-shortcut" data-ld="'+e+'">'+label+' <span style="opacity:.65">'+n+'</span></button>';
  box.innerHTML='<div class="libdash"><div class="libdash-card"><div class="libdash-title">MINHA BIBLIOTECA</div><div class="libdash-sub">'+all.length.toLocaleString('pt-BR')+' obras</div><div class="lib-counts">'+[['Anime','anime'],['Mangá','manga'],['Manhwa','manhwa'],['Manhua','manhua'],['Novel','novel'],['Donghua','donghua'],['Aeni','aeni']].map(x=>'<div class="lib-count" data-kind="'+x[1]+'"><b>'+countKind(x[1])+'</b><span>'+x[0]+'</span></div>').join('')+'</div><div class="lib-shortcuts">'+sc('fav','⭐ Favoritos',fav.length)+sc('recommend','🔥 Recomendo',recommend.length)+sc('abandon','💀 Obras abandonadas',abandon.length)+sc('ten','👑 Obras 10/10',ten.length)+sc('read','📚 Quero ler',read.length)+sc('watch','🎬 Quero assistir',watch.length)+sc('ongoing','🕐 Em andamento',ongoing.length)+'</div></div><div class="lib-profile"><div class="libdash-card"><div class="libdash-title" style="font-size:18px">SEU PERFIL</div><div class="libdash-sub">Baseado nas suas notas e gêneros das obras avaliadas.</div><div class="profile-bars">'+(top.length?top.map(x=>'<div class="profile-row"><span>'+esc(gname(x[0]))+'</span><span class="pbar"><i style="width:'+Math.round(x[1]/mx*100)+'%"></i></span><b>'+Math.round(x[1]/mx*100)+'%</b></div>').join(''):'<span class="libdash-sub">Dê notas para formar seu perfil.</span>')+'</div></div><div class="libdash-card"><div class="libdash-title" style="font-size:18px">Preferência por:</div><ul class="pref-list">'+(prefs.length?prefs.map(x=>'<li>'+esc(x.label)+'</li>').join(''):'<li>preferências aparecerão conforme você avalia obras</li>')+'</ul></div></div></div>';
- box.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{lkSet.clear();lkSet.add(el.dataset.kind);renderLib()});
+ box.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{
+  resetLibFilters();
+  lkSet.add(el.dataset.kind);
+  renderLib();
+  document.querySelector('#libgrid')?.scrollIntoView({behavior:'smooth',block:'start'});
+});
  box.querySelectorAll('[data-ld]').forEach(el=>el.onclick=()=>dashboardFilter(el.dataset.ld));
 }
+function resetLibFilters(){
+ favOnly=false;recOnly=false;
+ $('#lq').value='';
+ $('#lstatus').value='';
+ $('#lmin').value='0';
+ lkSet.clear();lgSet.clear();lgTags.clear();
+ $('#lfav').classList.remove('on');
+}
 function dashboardFilter(t){
- favOnly=false;$('#lmin').value='';
- const status=$('#lstatus');lkSet.clear();
+ resetLibFilters();
+ const status=$('#lstatus');
  if(t==='fav'){favOnly=true}
  if(t==='recommend'){recOnly=true}
  if(t==='abandon')status.value='Abandonado';
@@ -1079,6 +1092,7 @@ function dashboardFilter(t){
  if(t==='watch'){status.value='Quero ver/ler';['anime','donghua','aeni'].forEach(k=>lkSet.add(k))}
  if(t==='ongoing')status.value='Em andamento';
  renderLib();
+ document.querySelector('#libgrid')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderLib(){
   renderLibraryDashboard();
@@ -1108,8 +1122,18 @@ let tm;
 $('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>search(true),450)};
 $('#sort').onchange=()=>search(true);
 $('#more').onclick=()=>{page++;search(false)};
-['#lq','#lstatus','#lsort','#lmin'].forEach(s=>$(s).oninput=renderLib);
-$('#lfav').onclick=e=>{favOnly=!favOnly;e.target.classList.toggle('on',favOnly);renderLib()};
+['#lq','#lstatus','#lmin'].forEach(s=>$(s).oninput=()=>{
+  favOnly=false;recOnly=false;
+  $('#lfav').classList.remove('on');
+  renderLib();
+});
+$('#lsort').oninput=renderLib;
+$('#lfav').onclick=e=>{
+  favOnly=!favOnly;
+  recOnly=false;
+  e.target.classList.toggle('on',favOnly);
+  renderLib();
+};
 
 $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
 $('#imp').onclick=()=>$('#file').click();
