@@ -1664,4 +1664,278 @@ function watchLfMount(){
 watchLfMount();
 })();
 </script>
+<script>
+/* =========================================================
+   BIBLIOTECA OTaku — camada de central, perfil, progresso,
+   coleções e backup. Escala de avaliação: EXATAMENTE 5 estrelas.
+   ========================================================= */
+(function(){
+  'use strict';
+
+  const BO5 = window.BO5 = {
+    version: 2,
+    stars: 5,
+    key: 'otaku-central-v2'
+  };
+
+  const q5 = s => document.querySelector(s);
+  const esc5 = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+  const arr5 = () => Object.values(window.lib || {});
+  const ot5 = x => typeof window.isOtaku === 'function' ? window.isOtaku(x) : !['book','movie','game'].includes(x.kind);
+  const rated5 = () => arr5().filter(x => x.rating >= 1 && x.rating <= 5);
+  const stars5 = n => '★'.repeat(Math.max(0,Math.min(5,Number(n)||0))) + '☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
+  const avg5 = xs => {
+    const a=xs.filter(x=>x.rating>0);
+    return a.length ? (a.reduce((s,x)=>s+x.rating,0)/a.length).toFixed(1) : '–';
+  };
+
+  const css = document.createElement('style');
+  css.textContent = `
+    #bo5-dash{margin-top:14px}
+    .bo5-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+    .bo5-card{background:var(--panel);border-radius:var(--r);padding:14px}
+    .bo5-card h3{margin:0 0 8px;font-size:15px}
+    .bo5-big{font-size:28px;font-weight:700;color:var(--tx)}
+    .bo5-muted{color:var(--mut);font-size:12px}
+    .bo5-list{display:flex;flex-direction:column;gap:7px}
+    .bo5-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--panel2)}
+    .bo5-row:last-child{border-bottom:0}
+    .bo5-actions{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+    .bo5-chip{background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:7px 10px;cursor:pointer}
+    .bo5-chip.on{background:var(--ac);color:#0d2b26}
+    .bo5-stars{color:var(--star);letter-spacing:1px;white-space:nowrap}
+    .bo5-bar{height:9px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:5px}
+    .bo5-fill{height:100%;background:var(--ac)}
+    .bo5-continue{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+    .bo5-continue .card{min-width:0}
+    .bo5-profile{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+    .bo5-k{font-size:12px;color:var(--mut)} .bo5-v{font-size:18px;font-weight:700}
+    #bo5-search{margin:0 0 14px;background:var(--panel);border-radius:12px;padding:12px}
+    #bo5-search .bar{margin:0}
+    #bo5-search-out{margin-top:10px}
+    @media(max-width:600px){.bo5-grid{grid-template-columns:1fr 1fr}}
+  `;
+  document.head.appendChild(css);
+
+  function ensureDashboard(){
+    const stats = q5('#v-stats');
+    if(!stats || q5('#bo5-dash')) return;
+    stats.innerHTML = `
+      <div id="bo5-dash">
+        <div class="bo5-actions">
+          <button class="bo5-chip on" data-bo5-view="profile">🧠 Meu perfil</button>
+          <button class="bo5-chip" data-bo5-view="continue">▶ Continuar</button>
+          <button class="bo5-chip" data-bo5-view="collections">🏷 Coleções</button>
+          <button class="bo5-chip" data-bo5-view="backup">💾 Backup</button>
+        </div>
+        <section id="bo5-profile"></section>
+        <section id="bo5-continue" style="display:none"></section>
+        <section id="bo5-collections" style="display:none"></section>
+        <section id="bo5-backup" style="display:none"></section>
+      </div>`;
+    stats.addEventListener('click', e => {
+      const b=e.target.closest('[data-bo5-view]');
+      if(b){
+        const v=b.dataset.bo5View;
+        stats.querySelectorAll('[data-bo5-view]').forEach(x=>x.classList.toggle('on',x===b));
+        ['profile','continue','collections','backup'].forEach(k=>{
+          const el=q5('#bo5-'+k); if(el) el.style.display=k===v?'':'none';
+        });
+        render5(v);
+      }
+    });
+    render5('profile');
+  }
+
+  function kindName5(k){ return (window.KINDS && KINDS[k]) || ({book:'Livro',movie:'Filme',game:'Jogo'}[k]||k||'Obra'); }
+
+  function profile5(){
+    const a=arr5(), r=rated5(), kinds={};
+    a.forEach(x=>kinds[x.kind]=(kinds[x.kind]||0)+1);
+    const genres={};
+    r.forEach(x=>(x.genres||[]).forEach(g=>{const n=String(g||'').trim();if(n)genres[n]=(genres[n]||0)+x.rating;}));
+    const topGenres=Object.entries(genres).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxG=topGenres[0]?.[1]||1;
+    const fav=a.filter(x=>x.fav).length;
+    const done=a.filter(x=>x.status==='Completo'||x.status==='Concluído').length;
+    const active=a.filter(x=>x.status==='Em andamento').length;
+    const abandon=a.filter(x=>x.status==='Abandonado').length;
+    const dist=[1,2,3,4,5].map(n=>[n,r.filter(x=>x.rating===n).length]);
+    q5('#bo5-profile').innerHTML=`
+      <div class="bo5-grid">
+        <div class="bo5-card"><div class="bo5-k">Total de obras</div><div class="bo5-big">${a.length}</div><div class="bo5-muted">${Object.entries(kinds).sort((a,b)=>b[1]-a[1]).map(([k,n])=>kindName5(k)+': '+n).join(' · ')||'Sua biblioteca está vazia'}</div></div>
+        <div class="bo5-card"><div class="bo5-k">Média das suas notas</div><div class="bo5-big">${avg5(a)} / 5</div><div class="bo5-stars">${stars5(Math.round(Number(avg5(a))||0))}</div></div>
+        <div class="bo5-card"><div class="bo5-k">Favoritos</div><div class="bo5-big">${fav}</div><div class="bo5-muted">${done} concluídos · ${active} em andamento</div></div>
+        <div class="bo5-card"><div class="bo5-k">Abandonados</div><div class="bo5-big">${abandon}</div><div class="bo5-muted">Avaliações registradas: ${r.length}</div></div>
+      </div>
+      <div class="bo5-grid" style="margin-top:12px">
+        <div class="bo5-card">
+          <h3>🎯 Seu perfil de gosto</h3>
+          ${topGenres.length ? topGenres.map(([g,n])=>`<div style="margin:8px 0"><div class="bo5-row" style="border:0;padding:0"><span>${esc5(g)}</span><span>${Math.round(n)}</span></div><div class="bo5-bar"><div class="bo5-fill" style="width:${Math.max(4,Math.round(n/maxG*100))}%"></div></div></div>`).join('') : '<div class="bo5-muted">Dê notas às obras para construir seu perfil automaticamente.</div>'}
+        </div>
+        <div class="bo5-card">
+          <h3>⭐ Distribuição das notas</h3>
+          ${dist.reverse().map(([n,c])=>`<div style="margin:8px 0"><div class="bo5-row" style="border:0;padding:0"><span class="bo5-stars">${stars5(n)}</span><b>${c}</b></div><div class="bo5-bar"><div class="bo5-fill" style="width:${r.length?Math.round(c/r.length*100):0}%"></div></div></div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function continue5(){
+    const items=arr5().filter(x=>x.status==='Em andamento' || (x.prog && String(x.prog).trim())).sort((a,b)=>(b.upd||b.added||0)-(a.upd||a.added||0)).slice(0,20);
+    const el=q5('#bo5-continue');
+    el.innerHTML=`
+      <div class="bo5-card" style="margin-bottom:12px"><h3>▶ Continue de onde parou</h3><div class="bo5-muted">${items.length} item(ns) com progresso ou em andamento.</div></div>
+      ${items.length ? '<div class="bo5-continue">'+items.map(x=>`<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${esc5(x.cover||'')}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(kindName5(x.kind))} · ${esc5(x.prog||x.status||'Em andamento')}</div>${x.rating?'<div class="bo5-stars">'+stars5(x.rating)+'</div>':''}</div></div>`).join('')+'</div>' : '<div class="msg">Nenhuma obra em andamento ainda.</div>'}`;
+    el.querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{
+      const id=c.dataset.bo5Id;
+      if(typeof window.openModal==='function') window.openModal(id);
+    });
+  }
+
+  function collections5(){
+    const a=arr5(), groups=[
+      ['♥ Favoritos',x=>!!x.fav],
+      ['⭐ 5 estrelas',x=>x.rating===5],
+      ['▶ Em andamento',x=>x.status==='Em andamento'],
+      ['✓ Completos',x=>x.status==='Completo'||x.status==='Concluído'],
+      ['⏳ Quero ver/ler',x=>x.status==='Quero ver/ler'||x.status==='Na fila'],
+      ['✕ Abandonados',x=>x.status==='Abandonado']
+    ];
+    const tags={};
+    a.forEach(x=>(x.tags||[]).forEach(t=>{tags[t]=(tags[t]||0)+1}));
+    const el=q5('#bo5-collections');
+    el.innerHTML='<div class="bo5-grid">'+groups.map(([n,f])=>`<div class="bo5-card"><h3>${n}</h3><div class="bo5-big">${a.filter(f).length}</div></div>`).join('')+'</div>'+
+      '<div class="bo5-card" style="margin-top:12px"><h3>🏷 Suas tags</h3><div class="chips">'+(Object.entries(tags).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<button class="chip" data-bo5-tag="${esc5(t)}">${esc5(t)} · ${n}</button>`).join('')||'<span class="bo5-muted">Você ainda não criou tags.</span>')+'</div></div>';
+    el.querySelectorAll('[data-bo5-tag]').forEach(b=>b.onclick=()=>{
+      const tag=b.dataset.bo5Tag;
+      const old=q5('#ltags'); if(old){ old.scrollIntoView({behavior:'smooth',block:'center'}); }
+    });
+  }
+
+  function backup5(){
+    q5('#bo5-backup').innerHTML=`
+      <div class="bo5-card">
+        <h3>💾 Backup completo</h3>
+        <p class="bo5-muted">Salve sua biblioteca, notas, favoritos, status, progresso e tags em um arquivo JSON. As avaliações usam uma escala fixa de 5 estrelas.</p>
+        <div class="bo5-actions">
+          <button class="btn" id="bo5-export">Exportar backup</button>
+          <button class="btn" id="bo5-import">Importar backup</button>
+          <input id="bo5-file" type="file" accept=".json" hidden>
+        </div>
+        <div id="bo5-backup-msg" class="bo5-muted"></div>
+      </div>`;
+    q5('#bo5-export').onclick=()=>{
+      const data={version:BO5.version,exportedAt:new Date().toISOString(),ratingScale:5,library:window.lib||{},deleted:window.dels||{},novelCatalog:window.novelCatalog||[]};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='biblioteca-otaku-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+      q5('#bo5-backup-msg').textContent='Backup exportado com sucesso.';
+    };
+    q5('#bo5-import').onclick=()=>q5('#bo5-file').click();
+    q5('#bo5-file').onchange=async e=>{
+      const f=e.target.files?.[0];if(!f)return;
+      try{
+        const d=JSON.parse(await f.text());
+        const incoming=d.library||d.lib||d;
+        if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw new Error('Formato inválido');
+        window.lib={...window.lib,...incoming};
+        if(d.deleted)window.dels=d.deleted;
+        Object.values(window.lib).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.round(Number(x.rating))))});
+        if(typeof window.save==='function')window.save();
+        else localStorage.setItem('otaku-lib',JSON.stringify(window.lib));
+        q5('#bo5-backup-msg').textContent='Backup importado. Sua biblioteca foi atualizada.';
+        render5('profile');
+      }catch(err){q5('#bo5-backup-msg').textContent='Não foi possível importar: '+err.message}
+      e.target.value='';
+    };
+  }
+
+  function render5(v){
+    ensureDashboard();
+    if(v==='profile')profile5();
+    if(v==='continue')continue5();
+    if(v==='collections')collections5();
+    if(v==='backup')backup5();
+  }
+
+  /* Busca global: não substitui a busca atual; adiciona uma camada rápida
+     para encontrar itens já conhecidos na biblioteca e autores/títulos. */
+  function ensureGlobalSearch(){
+    const searchSec=q5('#v-search');
+    if(!searchSec || q5('#bo5-search'))return;
+    const box=document.createElement('div');box.id='bo5-search';
+    box.innerHTML=`
+      <div class="bar">
+        <input type="search" id="bo5-q" placeholder="🔎 Busca rápida em toda a sua biblioteca — título, autor ou tag">
+        <button class="btn" id="bo5-go">Buscar</button>
+      </div>
+      <div id="bo5-search-out"></div>`;
+    searchSec.insertBefore(box,searchSec.children[1]||null);
+    const go=()=>{
+      const term=(q5('#bo5-q').value||'').trim().toLowerCase();
+      const out=q5('#bo5-search-out');
+      if(!term){out.innerHTML='';return}
+      const items=arr5().filter(x=>(x.title+' '+(x.native||'')+' '+(x.by||' ')+' '+(x.author||' ')+' '+(x.note||' ')+' '+(x.tags||[]).join(' ')).toLowerCase().includes(term)).slice(0,20);
+      out.innerHTML=items.length?`<div class="stats">${items.length} resultado(s) na sua biblioteca</div><div class="grid">${items.map(x=>{
+        const cover=esc5(x.cover||'');
+        return `<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${cover}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(kindName5(x.kind))} · ${esc5(x.by||x.author||'')}</div>${x.rating?'<div class="bo5-stars">'+stars5(x.rating)+'</div>':''}</div></div>`;
+      }).join('')}</div>`:'<div class="msg" style="padding:18px">Nenhum resultado na sua biblioteca.</div>';
+      out.querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{if(typeof window.openModal==='function')window.openModal(c.dataset.bo5Id)});
+    };
+    q5('#bo5-go').onclick=go;
+    q5('#bo5-q').oninput=()=>{clearTimeout(window.__bo5t);window.__bo5t=setTimeout(go,180)};
+  }
+
+  /* Uma área "Continuar" também fica acessível na biblioteca principal. */
+  function addContinueStrip(){
+    const libSec=q5('#v-lib');
+    if(!libSec||q5('#bo5-strip'))return;
+    const s=document.createElement('div');s.id='bo5-strip';s.className='sec';
+    s.innerHTML='<h3>▶ Continuar</h3><div class="stats">Obras em andamento ou com progresso salvo.</div><div class="grid" id="bo5-strip-grid"></div>';
+    libSec.insertBefore(s,libSec.children[1]||null);
+    const items=arr5().filter(x=>x.status==='Em andamento'||(x.prog&&String(x.prog).trim())).slice(0,6);
+    q5('#bo5-strip-grid').innerHTML=items.length?items.map(x=>`<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${esc5(x.cover||'')}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(x.prog||x.status)}</div></div></div>`).join(''):'<div class="msg" style="grid-column:1/-1;padding:18px">Nenhuma obra em andamento.</div>';
+    q5('#bo5-strip-grid').querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{if(typeof window.openModal==='function')window.openModal(c.dataset.bo5Id)});
+  }
+
+  function boot5(){
+    ensureDashboard();
+    ensureGlobalSearch();
+    addContinueStrip();
+    /* Mantém a escala de 5 estrelas mesmo em bibliotecas antigas. */
+    try{
+      if(localStorage.getItem('otaku-scale')!=='5'){
+        Object.values(window.lib||{}).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.ceil(Number(x.rating)/2)))});
+        localStorage.setItem('otaku-scale','5');
+        localStorage.setItem('otaku-lib',JSON.stringify(window.lib||{}));
+      }
+    }catch(e){}
+  }
+
+  const oldTab5=window.tab;
+  if(typeof oldTab5==='function'){
+    window.tab=function(t){
+      const r=oldTab5(t);
+      if(t==='stats')setTimeout(()=>render5('profile'),0);
+      if(t==='lib')setTimeout(addContinueStrip,0);
+      return r;
+    };
+  }
+
+  const oldSave5=window.save;
+  if(typeof oldSave5==='function'){
+    window.save=function(l){
+      const r=oldSave5(l);
+      setTimeout(()=>{if(q5('#bo5-dash'))render5('profile');if(q5('#bo5-strip'))addContinueStrip()},0);
+      return r;
+    };
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot5,300));
+  else setTimeout(boot5,300);
+  setTimeout(boot5,1200);
+})();
+</script>
+
 </html>
