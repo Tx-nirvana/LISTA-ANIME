@@ -26,27 +26,8 @@ function collections(){
   favorites:w.filter(x=>x.fav),perfect:w.filter(x=>Number(x.rating)===5),abandoned:w.filter(x=>x.status==='Abandonado')
  };
 }
-function feedbackPanel(id){
- const v=store().ai.feedback?.[String(id)]||'';
- const d=document.createElement('div');d.className='ai-feedback';
- d.innerHTML='<div class="ai-actions ai-tags-row"><button class="chip '+(v==='avoid'?'on':'')+'" data-f="avoid">🚫 Não recomendar</button></div>';
- d.onclick=e=>{
-   const b=e.target.closest('[data-f]');if(!b)return;
-   const f=b.dataset.f;
-   window.OtakuStore.feedback(id,f);
-   d.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));
- };
- return d;
-}
-function attachFeedback(){
- const box=document.querySelector('#box');if(!box)return;
- const id=box.querySelector('[data-id]')?.dataset.id||window.__openOtakuId;
- if(!id||box.querySelector('.ai-feedback'))return;
- const w=works().find(x=>String(x.id)===String(id));if(!w)return;
- const d=feedbackPanel(id);const anchor=box.querySelector('.bo-cover-wrap');
- if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(d,anchor.nextSibling);
- else box.appendChild(d);
-}
+function feedbackPanel(id){return null;}
+function attachFeedback(){return;}
 async function authorSearch(name){
  const d=await window.OtakuAPI.anilist('query($s:String){Staff(search:$s){id name{full native}image{large}primaryOccupations works(sort:POPULARITY_DESC,perPage:30){edges{role node{id type format title{romaji english native}coverImage{large}genres averageScore popularity}}}}}',{s:name});
  const a=d?.Staff;if(!a)throw new Error('Autor não encontrado.');
@@ -85,9 +66,6 @@ function trackRecommendations(){
   const id=card.dataset.id;if(!id||card.dataset.aiTracked)return;card.dataset.aiTracked='1';
   const w=works().find(x=>String(x.id)===String(id))||window.current?.[id]||{id,title:card.querySelector('.t')?.textContent||'',kind:card.querySelector('.tag')?.textContent||''};
   window.OtakuStore.markRecommended(w,window.__r2mode||'recommended');
-  const d=document.createElement('div');d.className='ai-card-tools';d.innerHTML='<button class="chip" data-rf="avoid">🚫 Não recomendar</button>';
-  d.onclick=e=>{const b=e.target.closest('[data-rf]');if(!b)return;window.OtakuStore.feedback(id,'avoid');card.remove()};
-  card.appendChild(d);
  });
 }
 function styles(){if(document.getElementById('ai-v3-style'))return;const s=document.createElement('style');s.id='ai-v3-style';s.textContent='.ai-panel{background:var(--panel);border:1px solid var(--panel2);border-radius:14px;padding:15px;margin:12px 0}.ai-title{font:700 20px Georgia,serif;margin-bottom:4px}.ai-sub{color:var(--mut);font-size:13px}.ai-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px;margin-top:12px}.ai-mini{background:var(--panel2);border-radius:11px;padding:11px}.ai-mini b{display:block;margin-bottom:5px}.ai-bar{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:7px}.ai-bar i{display:block;height:100%;background:var(--ac)}.ai-chips,.ai-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.ai-chip,.ai-author{background:var(--panel2);color:var(--tx);border:1px solid transparent;border-radius:999px;padding:7px 11px;cursor:pointer}.ai-chip:hover,.ai-chip.on,.ai-author:hover{border-color:var(--ac)}.ai-card-tools{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}.ai-card-tools button{cursor:pointer}.ai-feedback{background:transparent;border:0;padding:8px 0;margin:0}.ai-feedback .ai-actions{margin-top:6px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.ai-feedback .ai-actions .chip{font-size:12px;padding:7px 6px}.ai-feedback .ai-actions .chip:nth-child(1){grid-column:span 2}@media(max-width:640px){.ai-feedback .ai-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.ai-feedback .ai-actions .chip:nth-child(1){grid-column:span 2}}';document.head.appendChild(s)}
