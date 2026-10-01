@@ -2298,7 +2298,7 @@ function restore5(d){
  return null;
 }
 async function sign5(mode,emailArg,passwordArg){
- const email=(emailArg??q5('#c5-email')?.value)?.trim(),password=passwordArg??q5('#c5-pass')?.value||'';
+ const email=(emailArg??q5('#c5-email')?.value)?.trim(),password=(passwordArg??q5('#c5-pass')?.value)||'';
  if(!email||!password)throw new Error('Informe e-mail e senha.');
  if(mode==='signup'){
   const d=await api5('/auth/v1/signup',{method:'POST',auth:false,body:JSON.stringify({email,password})});
