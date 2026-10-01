@@ -2319,4 +2319,101 @@ setTimeout(boot4,3000);
 })();
 </script>
 
+<script>
+/* ===== CAMADA 5 — Supabase Auth + sincronização real ===== */
+(function(){
+'use strict';
+const C5={cfg:'otaku-supabase-config-v1',session:'otaku-supabase-session-v1',table:'biblioteca_otaku_sync'};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cfg=()=>{try{return JSON.parse(localStorage.getItem(C5.cfg)||'{}')}catch(e){return {}}};
+const setCfg=x=>localStorage.setItem(C5.cfg,JSON.stringify(x));
+const sess=()=>{try{return JSON.parse(localStorage.getItem(C5.session)||'null')}catch(e){return null}};
+const setSess=x=>x?localStorage.setItem(C5.session,JSON.stringify(x)):localStorage.removeItem(C5.session);
+function headers(c,auth=true){const h={'apikey':c.key,'Content-Type':'application/json'};if(auth&&sess()?.access_token)h.Authorization='Bearer '+sess().access_token;return h}
+function base(c){return String(c.url||'').replace(/\/$/,'')}
+async function api5(path,opt={}){
+ const c=cfg();if(!c.url||!c.key)throw new Error('Configure a URL e a chave anon do Supabase.');
+ const r=await fetch(base(c)+path,{...opt,headers:{...headers(c,opt.auth!==false),...(opt.headers||{})}});
+ const txt=await r.text();let d=null;try{d=txt?JSON.parse(txt):null}catch(e){}
+ if(!r.ok)throw new Error(d?.msg||d?.message||d?.error_description||('HTTP '+r.status));
+ return d;
+}
+function snap5(){
+ if(window.OtakuCloud?.export)return window.OtakuCloud.export();
+ return {version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
+}
+function restore5(d){
+ if(window.OtakuCloud?.import)return window.OtakuCloud.import(d);
+ return null;
+}
+async function sign5(mode){
+ const c=cfg();
+ const email=q5('#c5-email')?.value.trim(),password=q5('#c5-pass')?.value||'';
+ if(!email||!password)throw new Error('Informe e-mail e senha.');
+ if(mode==='signup'){
+  const d=await api5('/auth/v1/signup',{method:'POST',auth:false,body:JSON.stringify({email,password})});
+  if(d?.access_token)setSess(d);return d;
+ }
+ const d=await api5('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:JSON.stringify({email,password})});
+ setSess(d);return d;
+}
+async function refresh5(){
+ const s=sess();if(!s?.refresh_token)return;
+ try{
+  const d=await api5('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:JSON.stringify({refresh_token:s.refresh_token})});
+  setSess(d);
+ }catch(e){setSess(null)}
+}
+async function sync5(mode){
+ const s=sess();if(!s?.user?.id&&!s?.user?.sub)throw new Error('Faça login no Supabase primeiro.');
+ const uid=s.user.id||s.user.sub,d=snap5();
+ if(mode==='push'){
+  await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
+  return 'Biblioteca enviada para a nuvem.';
+ }
+ const rows=await api5('/rest/v1/'+C5.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1');
+ if(!rows?.length)return 'Nenhum backup na nuvem para esta conta.';
+ const remote=rows[0].data;
+ const localTime=Number(d.updatedAt||0),remoteTime=Date.parse(rows[0].updated_at||'')||0;
+ if(remoteTime>=localTime){restore5(remote);return 'Biblioteca sincronizada a partir da nuvem.'}
+ await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
+ return 'A versão local era mais recente e foi enviada para a nuvem.';
+}
+function panel5(){
+ if(q5('#c5-panel'))return;
+ const stats=q5('#v-stats');if(!stats)return;
+ const c=cfg(),s=sess(),box=document.createElement('div');box.id='c5-panel';box.className='bo5-card';box.style.marginTop='12px';
+ box.innerHTML='<h3>☁️ Sincronização na nuvem</h3><div class="bo5-muted">Entre com sua conta Supabase para manter biblioteca, progresso e histórico entre dispositivos.</div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px">'+
+ '<input id="c5-url" placeholder="URL do Supabase" value="'+esc(c.url||'')+'">'+
+ '<input id="c5-key" placeholder="Chave anon/public do Supabase" value="'+esc(c.key||'')+'">'+
+ '<input id="c5-email" type="email" placeholder="E-mail">'+
+ '<input id="c5-pass" type="password" placeholder="Senha">'+
+ '</div><div class="bo5-actions" style="margin-top:10px">'+
+ '<button class="btn" id="c5-config">⚙️ Salvar conexão</button><button class="btn" id="c5-login">🔐 Entrar</button><button class="btn" id="c5-signup">➕ Criar conta</button><button class="btn" id="c5-push">☁️ Enviar</button><button class="btn" id="c5-pull">⬇️ Baixar</button><button class="btn" id="c5-sync">🔄 Sincronizar</button><button class="btn" id="c5-logout">Sair</button></div>'+
+ '<div id="c5-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(box);
+ q5('#c5-config').onclick=()=>{setCfg({url:q5('#c5-url').value.trim(),key:q5('#c5-key').value.trim()});status5('Configuração salva neste navegador.')};
+ q5('#c5-login').onclick=async()=>action5(()=>sign5('login'));
+ q5('#c5-signup').onclick=async()=>action5(()=>sign5('signup'));
+ q5('#c5-push').onclick=async()=>action5(()=>sync5('push'));
+ q5('#c5-pull').onclick=async()=>action5(()=>sync5('pull'),true);
+ q5('#c5-sync').onclick=async()=>action5(()=>sync5('sync'));
+ q5('#c5-logout').onclick=()=>{setSess(null);status5('Sessão encerrada.')};
+ status5(s?'Conta conectada.':'Não conectado.');
+}
+async function action5(fn,reload){
+ try{const msg=await fn();status5(msg||'Concluído.');if(reload)setTimeout(()=>location.reload(),500)}catch(e){status5('❌ '+e.message)}
+}
+function status5(msg){
+ const x=q5('#c5-status');if(!x)return;
+ const s=sess();x.textContent=msg+(s?.user?.email?' · '+s.user.email:'');
+}
+function boot5(){panel5();refresh5().then(()=>status5(sess()?'Sessão atualizada.':'Não conectado.')).catch(()=>{})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot5,2000));else setTimeout(boot5,2000);
+setTimeout(boot5,3500);
+window.OtakuSupabase={config:cfg,setConfig:setCfg,login:()=>sign5('login'),signup:()=>sign5('signup'),sync:sync5,logout:()=>setSess(null)};
+})();
+</script>
+
 </html>
