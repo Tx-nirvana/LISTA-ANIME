@@ -1682,8 +1682,8 @@ watchLfMount();
   const esc5 = s => String(s ?? '').replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
-  const arr5 = () => Object.values(window.lib || {});
-  const ot5 = x => typeof window.isOtaku === 'function' ? window.isOtaku(x) : !['book','movie','game'].includes(x.kind);
+  const arr5 = () => Object.values(lib || {});
+  const ot5 = x => typeof typeof isOtaku === 'function' ? isOtaku(x) : !['book','movie','game'].includes(x.kind);
   const rated5 = () => arr5().filter(x => x.rating >= 1 && x.rating <= 5);
   const stars5 = n => '★'.repeat(Math.max(0,Math.min(5,Number(n)||0))) + '☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
   const avg5 = xs => {
@@ -1827,7 +1827,7 @@ watchLfMount();
         <div id="bo5-backup-msg" class="bo5-muted"></div>
       </div>`;
     q5('#bo5-export').onclick=()=>{
-      const data={version:BO5.version,exportedAt:new Date().toISOString(),ratingScale:5,library:window.lib||{},deleted:window.dels||{},novelCatalog:window.novelCatalog||[]};
+      const data={version:BO5.version,exportedAt:new Date().toISOString(),ratingScale:5,library:lib||{},deleted:dels||{},novelCatalog:novelCatalog||[]};
       const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='biblioteca-otaku-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
       q5('#bo5-backup-msg').textContent='Backup exportado com sucesso.';
@@ -1839,11 +1839,11 @@ watchLfMount();
         const d=JSON.parse(await f.text());
         const incoming=d.library||d.lib||d;
         if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw new Error('Formato inválido');
-        window.lib={...window.lib,...incoming};
-        if(d.deleted)window.dels=d.deleted;
-        Object.values(window.lib).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.round(Number(x.rating))))});
+        lib={...lib,...incoming};
+        if(d.deleted)dels=d.deleted;
+        Object.values(lib).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.round(Number(x.rating))))});
         if(typeof window.save==='function')window.save();
-        else localStorage.setItem('otaku-lib',JSON.stringify(window.lib));
+        else localStorage.setItem('otaku-lib',JSON.stringify(lib));
         q5('#bo5-backup-msg').textContent='Backup importado. Sua biblioteca foi atualizada.';
         render5('profile');
       }catch(err){q5('#bo5-backup-msg').textContent='Não foi possível importar: '+err.message}
@@ -1906,9 +1906,9 @@ watchLfMount();
     /* Mantém a escala de 5 estrelas mesmo em bibliotecas antigas. */
     try{
       if(localStorage.getItem('otaku-scale')!=='5'){
-        Object.values(window.lib||{}).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.ceil(Number(x.rating)/2)))});
+        Object.values(lib||{}).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.ceil(Number(x.rating)/2)))});
         localStorage.setItem('otaku-scale','5');
-        localStorage.setItem('otaku-lib',JSON.stringify(window.lib||{}));
+        localStorage.setItem('otaku-lib',JSON.stringify(lib||{}));
       }
     }catch(e){}
   }
