@@ -69,7 +69,7 @@ input[type=search]{flex:1;min-width:200px}
 nav{overflow-x:auto}nav button{white-space:nowrap}
 .grid.land{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}.card.land img{aspect-ratio:16/9}.card.cx .m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-</style>
+#bo-lib-dashboard .libdash{display:grid;gap:14px}#bo-lib-dashboard .libdash-card{background:var(--panel);border:1px solid var(--panel2);border-radius:14px;padding:16px}#bo-lib-dashboard .libdash-title{font:700 21px Georgia,serif;margin:0 0 4px}#bo-lib-dashboard .libdash-sub{color:var(--mut);font-size:13px}#bo-lib-dashboard .lib-counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:12px}#bo-lib-dashboard .lib-count{background:var(--panel2);border-radius:10px;padding:10px;text-align:center;cursor:pointer}#bo-lib-dashboard .lib-count b{display:block;font-size:20px}#bo-lib-dashboard .lib-count span{display:block;color:var(--mut);font-size:12px}#bo-lib-dashboard .lib-shortcuts{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}#bo-lib-dashboard .lib-shortcut{background:var(--panel2);color:var(--tx);border:1px solid transparent;border-radius:999px;padding:7px 12px;cursor:pointer;font:600 13px inherit}#bo-lib-dashboard .lib-shortcut:hover{border-color:var(--ac)}#bo-lib-dashboard .lib-profile{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,.8fr);gap:18px;margin-top:14px}#bo-lib-dashboard .profile-bars{display:grid;gap:7px;margin-top:10px}#bo-lib-dashboard .profile-row{display:grid;grid-template-columns:90px 1fr 45px;gap:8px;align-items:center;font-size:13px}#bo-lib-dashboard .profile-row .pbar{height:9px;background:var(--panel2);border-radius:99px;overflow:hidden}#bo-lib-dashboard .profile-row .pbar i{display:block;height:100%;background:var(--ac);border-radius:99px}#bo-lib-dashboard .pref-list{margin:10px 0 0;padding-left:20px;color:var(--mut);line-height:1.8}@media(max-width:700px){#bo-lib-dashboard .lib-profile{grid-template-columns:1fr}}</style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -103,6 +103,7 @@ nav{overflow-x:auto}nav button{white-space:nowrap}
   </section>
 
   <section id="v-lib" style="display:none">
+    <div id="bo-lib-dashboard" style="margin-bottom:18px"></div>
     <div class="bar">
       <input type="search" id="lq" placeholder="Buscar na minha biblioteca">
       <select id="lstatus"><option value="">Todos os status</option><option>Quero ver/ler</option><option>Em andamento</option><option>Completo</option><option>Abandonado</option></select>
@@ -1024,7 +1025,36 @@ function refresh(){
   renderLib();
 }
 
+function renderLibraryDashboard(){
+ const box=document.querySelector('#bo-lib-dashboard');if(!box)return;
+ const all=Object.values(lib).filter(isOtaku),countKind=k=>all.filter(x=>x.kind===k).length;
+ const fav=all.filter(x=>x.fav),recommend=all.filter(x=>x.fav||x.rating>=4),abandon=all.filter(x=>x.status==='Abandonado'),ten=all.filter(x=>x.rating===5),ongoing=all.filter(x=>x.status==='Em andamento');
+ const read=all.filter(x=>x.status==='Quero ver/ler'&&['manga','manhwa','manhua','novel','webnovel'].includes(x.kind));
+ const watch=all.filter(x=>x.status==='Quero ver/ler'&&['anime','donghua','aeni'].includes(x.kind));
+ const rated=all.filter(x=>x.rating>0),gs={};rated.forEach(x=>(x.genres||[]).forEach(g=>gs[g]=(gs[g]||0)+x.rating));
+ const top=Object.entries(gs).sort((a,b)=>b[1]-a[1]).slice(0,5),mx=Math.max(1,...top.map(x=>x[1]));
+ const text=all.map(x=>[x.title,x.syn,x.note,(x.tags||[]).join(' ')].join(' ')).join(' ').toLowerCase();
+ const rules=[['protagonistas fortes',['protagonista','protagonist','strong mc']],['mundos de fantasia',['fantasy','fantasia','magic','mágica','isekai','xianxia']],['evolução de poder',['cultivation','power','poder','level','sistema','martial']],['histórias sombrias',['dark','sombr','tragedy','tragédia','psychological','horror','terror']],['longas jornadas',['journey','jornada','adventure','aventura','quest']]];
+ const prefs=rules.map(r=>({label:r[0],hits:r[1].reduce((n,k)=>n+(text.split(k).length-1),0)})).filter(x=>x.hits).sort((a,b)=>b.hits-a.hits).slice(0,5);
+ const sc=(e,label,n)=>'<button class="lib-shortcut" data-ld="'+e+'">'+label+' <span style="opacity:.65">'+n+'</span></button>';
+ box.innerHTML='<div class="libdash"><div class="libdash-card"><div class="libdash-title">MINHA BIBLIOTECA</div><div class="libdash-sub">'+all.length.toLocaleString('pt-BR')+' obras</div><div class="lib-counts">'+[['Anime','anime'],['Mangá','manga'],['Manhwa','manhwa'],['Manhua','manhua'],['Novel','novel'],['Donghua','donghua'],['Aeni','aeni']].map(x=>'<div class="lib-count" data-kind="'+x[1]+'"><b>'+countKind(x[1])+'</b><span>'+x[0]+'</span></div>').join('')+'</div><div class="lib-shortcuts">'+sc('fav','⭐ Favoritos',fav.length)+sc('recommend','🔥 Obras que recomendo',recommend.length)+sc('abandon','💀 Obras abandonadas',abandon.length)+sc('ten','👑 Obras 10/10',ten.length)+sc('read','📚 Quero ler',read.length)+sc('watch','🎬 Quero assistir',watch.length)+sc('ongoing','🕐 Em andamento',ongoing.length)+'</div></div><div class="lib-profile"><div class="libdash-card"><div class="libdash-title" style="font-size:18px">SEU PERFIL</div><div class="libdash-sub">Baseado nas suas notas e gêneros das obras avaliadas.</div><div class="profile-bars">'+(top.length?top.map(x=>'<div class="profile-row"><span>'+esc(gname(x[0]))+'</span><span class="pbar"><i style="width:'+Math.round(x[1]/mx*100)+'%"></i></span><b>'+Math.round(x[1]/mx*100)+'%</b></div>').join(''):'<span class="libdash-sub">Dê notas para formar seu perfil.</span>')+'</div></div><div class="libdash-card"><div class="libdash-title" style="font-size:18px">Preferência por:</div><ul class="pref-list">'+(prefs.length?prefs.map(x=>'<li>'+esc(x.label)+'</li>').join(''):'<li>preferências aparecerão conforme você avalia obras</li>')+'</ul></div></div></div>';
+ box.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{lkSet.clear();lkSet.add(el.dataset.kind);renderLib()});
+ box.querySelectorAll('[data-ld]').forEach(el=>el.onclick=()=>dashboardFilter(el.dataset.ld));
+}
+function dashboardFilter(t){
+ favOnly=false;$('#lmin').value='';
+ const status=$('#lstatus');lkSet.clear();
+ if(t==='fav'){favOnly=true}
+ if(t==='recommend')$('#lmin').value=4;
+ if(t==='abandon')status.value='Abandonado';
+ if(t==='ten')$('#lmin').value=5;
+ if(t==='read'){status.value='Quero ver/ler';['manga','manhwa','manhua','novel','webnovel'].forEach(k=>lkSet.add(k))}
+ if(t==='watch'){status.value='Quero ver/ler';['anime','donghua','aeni'].forEach(k=>lkSet.add(k))}
+ if(t==='ongoing')status.value='Em andamento';
+ renderLib();
+}
 function renderLib(){
+  renderLibraryDashboard();
   const q=$('#lq').value.toLowerCase(),st=$('#lstatus').value,so=$('#lsort').value;
   const tc={};Object.values(lib).filter(isOtaku).forEach(x=>(x.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));
   [...lgTags].forEach(t=>{if(!tc[t])lgTags.delete(t)});
