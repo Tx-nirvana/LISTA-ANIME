@@ -332,20 +332,9 @@ async function gtr(c){
   if(!r.ok)throw new Error('g'+r.status);
   const j=await r.json();return j[0].map(x=>x[0]).join('');
 }
-async function mtr(c){
-  const r=await fetch('https://api.mymemory.translated.net/get?langpair=en|pt-BR&q='+encodeURIComponent(c));
-  const j=await r.json();
-  if(!j.responseData||!j.responseData.translatedText)throw new Error('m');
-  return j.responseData.translatedText;
-}
 async function translate(text){
-  let parts;
-  try{
-    parts=await Promise.all(splitText(text,1500).map(c=>c.trim()?gtr(c):c));
-  }catch(e){
-    parts=[];
-    for(const c of splitText(text,450)) parts.push(c.trim()?await mtr(c):c);
-  }
+  const chunks=splitText(text,1500);
+  const parts=await Promise.all(chunks.map(c=>c.trim()?gtr(c):c));
   return parts.join('').replace(/\n{3,}/g,'\n\n').trim();
 }
 async function showSyn(id){
