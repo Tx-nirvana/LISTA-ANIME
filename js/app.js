@@ -2163,12 +2163,14 @@ setTimeout(boot3,2600);
 const C4={key:'otaku-cloud-v1',version:1,last:0};
 const esc4=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function snapshot4(){
+ const items=Object.values(window.lib||{}),progress=JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history=JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]');
+ const updatedAt=Math.max(0,...items.map(x=>Number(x?.updatedAt||x?.upd||0)),...Object.values(progress).map(x=>Number(x?.updated||0)),...history.map(x=>Number(x?.at||0)));
  return {
   version:C4.version,
-  updatedAt:Date.now(),
-  library:Object.values(window.lib||{}),
-  progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),
-  history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]'),
+  updatedAt,
+  library:items,
+  progress,
+  history,
   settings:{
    scale:localStorage.getItem('otaku-scale')||'5',
    theme:localStorage.getItem('theme')||'',
@@ -2374,7 +2376,7 @@ const C6={table:'biblioteca_otaku_sync',timer:null};
 const cfg=()=>{try{const saved=JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}');return {url:saved.url||'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:saved.key||'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}catch(e){return {url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}};
 const sess=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
 const base=()=>String(cfg().url||'').replace(/\/$/,'');
-const snapshot=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
+const snapshot=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version:1,updatedAt:Math.max(0,...Object.values(window.lib||{}).map(x=>Number(x?.updatedAt||x?.upd||0))),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
 async function api6(path,opt={}){
  const c=cfg(),s=sess();if(!c.url||!c.key||!s?.access_token)throw new Error('Supabase não configurado ou usuário não conectado.');
  const h={apikey:c.key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',...(opt.headers||{})};
