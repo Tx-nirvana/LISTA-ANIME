@@ -279,7 +279,7 @@ function openModal(id){
   const l=lib[id]; const stars=l?l.rating||0:0;
   const size=s.type==='MANGA'?[s.ch&&s.ch+' capítulos',s.vol&&s.vol+' volumes']:[s.eps&&s.eps+' episódios'];
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button>
-    <div class="bo-cover-wrap"><img src="${s.cover}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
+    <div class="bo-cover-wrap"><img src="${s.cover}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div><button class="bo-action bo-avoid" id="avoidbtn">🚫 Não recomendar</button></div>
     <div style="flex:1;min-width:0"><h2>${s.title}</h2>
     <div class="sub">${[KINDS[s.kind],s.year,...size,s.avg&&'Nota '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10,s.native].filter(Boolean).join(' · ')}</div>
     <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
@@ -298,6 +298,8 @@ function openModal(id){
     </div>`;
   $('#modal').classList.add('on');
   showSyn(id);showWhere(id);$('#fav').onclick=()=>toggleFav(id);$('#recbtn').onclick=()=>toggleRec(id);
+  const avoidbtn=$('#avoidbtn');
+  if(avoidbtn)avoidbtn.onclick=()=>{window.OtakuStore?.feedback?.(id,'avoid');avoidbtn.classList.add('on');};
   if(l){
     $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
     $('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
