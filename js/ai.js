@@ -85,8 +85,8 @@ function trackRecommendations(){
   const id=card.dataset.id;if(!id||card.dataset.aiTracked)return;card.dataset.aiTracked='1';
   const w=works().find(x=>String(x.id)===String(id))||window.current?.[id]||{id,title:card.querySelector('.t')?.textContent||'',kind:card.querySelector('.tag')?.textContent||''};
   window.OtakuStore.markRecommended(w,window.__r2mode||'recommended');
-  const d=document.createElement('div');d.className='ai-card-tools';d.innerHTML='<button class="chip" data-rf="like">👍</button><button class="chip" data-rf="love">❤️</button><button class="chip" data-rf="dislike">👎</button><button class="chip" data-rf="avoid">🚫</button>';
-  d.onclick=e=>{const b=e.target.closest('[data-rf]');if(!b)return;window.OtakuStore.feedback(id,b.dataset.rf);if(['dislike','avoid'].includes(b.dataset.rf))card.remove()};
+  const d=document.createElement('div');d.className='ai-card-tools';d.innerHTML='<button class="chip" data-rf="avoid">🚫 Não recomendar</button>';
+  d.onclick=e=>{const b=e.target.closest('[data-rf]');if(!b)return;window.OtakuStore.feedback(id,'avoid');card.remove()};
   card.appendChild(d);
  });
 }
@@ -101,12 +101,17 @@ function boot(){
  const old=window.renderLibraryDashboard;if(typeof old==='function'&&!old.__ai3){const f=function(){old.apply(this,arguments);setTimeout(renderDashboard,20)};f.__ai3=true;window.renderLibraryDashboard=f}
  const oldStats=window.renderStats;if(typeof oldStats==='function'&&!oldStats.__ai3){const f=function(){oldStats.apply(this,arguments);setTimeout(()=>{const d=dna();const box=document.querySelector('#v-stats');if(box&&!document.getElementById('ai-stats')){const p=document.createElement('div');p.id='ai-stats';p.className='ai-panel';p.innerHTML='<div class="ai-title">📊 Inteligência da biblioteca</div><div class="ai-grid"><div class="ai-mini"><b>Média</b><span>★ '+(d.average?d.average.toFixed(2):'—')+'/5</span></div><div class="ai-mini"><b>Avaliadas</b><span>'+d.rated+' de '+works().length+'</span></div><div class="ai-mini"><b>Recomendações vistas</b><span>'+(store().ai.history||[]).length+'</span></div></div>';box.appendChild(p)}} ,20)};f.__ai3=true;window.renderStats=f}
  const obs=new MutationObserver(()=>{attachFeedback();trackRecommendations()});obs.observe(document.body,{childList:true,subtree:true});
- setTimeout(()=>{renderDashboard();trackRecommendations()},700);
+ const om=window.openModal;
+ if(typeof om==='function'&&!om.__ai3){
+   const wrapped=function(id){om.apply(this,arguments);setTimeout(attachFeedback,30);};
+   wrapped.__ai3=true;window.openModal=wrapped;
+ }
+ setTimeout(()=>{renderDashboard();trackRecommendations();attachFeedback()},700);
 }
 window.OtakuCloud={
  export:()=>window.OtakuStore.export(),
  import:d=>window.OtakuStore.import(d)
 };
-window.OtakuAI={dna,collections,authorSearch,authorPage,history:()=>store().ai.history||[],feedback:(id,v)=>window.OtakuStore.feedback(id,v),block:id=>window.OtakuStore.feedback(id,'avoid'),historyPanel};
+window.OtakuAI={dna,collections,authorSearch,authorPage,history:()=>store().ai.history||[],feedback:(id,v)=>window.OtakuStore.feedback(id,v),block:id=>window.OtakuStore.feedback(id,'avoid'),historyPanel,attachFeedback};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
