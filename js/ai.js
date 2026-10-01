@@ -21,7 +21,9 @@ function dna(){
 function collections(){
  const w=works();
  return {
-  favorites:w.filter(x=>x.fav),perfect:w.filter(x=>Number(x.rating)===5),abandoned:w.filter(x=>x.status==='Abandonado')
+  favorites:w.filter(x=>x.fav),
+  perfect:w.filter(x=>Number(x.rating)===5),
+  abandoned:w.filter(x=>x.status==='Abandonado')
  };
 }
 function feedbackPanel(id){return null;}
@@ -51,8 +53,7 @@ function renderDashboard(){
  let p=document.getElementById('ai-dashboard');if(p)p.remove();
  const d=dna(),c=collections(),authors=Object.values(store().ai.authors||{}).filter(x=>x.favorite);
  p=document.createElement('div');p.id='ai-dashboard';p.innerHTML=
- '<div class="ai-panel"><div class="ai-title">🧬 DNA Otaku</div><div class="ai-sub">Gêneros, formatos, autores, notas e comportamento de leitura/visualização.</div><div class="ai-grid">'+(d.genres.length?d.genres.slice(0,6).map(x=>'<div class="ai-mini"><b>'+esc(x.name)+'</b><span>'+x.value+'%</span><div class="ai-bar"><i style="width:'+x.value+'%"></i></div></div>').join(''):'<span class="ai-sub">Avalie obras para formar seu DNA.</span>')+'</div><div class="ai-sub" style="margin-top:10px">Média: '+(d.average?d.average.toFixed(2):'—')+'/5 · '+d.rated+' avaliadas</div></div>'+
- '<div class="ai-panel"><div class="ai-title">👤 Autores favoritos</div><div class="ai-chips" id="ai-authors"></div></div>';
+ '<div class="ai-panel"><div class="ai-title">🧬 DNA Otaku</div><div class="ai-sub">Gêneros, formatos, autores, notas e comportamento de leitura/visualização.</div><div class="ai-grid">'+(d.genres.length?d.genres.slice(0,6).map(x=>'<div class="ai-mini"><b>'+esc(x.name)+'</b><span>'+x.value+'%</span><div class="ai-bar"><i style="width:'+x.value+'%"></i></div></div>').join(''):'<span class="ai-sub">Avalie obras para formar seu DNA.</span>')+'</div><div class="ai-sub" style="margin-top:10px">Média: '+(d.average?d.average.toFixed(2):'—')+'/5 · '+d.rated+' avaliadas</div></div>'+'<div class="ai-panel"><div class="ai-title">👤 Autores favoritos</div><div class="ai-chips" id="ai-authors"></div></div>';
  host.appendChild(p);
  const ag=p.querySelector('#ai-authors');if(authors.length)authors.forEach(a=>{const b=document.createElement('button');b.className='ai-author';b.textContent='★ '+a.name;b.onclick=()=>authorPage(a.name);ag.appendChild(b)});else ag.innerHTML='<span class="ai-sub">Nenhum autor favorito ainda.</span>';
  p.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{const ids=new Set((c[b.dataset.col]||[]).map(x=>String(x.id)));if(typeof renderLib==='function')renderLib();document.querySelectorAll('#libgrid .card').forEach(x=>x.style.display=ids.has(String(x.dataset.id))?'':'none')});
