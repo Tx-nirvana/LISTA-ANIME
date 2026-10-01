@@ -517,5 +517,25 @@ function init(){
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-window.OtakuReader={open:openBook,refresh:renderShelf};
+async function openOnlineByTitle(title){
+ title=String(title||'').trim();if(!title)return;
+ const btn=document.getElementById('t-rd');
+ if(btn)btn.click();
+ onlineState={manga:null,chapters:[],query:title,loading:true,error:'',results:[]};
+ renderShelf();
+ try{
+  const j=await mdJson('/manga',{title:title,limit:12,'includes[]':['cover_art'],'order[relevance]':'desc','contentRating[]':['safe','suggestive']});
+  const results=(j.data||[]).map(x=>({id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x),status:x.attributes.status||'',year:x.attributes.year||''}));
+  onlineState.results=results;onlineState.loading=false;
+  if(!results.length){onlineState.error='Nenhum mangá correspondente foi encontrado nesta fonte.';renderShelf();return}
+  const norm=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  const wanted=norm(title);
+  const best=results.find(x=>norm(x.title)===wanted||norm(x.alt)===wanted)||results[0];
+  renderShelf();
+  await loadOnlineManga(best.id);
+ }catch(e){
+  onlineState.loading=false;onlineState.error=e.message||'Não foi possível procurar capítulos agora.';renderShelf();
+ }
+}
+window.OtakuReader={open:openBook,refresh:renderShelf,openOnline:openOnlineByTitle};
 })();
