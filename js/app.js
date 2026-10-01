@@ -1,0 +1,2703 @@
+
+const KINDS={all:'Tudo',anime:'Anime',donghua:'Donghua',aeni:'Aeni',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua',novel:'Novel',webnovel:'WEB Novel'};
+const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],manga:['MANGA','JP'],manhwa:['MANGA','KR'],manhua:['MANGA','CN'],novel:['MANGA',undefined]};
+let novelCatalog=[];let novelCatalogLoaded=false;let novelCatalogUpdated='';
+const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
+const $=s=>document.querySelector(s);
+const KX={book:'Livro',movie:'Filme',game:'Jogo'},isOtaku=x=>!KX[x.kind];
+let src=null,favOnly=false,recOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
+
+function safe(v){
+  const t=x=>String(x??'').replace(/[<>]/g,''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number(x)||0;
+  const o={id:n(v.id),type:v.type==='MANGA'?'MANGA':'ANIME',kind:KINDS[v.kind]?v.kind:'anime',title:t(v.title),native:t(v.native),cover:u(v.cover),
+   genres:(v.genres||[]).slice(0,20).map(t),year:t(v.year),eps:n(v.eps)||null,ch:n(v.ch)||null,vol:n(v.vol)||null,avg:n(v.avg)||null,st:t(v.st),
+   status:STATUS.includes(v.status)?v.status:STATUS[0],rating:Math.min(5,Math.max(0,Math.round(n(v.rating)))),prog:t(v.prog),note:t(v.note),
+   tags:(Array.isArray(v.tags)?v.tags:[]).slice(0,20).map(x=>t(x).trim().slice(0,30)).filter(Boolean),tr:/^((youtube|dailymotion):[\w-]{5,20}|-)$/.test(v.tr||'')?v.tr:undefined,fav:!!v.fav,rec:!!v.rec,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
+   links:Array.isArray(v.links)?v.links.slice(0,40).map(x=>({site:t(x.site),url:u(x.url),lang:t(x.lang)})).filter(x=>x.url):undefined,
+   authors:Array.isArray(v.authors)?v.authors.slice(0,8).map(x=>({id:n(x.id),name:t(x.name),role:t(x.role)})):undefined,
+   studios:Array.isArray(v.studios)?v.studios.slice(0,8).map(x=>({id:n(x.id),name:t(x.name)})):undefined};
+  Object.keys(o).forEach(k=>{if(o[k]===undefined||((k==='syn'||k==='pt'||k==='page')&&!o[k]))delete o[k]});
+  return o;
+}
+function to5(o){Object.values(o).forEach(l=>{if(l&&l.rating)l.rating=Math.max(1,Math.ceil(l.rating/2))})}
+try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}');if(localStorage.getItem('otaku-scale')!=='5'){to5(lib);localStorage.setItem('otaku-scale','5')}}catch(e){lib={}}
+function save(l){if(l)l.upd=Date.now();try{localStorage.setItem('otaku-lib',JSON.stringify(lib));localStorage.setItem('otaku-del',JSON.stringify(dels))}catch(e){}$('#cnt').textContent=Object.values(lib).filter(isOtaku).length;schedulePush()}
+
+function kindOf(m){
+  const c=m.countryOfOrigin;
+  if(m.format==='NOVEL') return 'novel';
+  if(m.type==='MANGA') return c==='KR'?'manhwa':(c==='CN'||c==='TW')?'manhua':'manga';
+  return c==='CN'||c==='TW'?'donghua':c==='KR'?'aeni':'anime';
+}
+const title=m=>m.title.english||m.title.romaji||m.title.native;
+const clean=t=>(t||'Sem sinopse disponível.').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');
+function slim(m){return{id:m.id,type:m.type,kind:kindOf(m),title:title(m).replace(/[<>]/g,''),native:(m.title.native||'').replace(/[<>]/g,''),cover:m.coverImage.large,syn:clean(m.description),genres:m.genres||[],year:m.seasonYear||(m.startDate&&m.startDate.year)||'',eps:m.episodes,ch:m.chapters,vol:m.volumes,avg:m.averageScore,st:m.status}}
+
+function chips(el,cur,fn){
+  el.innerHTML=Object.entries(KINDS).map(([k,v])=>`<button class="chip ${k===cur?'on':''}" data-k="${k}">${v}</button>`).join('');
+  el.onclick=e=>{const k=e.target.dataset.k;if(k)fn(k)};
+}
+
+const GEN={Action:'Ação',Adventure:'Aventura',Comedy:'Comédia',Drama:'Drama',Ecchi:'Ecchi',Fantasy:'Fantasia',Horror:'Terror','Mahou Shoujo':'Mahou Shoujo',Mecha:'Mecha',Music:'Música',Mystery:'Mistério',Psychological:'Psicológico',Romance:'Romance','Sci-Fi':'Ficção científica','Slice of Life':'Cotidiano',Sports:'Esportes',Supernatural:'Sobrenatural',Thriller:'Suspense'};
+const GEN_NOVEL={Xianxia:'Xianxia',Wuxia:'Wuxia',Xuanhuan:'Xuanhuan','Martial Arts':'Artes marciais',Cultivation:'Cultivo',Isekai:'Isekai',Reincarnation:'Reencarnação',LitRPG:'LitRPG',Harem:'Harém',Historical:'Histórico','School Life':'Vida escolar',Tragedy:'Tragédia',Alchemy:'Alquimia',Shounen:'Shounen',Seinen:'Seinen',Josei:'Josei',Shoujo:'Shoujo'};
+const gname=g=>GEN[g]||GEN_NOVEL[g]||g;
+function multiKinds(el,set,fn){
+  el.innerHTML=Object.entries(KINDS).map(([k,v])=>`<button class="chip ${(k==='all'?!set.size:set.has(k))?'on':''}" data-k="${k}">${v}</button>`).join('');
+  el.onclick=e=>{const k=e.target.dataset.k;if(!k)return;if(k==='all')set.clear();else if(set.has(k))set.delete(k);else set.add(k);multiKinds(el,set,fn);fn()};
+}
+function genreBox(el,set,mode,fn,extra){
+  const draw=()=>{const list=extra&&extra()?{...GEN,...GEN_NOVEL}:GEN;if(!(extra&&extra()))Object.keys(GEN_NOVEL).forEach(k=>{if(!GEN[k])set.delete(k)});el.innerHTML=`<summary>Gêneros${set.size?' ('+set.size+' selecionado'+(set.size>1?'s':'')+')':''}</summary><div class="chips">${Object.entries(list).map(([k,v])=>`<button class="chip ${set.has(k)?'on':''}" data-g="${k}">${v}</button>`).join('')}</div>
+    <div class="gen" style="margin-top:10px"><button class="chip ${mode.all?'':'on'}" data-m="any">Qualquer um dos gêneros</button><button class="chip ${mode.all?'on':''}" data-m="all">Todos os gêneros</button>${set.size?'<button class="chip" data-c="1">Limpar gêneros</button>':''}</div>`};
+  draw();
+  el.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.g){set.has(b.dataset.g)?set.delete(b.dataset.g):set.add(b.dataset.g)}
+    else if(b.dataset.m){mode.all=b.dataset.m==='all'}
+    else if(b.dataset.c){set.clear()}
+    else return;
+    draw();fn()};
+}
+const genOk=(arr,set,all)=>{if(!set.size)return true;const a=(arr||[]).map(x=>String(x).toLowerCase()),has=g=>a.includes(String(g).toLowerCase());return all?[...set].every(has):[...set].some(has)};
+
+const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:[String],$f:[MediaFormat],$fn:[MediaFormat],$stt:MediaStatus,$gt:FuzzyDateInt,$lt:FuzzyDateInt,$ms:Int){Page(page:$p,perPage:24){pageInfo{hasNextPage}media(search:$s,type:$t,countryOfOrigin:$c,sort:$o,genre_in:$g,format_in:$f,format_not_in:$fn,status:$stt,startDate_greater:$gt,startDate_lesser:$lt,averageScore_greater:$ms,isAdult:false){id type format countryOfOrigin title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status}}}`;
+
+async function fetchPage(q,k,p,sort,g){
+  const [t,c]=k==='all'?[undefined,undefined]:SPEC[k];
+  const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:(g||[]).filter(x=>GEN[x]).length?(g||[]).filter(x=>GEN[x]):undefined,f:k==='novel'?['NOVEL']:(F.fmt?F.fmt.split(','):undefined),fn:(k==='manga'||k==='manhwa'||k==='manhua')&&!F.fmt?['NOVEL']:undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
+  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
+  return j.data.Page;
+}
+
+const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+async function authorsFor(q){
+  const box=$('#authors');
+  if(!q||q.length<3){box.style.display='none';box.innerHTML='';return}
+  try{
+    const d=await gql('query($s:String){Page(perPage:8){staff(search:$s,sort:SEARCH_MATCH){id name{full native} primaryOccupations image{medium}}}}',{s:q});
+    if($('#q').value.trim()!==q||src)return;
+    const ws=norm(q).split(/\s+/).filter(Boolean);
+    const list=(d.Page.staff||[]).filter(a=>{const n=norm(a.name.full)+' '+norm(a.name.native);return ws.every(w=>n.includes(w))}).slice(0,4);
+    if(!list.length){box.style.display='none';box.innerHTML='';return}
+    box.innerHTML='<small style="color:var(--mut);display:block;margin:6px 0">Autores e criadores encontrados (toque para ver as obras):</small><div class="gen">'+list.map(a=>`<button class="lk" style="border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px" data-id="${a.id}" data-n="${esc(a.name.full)}">${a.image&&/^https?:/.test(a.image.medium||'')?`<img src="${esc(a.image.medium)}" alt="" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`:''}${esc(a.name.full)}${a.primaryOccupations&&a.primaryOccupations[0]?' <small style="display:inline;margin:0;color:var(--mut)">· '+esc(a.primaryOccupations[0])+'</small>':''}</button>`).join('')+'</div>';
+    box.style.display='';
+    box.onclick=e=>{const b=e.target.closest('button');if(b)openWorks('staff',b.dataset.id,b.dataset.n)};
+  }catch(e){box.style.display='none'}
+}
+async function search(reset){
+  if(loading) return; loading=true;
+  if(reset){$('#recs').style.display='none';page=1;pgs={};mores={};$('#results').innerHTML='';current={};curOrder=[];authorsFor(src?'':$('#q').value.trim())}
+  $('#smsg').textContent='Carregando...';$('#more').style.display='none';
+  try{
+    const addCard=m=>{const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
+    const addNovel=n=>{const s=novelSlim(n);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
+    let hasNext=false;
+    if(src&&src.type==='author'){
+      const w=await authorWorks(page===1);
+      w.novels.forEach(addNovel);w.media.forEach(addCard);kitsuBatch(w.novels.map(n=>current[novelId(n)]));hasNext=w.hasNext;
+    }else if(src){
+      const d=await fetchSrc(page); d.nodes.filter(m=>!m.isAdult).forEach(addCard); hasNext=d.pageInfo.hasNextPage;
+    }else if([...kSet].includes('webnovel')){
+      const q=$('#q').value.trim();
+      const kinds=kSet.size?[...kSet]:['webnovel'];
+      const onlyWeb=kinds.length===1&&kinds[0]==='webnovel';
+      if(page===1)novelUseCat=false;
+      let slice=null,more=false;
+      if(!novelUseCat){
+        if(page===1)novelExtra=gSet.size?novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)):[];
+        try{const k=await kitsuNovels(q,page===1);if(k.items.length||page>1){slice=k.items;more=k.hasNext;if(novelExtra.length){slice=slice.concat(novelExtra.splice(0,12));more=more||novelExtra.length>0}}else novelUseCat=true}
+        catch(e){novelUseCat=true}
+      }
+      if(novelUseCat){ /* plano B: catálogo sincronizado (novels-catalog.json) */
+            const list=novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)&&(!F.st||norm(n.status)===norm(F.st))&&(!F.from||Number(n.year)>=Number(F.from))&&(!F.to||Number(n.year)<=Number(F.to)));
+      list.sort((a,b)=>{if($('#sort').value==='SCORE_DESC')return (b.rating||0)-(a.rating||0);if($('#sort').value==='START_DATE_DESC')return (b.year||0)-(a.year||0);return (b.popularity||0)-(a.popularity||0)});
+      slice=list.slice((page-1)*24,page*24); more=page*24<list.length;
+      }
+      slice.forEach(addNovel); kitsuBatch(slice.map(n=>current[novelId(n)])); hasNext=more;
+      if(!slice.length && !onlyWeb){
+        // Se o filtro misturar tipos, deixa o AniList continuar abaixo.
+        kSet.delete('webnovel');
+        await search(reset);
+        kSet.add('webnovel');
+        loading=false;return;
+      }
+    }else{
+      const keys=kSet.size?[...kSet]:['all'],q=$('#q').value.trim(),gs=[...gSet],all=gMode.all&&gs.length>1;
+      let tries=0,added=0;
+      do{
+        const act=keys.filter(k=>k!=='webnovel'&&mores[k]!==false);
+        const res=await Promise.all(act.map(async k=>{const pg=(pgs[k]||0)+1;pgs[k]=pg;const d=await fetchPage(q,k,pg,$('#sort').value,gs);mores[k]=d.pageInfo.hasNextPage;return d.media}));
+        const mx=Math.max(0,...res.map(r=>r.length));
+        for(let i=0;i<mx;i++)res.forEach(r=>{const m=r[i];if(!m||m.isAdult)return;if(all&&!genOk(m.genres,gSet,true))return;added+=addCard(m)});
+        hasNext=keys.filter(k=>k!=='webnovel').some(k=>mores[k]!==false);tries++;
+      }while(all&&added<8&&hasNext&&tries<5);
+    }
+    $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';
+    $('#more').style.display=hasNext?'block':'none';
+  }catch(e){$('#smsg').textContent='Não consegui carregar o catálogo. '+e.message}
+  loading=false;
+}
+
+function novelId(n){
+  let h=2166136261;for(const c of String(n.source+'|'+n.url)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return -Math.abs(h||1);
+}
+function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#373739"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:(n.authors&&n.authors.length?n.authors.map(a=>({id:Number(a.id)||0,name:String(a.name||'').replace(/[<>]/g,''),role:String(a.role||'')})):splitNames(n.author).map(x=>({id:0,name:x,role:'Autor'}))),links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog'} }
+function matchNovel(n,q){if(!q)return true;const z=norm(q);return norm(n.title).includes(z)||norm(n.author).includes(z)||(n.alternative&&norm(n.alternative).includes(z))}
+async function loadNovelCatalog(){
+  try{const r=await fetch('./novels-catalog.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
+    const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent=novelCatalog.length+' WEB novels carregadas'+(novelCatalogUpdated?' · atualizado '+new Date(novelCatalogUpdated).toLocaleDateString('pt-BR'): '');
+  }catch(e){novelCatalog=[];novelCatalogLoaded=false;const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent='Catálogo de WEB novels ainda não foi gerado. Publique também a pasta .github/workflows.'}
+}
+function importNovelCatalog(){
+  if(!novelCatalog.length){alert('O catálogo de WEB novels ainda não foi carregado.');return}
+  let count=0;for(const n of novelCatalog){const s=novelSlim(n);if(!lib[s.id]){lib[s.id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:['WEB Novel',n.source],fav:false,added:Date.now(),upd:Date.now()};count++}else{lib[s.id]={...lib[s.id],...s,links:lib[s.id].links||s.links}}
+  }save();renderLib();alert(count+' WEB novels foram adicionadas à sua biblioteca.');
+}
+function card(s){
+  const l=lib[s.id];
+  return `<div class="card" data-id="${s.id}" tabindex="0">
+    <span class="tag">${KINDS[s.kind]}</span>
+    ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?`<span class="badge g">✓</span>`:''}
+    <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
+    <img loading="lazy" src="${s.cover}" alt="Capa de ${s.title.replace(/"/g,'')}">
+    <div class="i"><div class="t">${s.title}</div>
+    <div class="m">${s.year||''} ${s.avg?'· '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
+}
+
+const MF='id type format countryOfOrigin isAdult title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status';
+async function fetchSrc(p){
+  if(src.type==='staff'){const d=await gql('query($id:Int,$p:Int){Staff(id:$id){staffMedia(page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:src.id,p});return d.Staff.staffMedia}
+  const d=await gql('query($id:Int,$p:Int){Studio(id:$id){media(page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:src.id,p});return d.Studio.media;
+}
+function setSrc(v){
+  src=v;
+  ['.bar','#kinds','#gsearch','#fsearch','#recs'].forEach(x=>{const e=$('#v-search '+x);if(e)e.style.display=v?'none':''});
+  const b=$('#banner');b.style.display=v?'':'none';
+  b.innerHTML=v?`<button class="chip" id="bk">← Voltar</button> <b>Obras de ${esc(v.name)}</b>${v.type==='author'?' (WEB novels e novels encontradas no Kitsu, no catálogo e no AniList)':' (das mais populares às menos)'}`:'';
+  if(v)$('#bk').onclick=()=>{setSrc(null)};
+  search(true);
+}
+function openWorks(type,id,name){closeModal();tab('s');setSrc({type,id:+id,name})}
+
+/* ---------- filtros extras ---------- */
+const FMT=[['','Qualquer formato'],['TV,TV_SHORT','Série de TV'],['MOVIE','Filme'],['OVA,ONA,SPECIAL','OVA / ONA / Especial'],['MANGA','Mangá (capítulos)'],['NOVEL','Novel'],['ONE_SHOT','One-shot']];
+const STS=[['','Qualquer situação'],['RELEASING','Em andamento'],['FINISHED','Finalizado'],['NOT_YET_RELEASED','Ainda não lançado'],['HIATUS','Em hiato']];
+const MINS=[[0,'Qualquer nota AniList'],[60,'Nota AniList 6+'],[70,'Nota AniList 7+'],[80,'Nota AniList 8+'],[90,'Nota AniList 9+']];
+const fCount=()=>[F.fmt,F.st,F.from,F.to,F.min].filter(x=>x&&x!=='0').length;
+function filterBox(){
+  const el=$('#fsearch'),opt=(a,v)=>a.map(([k,l])=>`<option value="${k}" ${String(k)===String(v)?'selected':''}>${l}</option>`).join('');
+  el.innerHTML=`<summary>Mais filtros${fCount()?' ('+fCount()+')':''}</summary><div class="bar" style="margin-top:8px">
+    <select id="ffmt">${opt(FMT,F.fmt)}</select><select id="fst">${opt(STS,F.st)}</select><select id="fmin">${opt(MINS,F.min)}</select>
+    <input id="ffrom" type="number" min="1950" max="2100" placeholder="Ano de" value="${F.from}" style="width:100px"><input id="fto" type="number" min="1950" max="2100" placeholder="até" value="${F.to}" style="width:100px">
+    <button class="chip" id="fclr">Limpar filtros</button></div>`;
+  const go=()=>{F.fmt=$('#ffmt').value;F.st=$('#fst').value;F.min=+$('#fmin').value;F.from=$('#ffrom').value.trim();F.to=$('#fto').value.trim();
+    el.querySelector('summary').textContent='Mais filtros'+(fCount()?' ('+fCount()+')':'');search(true)};
+  ['#ffmt','#fst','#fmin','#ffrom','#fto'].forEach(x=>$(x).onchange=go);
+  $('#fclr').onclick=()=>{F={fmt:'',st:'',from:'',to:'',min:0};const o=el.open;filterBox();el.open=o;search(true)};
+}
+
+/* ---------- me surpreenda ---------- */
+async function surprise(){
+  const b=$('#rnd');b.disabled=true;b.textContent='Sorteando...';
+  try{
+    const keys=kSet.size?[...kSet]:['all'],gs=[...gSet],all=gMode.all&&gs.length>1;
+    let pick=null;
+    for(let t=0;t<4&&!pick;t++){
+      const k=keys[Math.floor(Math.random()*keys.length)];
+      const d=await fetchPage('',k,1+Math.floor(Math.random()*(t?3:25)),'POPULARITY_DESC',gs);
+      const c=d.media.filter(m=>!m.isAdult&&(!all||genOk(m.genres,gSet,true)));
+      const fresh=c.filter(m=>!lib[m.id]),pool=fresh.length?fresh:c;
+      if(pool.length)pick=pool[Math.floor(Math.random()*pool.length)];
+    }
+    if(pick){const x=slim(pick);current[x.id]=x;openModal(x.id)}
+    else alert('Não achei nada com esses filtros. Tente afrouxar um pouco.');
+  }catch(e){alert('Não consegui sortear agora: '+e.message)}
+  b.disabled=false;b.textContent='🎲 Me surpreenda';
+}
+
+/* ---------- recomendados ---------- */
+async function showRecs(){
+  const box=$('#recs');
+  if(box.style.display===''){box.style.display='none';return}
+  box.style.display='';box.onclick=clickCard;
+  const seeds=Object.values(lib).filter(isOtaku).filter(x=>x.rec).slice(0,6);
+  if(!seeds.length){box.innerHTML='<div class="msg" style="padding:16px">Marque títulos como “Recomendo” pelo botão da sinopse para receber recomendações.</div>';return}
+  box.innerHTML='<div class="msg" style="padding:16px">Buscando recomendações...</div>';
+  try{
+    const d=await gql('query{'+seeds.map((x,i)=>`a${i}:Media(id:${+x.id}){recommendations(sort:RATING_DESC,perPage:10){nodes{rating mediaRecommendation{${MF}}}}}`).join('')+'}',{});
+    if(!d)throw new Error('sem resposta');
+    const acc={};
+    seeds.forEach((x,i)=>{const nodes=(d['a'+i]&&d['a'+i].recommendations.nodes)||[];nodes.forEach(n=>{const m=n.mediaRecommendation;if(!m||m.isAdult||lib[m.id]||(n.rating||0)<1)return;const a=acc[m.id]||(acc[m.id]={m,n:0,sc:0});a.n++;a.sc+=n.rating})});
+    const list=Object.values(acc).sort((a,b)=>b.n-a.n||b.sc-a.sc).slice(0,18);
+    if(!list.length){box.innerHTML='<div class="msg" style="padding:16px">Ainda não achei recomendações novas. Dê nota a mais títulos e tente de novo.</div>';return}
+    list.forEach(a=>{const x=slim(a.m);current[x.id]=x});
+    box.innerHTML=`<div class="stats"><b>Recomendados para você</b> · baseado em: ${esc(seeds.map(x=>x.title).join(', '))}</div><div class="grid">${list.map(a=>card(current[a.m.id])).join('')}</div>`;
+  }catch(e){box.innerHTML='<div class="msg" style="padding:16px">Não consegui buscar agora ('+esc(e.message)+'). Tente de novo em instantes.</div>'}
+}
+
+/* ---------- listas / etiquetas ---------- */
+const allTags=()=>[...new Set(Object.values(lib).flatMap(x=>x.tags||[]))].sort((a,b)=>a.localeCompare(b));
+function drawTags(l){$('#mtags').innerHTML=(l.tags||[]).map(t=>`<button class="chip on" data-x="${esc(t)}" title="Remover">${esc(t)} ×</button>`).join('')||'<small style="margin:0">nenhuma ainda</small>'}
+
+/* ---------- estatísticas ---------- */
+function renderStats(){
+  const v=$('#v-stats'),items=Object.values(lib).filter(isOtaku);
+  if(!items.length){v.innerHTML='<div class="msg">Adicione títulos à biblioteca para ver suas estatísticas.</div>';return}
+  const cnt=(arr,f)=>{const o={};arr.forEach(x=>{const k=f(x);if(k!=null&&k!=='')o[k]=(o[k]||0)+1});return o};
+  const bars=(o,label,max)=>{const e=Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,max||10),m=Math.max(1,...e.map(x=>x[1]));return e.map(([k,n])=>`<div class="bar2"><span class="n">${esc(label?label(k):k)}</span><span class="b" style="width:${Math.max(2,n/m*55)}%"></span><span>${n}</span></div>`).join('')||'<small>Sem dados.</small>'};
+  const num=x=>Number(String(x||'').replace(/\D/g,''))||0;
+  let eps=0,chs=0;items.forEach(x=>{const p=num(x.prog);if(x.type==='MANGA')chs+=x.status==='Completo'?Math.max(p,x.ch||0):p;else eps+=x.status==='Completo'?Math.max(p,x.eps||0):p});
+  const rated=items.filter(x=>x.rating),avg=rated.length?(rated.reduce((a,x)=>a+x.rating,0)/rated.length).toFixed(1):'–';
+  const gc=cnt(items.flatMap(x=>x.genres||[]),g=>g);
+  const gr={};rated.forEach(x=>(x.genres||[]).forEach(g=>{(gr[g]=gr[g]||[]).push(x.rating)}));
+  const bestG={};Object.entries(gr).filter(([g,a])=>a.length>=2).forEach(([g,a])=>{bestG[g]=+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)});
+  const bestRows=Object.entries(bestG).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([g,n])=>`<div class="bar2"><span class="n">${esc(gname(g))}</span><span class="b" style="width:${n/5*55}%"></span><span>${n} ★</span></div>`).join('')||'<small>Precisa de pelo menos 2 títulos com nota no mesmo gênero.</small>';
+  const key=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+  const now=new Date(),months=[];for(let i=11;i>=0;i--)months.push(key(new Date(now.getFullYear(),now.getMonth()-i,1)));
+  const mc=cnt(items.filter(x=>x.added),x=>key(x.added));
+  const mm=Math.max(1,...months.map(m=>mc[m]||0));
+  const monthRows=months.map(m=>`<div class="bar2"><span class="n">${m.slice(5)}/${m.slice(0,4)}</span><span class="b" style="width:${Math.max(1,(mc[m]||0)/mm*55)}%"></span><span>${mc[m]||0}</span></div>`).join('');
+  const stars=cnt(rated,x=>x.rating),sm=Math.max(1,...Object.values(stars));
+  const box=(t,inner)=>`<div class="sec"><h3>${t}</h3>${inner}</div>`;
+  v.innerHTML=`<div class="sgrid">
+    <div class="sc"><b>${items.length}</b>títulos</div><div class="sc"><b>${items.filter(x=>x.status==='Completo').length}</b>completos</div>
+    <div class="sc"><b>${items.filter(x=>x.fav).length}</b>favoritos</div><div class="sc"><b>${avg}</b>sua nota média</div>
+    <div class="sc"><b>${eps}</b>episódios (~${Math.round(eps*24/60)} h)</div><div class="sc"><b>${chs}</b>capítulos lidos</div></div>
+    ${box('Por tipo',bars(cnt(items,x=>x.kind),k=>KINDS[k]||k))}
+    ${box('Por situação',bars(cnt(items,x=>x.status)))}
+    ${box('Suas notas',[5,4,3,2,1].map(n=>`<div class="bar2"><span class="n">${'★'.repeat(n)}</span><span class="b" style="width:${Math.max(2,(stars[n]||0)/sm*55)}%"></span><span>${stars[n]||0}</span></div>`).join('')+(rated.length?'':'<small>Você ainda não deu notas.</small>'))}
+    ${box('Gêneros mais frequentes',bars(gc,g=>gname(g),10))}
+    ${box('Gêneros em que você dá as melhores notas',bestRows)}
+    ${box('Títulos adicionados nos últimos 12 meses',monthRows)}
+    <small style="color:var(--mut)">Horas estimadas com 24 min por episódio. Episódios contam o que você marcou como visto e o total dos títulos completos.</small>`;
+}
+
+function openModal(id){
+  const s=lib[id]||current[id]; if(!s) return;
+  const l=lib[id]; const stars=l?l.rating||0:0;
+  const size=s.type==='MANGA'?[s.ch&&s.ch+' capítulos',s.vol&&s.vol+' volumes']:[s.eps&&s.eps+' episódios'];
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button>
+    <div class="bo-cover-wrap"><img src="${s.cover}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
+    <div style="flex:1;min-width:0"><h2>${s.title}</h2>
+    <div class="sub">${[KINDS[s.kind],s.year,...size,s.avg&&'Nota '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10,s.native].filter(Boolean).join(' · ')}</div>
+    <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
+    <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
+    <button class="chip" id="tg" style="display:none">Ver original (inglês)</button>
+    ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option ${x===l.status?'selected':''}>${x}</option>`).join('')}</select>
+      <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
+      <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/5':'sem nota'}</span></div>
+      <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${(l.note||'').replace(/</g,'&lt;')}</textarea>
+      <div class="row" style="align-items:flex-start"><b>Listas:</b><div id="mtags" class="gen"></div></div>
+      <div class="row"><input id="mtin" list="taglist" maxlength="30" placeholder="Nova lista ou etiqueta (Enter para adicionar)" style="flex:1"><datalist id="taglist">${allTags().map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>
+      <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`
+     :`<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>`}
+    <div class="where" id="credits"></div>
+    <div class="where" id="where">Buscando onde ${s.type==='MANGA'?'ler':'assistir'}...</div>
+    </div>`;
+  $('#modal').classList.add('on');
+  showSyn(id);showWhere(id);$('#fav').onclick=()=>toggleFav(id);$('#recbtn').onclick=()=>toggleRec(id);
+  if(l){
+    $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
+    $('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
+    $('#mnote').onchange=e=>{l.note=e.target.value;save(l)};
+    drawTags(l);
+    $('#mtags').onclick=e=>{const b=e.target.closest('button');if(!b)return;l.tags=(l.tags||[]).filter(t=>t!==b.dataset.x);save(l);drawTags(l);renderLib()};
+    $('#mtin').onkeydown=e=>{if(e.key!=='Enter')return;const t=e.target.value.replace(/[<>]/g,'').trim().slice(0,30);if(!t)return;l.tags=l.tags||[];if(!l.tags.some(x=>x.toLowerCase()===t.toLowerCase()))l.tags.push(t);e.target.value='';save(l);drawTags(l);renderLib()};
+    $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save(l);openModal(id);refresh()};
+    $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
+  }else{
+    $('#add').onclick=()=>{delete dels[id];const item={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};attachNovelSources(item);lib[id]=item;save(lib[id]);openModal(id);refresh()};
+  }
+}
+function splitText(t,max){
+  const out=[];
+  t.split('\n').forEach(par=>{
+    if(!par.trim()){out.push('');return}
+    let cur='';
+    (par.match(/[^.!?]+[.!?]*\s*/g)||[par]).forEach(sn=>{
+      while(sn.length>max){ if(cur){out.push(cur);cur=''} out.push(sn.slice(0,max)); sn=sn.slice(max) }
+      if((cur+sn).length>max){out.push(cur);cur=sn}else cur+=sn;
+    });
+    if(cur)out.push(cur);
+    out.push('\n');
+  });
+  return out;
+}
+async function gtr(c){
+  const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q='+encodeURIComponent(c));
+  if(!r.ok)throw new Error('g'+r.status);
+  const j=await r.json();return j[0].map(x=>x[0]).join('');
+}
+async function mtr(c){
+  const r=await fetch('https://api.mymemory.translated.net/get?langpair=en|pt-BR&q='+encodeURIComponent(c));
+  const j=await r.json();
+  if(!j.responseData||!j.responseData.translatedText)throw new Error('m');
+  return j.responseData.translatedText;
+}
+async function translate(text){
+  let parts;
+  try{
+    parts=await Promise.all(splitText(text,1500).map(c=>c.trim()?gtr(c):c));
+  }catch(e){
+    parts=[];
+    for(const c of splitText(text,450)) parts.push(c.trim()?await mtr(c):c);
+  }
+  return parts.join('').replace(/\n{3,}/g,'\n\n').trim();
+}
+async function showSyn(id){
+  const s=lib[id]||current[id];
+  const el=$('#syn'),tg=$('#tg');
+  if(!s||!el)return;
+  if(s.kind==='webnovel'&&(noSyn(s.syn)||noCover(s.cover))){
+    const r=await kitsuGet(s.title,s.native,noSyn(s.syn));
+    if(r&&kitsuApply(s.id,r)){if(lib[s.id])save(lib[s.id]);const im=document.querySelector('#box img');if(im&&r.cover)im.src=r.cover}
+  }
+  if(!s.syn){
+    try{const d=await gql('query($id:Int){Media(id:$id){description(asHtml:false)}}',{id:+id});s.syn=clean(d.Media.description);[lib[id],current[id]].forEach(o=>{if(o)o.syn=s.syn})}
+    catch(e){s.syn='Sem sinopse disponível.'}
+  }
+  let pt=s.pt, showPT=true;
+  const paint=()=>{
+    const el2=$('#syn'); if(!el2||$('#syn').dataset.id!==String(id)&&false)return;
+    el2.textContent=showPT?pt:s.syn;
+    tg.textContent=showPT?'Ver original (inglês)':'Ver tradução (português)';
+  };
+  el.dataset.id=id;
+  tg.onclick=()=>{showPT=!showPT;paint()};
+  if(!pt){
+    if(s.syn==='Sem sinopse disponível.'){pt=s.syn}
+    else{
+      try{pt=await translate(s.syn)}
+      catch(e){ if($('#syn')) $('#syn').textContent=s.syn+'\n\n(Não foi possível traduzir agora. Mostrando o texto original.)'; return }
+      s.pt=pt; if(lib[id]){lib[id].pt=pt;save()} if(current[id])current[id].pt=pt;
+    }
+  }
+  if($('#syn')&&$('#syn').dataset.id===String(id)){tg.style.display=pt===s.syn?'none':'';paint()}
+}
+
+/* ---------- Kitsu: capa e sinopse das WEB Novels ---------- */
+const KITSU='https://kitsu.io/api/edge/manga';
+const kMem=new Map();let kLS={},kQ=Promise.resolve();
+try{kLS=JSON.parse(localStorage.getItem('otaku-kitsu')||'{}')}catch(e){kLS={}}
+const kSaveLS=()=>{try{const k=Object.keys(kLS);if(k.length>3000)k.slice(0,k.length-3000).forEach(x=>delete kLS[x]);localStorage.setItem('otaku-kitsu',JSON.stringify(kLS))}catch(e){}};
+const kn=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+const noCover=c=>!c||/^data:image\/svg/.test(c);
+const noSyn=t=>!t||t==='Sem sinopse disponível.';
+function kPick(list,title,alt){
+  const want=[kn(title),kn(alt)].filter(Boolean);
+  const names=m=>{const a=m.attributes||{},t=a.titles||{};return [a.canonicalTitle,t.en,t.en_jp,t.en_us,t.ja_jp,...(a.abbreviatedTitles||[])].map(kn).filter(Boolean)};
+  return list.filter(m=>/^(novel|oel)$/.test((m.attributes||{}).subtype||'')).find(m=>names(m).some(x=>want.includes(x)))||null;
+}
+function kitsuGet(title,alt,needSyn){
+  const key=kn(title);if(!key)return Promise.resolve(null);
+  const m=kMem.get(key);
+  if(m===null)return Promise.resolve(null);
+  if(m&&(!needSyn||m.syn))return Promise.resolve(m);
+  const c=kLS[key];
+  if(c&&c[1]===0&&Date.now()-c[0]<6048e5)return Promise.resolve(null);
+  if(c&&c[1]&&!needSyn)return Promise.resolve({cover:c[1],syn:''});
+  const p=kQ.then(async()=>{
+    try{
+      const r=await fetch(KITSU+'?filter[text]='+encodeURIComponent(String(title).replace(/[’‘]/g,"'"))+'&page[limit]=10',{headers:{Accept:'application/vnd.api+json'}});
+      if(!r.ok)return undefined;
+      const j=await r.json(),hit=kPick(j.data||[],title,alt);
+      if(!hit){kMem.set(key,null);kLS[key]=[Date.now(),0];kSaveLS();return null}
+      const a=hit.attributes,pi=a.posterImage||{};
+      const cover=[pi.large,pi.medium,pi.small,pi.original].find(x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||''))||'';
+      const syn=String(a.synopsis||a.description||'').replace(/[<>]/g,'').replace(/\s*\((source|written by)[^)]*\)\s*$/i,'').trim();
+      const rec={cover,syn};kMem.set(key,rec);kLS[key]=[Date.now(),cover||0];kSaveLS();return rec;
+    }catch(e){return undefined}
+  });
+  kQ=p.then(()=>new Promise(r=>setTimeout(r,250)));
+  return p;
+}
+function kitsuApply(id,r){
+  if(!r)return false;let ch=false;
+  const n=novelCatalog.find(x=>novelId(x)===id);
+  if(n){if(r.cover&&noCover(n.cover))n.cover=r.cover;if(r.syn&&!n.synopsis)n.synopsis=r.syn}
+  [current[id],lib[id]].forEach(o=>{if(!o)return;
+    if(r.cover&&noCover(o.cover)){o.cover=r.cover;ch=true}
+    if(r.syn&&noSyn(o.syn)){o.syn=r.syn;delete o.pt;ch=true}});
+  if(r.cover)document.querySelectorAll('[data-id="'+id+'"] img').forEach(i=>{if(i.getAttribute('src')!==r.cover)i.src=r.cover});
+  return ch;
+}
+function kitsuBatch(items){
+  items.filter(s=>s&&s.kind==='webnovel'&&noCover(s.cover)).forEach(s=>{
+    kitsuGet(s.title,s.native,false).then(r=>{if(kitsuApply(s.id,r)&&lib[s.id])save(lib[s.id])});
+  });
+}
+
+/* ---------- Kitsu como fonte principal das WEB Novels ---------- */
+let novelUseCat=false,kCur={off:0,done:false},catIdx=new Map(),catIdxN=-1;
+const kHit=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'');
+function catFind(n){
+  if(catIdxN!==novelCatalog.length){catIdx=new Map();novelCatalog.forEach(c=>{[c.title,c.alternative].forEach(t=>{const k=kn(t);if(k&&!catIdx.has(k))catIdx.set(k,c)})});catIdxN=novelCatalog.length}
+  for(const k of [kn(n.title),kn(n.alternative),...(n.names||[])]){if(k&&catIdx.has(k))return catIdx.get(k)}
+  return null;
+}
+const kH={headers:{Accept:'application/vnd.api+json'}};let kStaffOK=true;
+function kInc(j){
+  const o={cat:{},ppl:{},stf:{}};
+  (j.included||[]).forEach(x=>{const a=x.attributes||{};
+    if(x.type==='categories')o.cat[x.id]=a.title;
+    else if(x.type==='people')o.ppl[x.id]=String(a.name||'').replace(/[<>]/g,'').trim();
+    else if(x.type==='mediaStaff'){const d=x.relationships&&x.relationships.person&&x.relationships.person.data;o.stf[x.id]={role:String(a.role||'').replace(/[<>]/g,'').trim(),pid:d?d.id:null}}});
+  return o;
+}
+function kAuthors(m,inc){
+  const rel=(m.relationships&&m.relationships.staff&&m.relationships.staff.data)||[],seen={},out=[];
+  rel.forEach(r=>{const st=inc.stf[r.id];if(!st||!st.pid)return;const nm=inc.ppl[st.pid];if(!nm||seen[st.pid])return;seen[st.pid]=1;out.push({id:+st.pid,name:nm,role:st.role})});
+  return out.slice(0,4);
+}
+function kitsuNovel(m,inc){
+  const a=m.attributes||{},t=a.titles||{},pi=a.posterImage||{};
+  const title=String(t.en||t.en_us||a.canonicalTitle||t.en_jp||'').replace(/[<>]/g,'').trim();
+  const alternative=[t.en_jp,t.ja_jp,a.canonicalTitle].map(x=>String(x||'').replace(/[<>]/g,'').trim()).find(x=>x&&x!==title)||'';
+  const cover=[pi.large,pi.medium,pi.small,pi.original].find(kHit)||'';
+  const syn=String(a.synopsis||a.description||'').replace(/[<>]/g,'').replace(/\s*\((source|written by)[^)]*\)\s*$/i,'').trim();
+  const rel=(m.relationships&&m.relationships.categories&&m.relationships.categories.data)||[];
+  const genres=rel.map(x=>inc.cat[x.id]).filter(Boolean).slice(0,12);
+  const url='https://kitsu.io/manga/'+(a.slug||m.id);
+  const names=[t.en,t.en_us,t.en_jp,t.ja_jp,a.canonicalTitle,...(a.abbreviatedTitles||[])].map(kn).filter(Boolean);
+  const n={source:'Kitsu',names,title,alternative,author:'',chapters:a.chapterCount||null,
+    status:{current:'Ongoing',finished:'Completed'}[a.status]||'',
+    stcode:{current:'RELEASING',finished:'FINISHED',tba:'NOT_YET_RELEASED',unreleased:'NOT_YET_RELEASED',upcoming:'NOT_YET_RELEASED'}[a.status]||'',
+    genres,cover,synopsis:syn,url,year:a.startDate?String(a.startDate).slice(0,4):'',rating:Math.round(parseFloat(a.averageRating))||null,language:'EN'};
+  const au=kAuthors(m,inc);n.authors=au;n.author=au.map(x=>x.name).join(', ');
+  const kl={site:'Kitsu',url,lang:'EN'},c=catFind(n);
+  if(c){ /* obra também está no catálogo: reaproveita os links de leitura e o mesmo id */
+    n.genres=[...new Set([...n.genres,...(c.genres||[])])].slice(0,16);
+    n.source=c.source;n.url=c.url;n.author=n.author||c.author||'';n.chapters=n.chapters||c.chapters||null;
+    n.sources=(c.sources&&c.sources.length?c.sources:[{site:c.source,url:c.url,lang:c.language||'EN'}]).concat([kl]);
+  }else{
+    n.sources=[kl].concat(novelSourceLinks({kind:'novel',title,authors:[]}));
+  }
+  return n;
+}
+function kitsuOk(n){
+  if(!genOk(n.genres||[],gSet,gMode.all))return false;
+  if(F.st&&n.stcode!==F.st)return false;
+  if(F.from&&!(Number(n.year)>=Number(F.from)))return false;
+  if(F.to&&!(Number(n.year)<=Number(F.to)))return false;
+  if(F.min&&!((n.rating||0)>=F.min))return false;
+  return true;
+}
+async function kitsuNovels(q,reset){
+  if(reset){kCur={off:0,done:false}}
+  const filt=gSet.size||F.st||F.from||F.to||F.min,out=[];let tries=0;
+  const so=$('#sort').value,sort=so==='SCORE_DESC'?'ratingRank':so==='START_DATE_DESC'?'-startDate':'popularityRank';
+  while(!kCur.done&&tries<(filt?5:1)&&out.length<(filt?8:1)){
+    const url=()=>KITSU+'?filter[subtype]=novel&include='+(kStaffOK?'categories,staff.person':'categories')+'&fields[categories]=title&page[limit]=20&page[offset]='+kCur.off+(q?'&filter[text]='+encodeURIComponent(q):'&sort='+sort);
+    let r=await fetch(url(),kH);
+    if(!r.ok&&kStaffOK){kStaffOK=false;r=await fetch(url(),kH)}
+    if(!r.ok)throw new Error('Kitsu '+r.status);
+    const j=await r.json(),inc=kInc(j);
+    const data=j.data||[];
+    data.forEach(m=>{const n=kitsuNovel(m,inc);if(n.title&&kitsuOk(n))out.push(n)});
+    kCur.off+=20;kCur.done=!data.length||!(j.links&&j.links.next);tries++;
+  }
+  return {items:out,hasNext:!kCur.done};
+}
+
+/* ---------- autores e outras obras do autor ---------- */
+/* ids: >0 = pessoa do Kitsu · <0 = staff do AniList (id negativo) · 0 = só o nome (catálogo) */
+const splitNames=str=>String(str||'').split(/\s*(?:\/|,|&|;)\s*/).map(x=>x.replace(/[<>]/g,'').trim()).filter(Boolean);
+const ws=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).sort().join(' ');
+const authTried=new Set();
+function catalogWorksBy(name){const k=kn(name);if(!k)return [];return novelCatalog.filter(c=>splitNames(c.author).some(x=>kn(x)===k))}
+
+async function kitsuWorks(pid,st){
+  const out=[];let tries=0;
+  while(!st.done&&tries<5&&!out.length){
+    const r=await fetch('https://kitsu.io/api/edge/people/'+pid+'/staff?include=media&page[limit]=20&page[offset]='+st.off,kH);
+    if(!r.ok)throw new Error('Kitsu '+r.status);
+    const j=await r.json(),data=j.data||[],empty={cat:{},ppl:{},stf:{}};
+    (j.included||[]).forEach(m=>{if(m.type==='manga'&&/^(novel|oel)$/.test((m.attributes||{}).subtype||'')){const n=kitsuNovel(m,empty);if(n.title)out.push(n)}});
+    st.off+=20;st.done=!data.length||!(j.links&&j.links.next);tries++;
+  }
+  return out.sort((a,b)=>(b.rating||0)-(a.rating||0));
+}
+async function anilistWorks(id,st){
+  const out=[];let tries=0;
+  while(!st.done&&tries<3&&!out.length){
+    st.p++;
+    const d=await gql('query($id:Int,$p:Int){Staff(id:$id){staffMedia(type:MANGA,page:$p,perPage:24,sort:POPULARITY_DESC){pageInfo{hasNextPage}nodes{'+MF+'}}}}',{id:+id,p:st.p});
+    const sm=d.Staff.staffMedia;
+    sm.nodes.forEach(m=>{if(m.format==='NOVEL'&&!m.isAdult)out.push(m)});
+    st.done=!sm.pageInfo.hasNextPage;tries++;
+  }
+  return out;
+}
+async function resolveKitsuPerson(name){
+  for(const f of ['name','query']){
+    try{
+      const r=await fetch('https://kitsu.io/api/edge/people?filter['+f+']='+encodeURIComponent(name)+'&page[limit]=5',kH);
+      if(!r.ok)continue;
+      const j=await r.json(),p=(j.data||[]).find(x=>ws((x.attributes||{}).name)===ws(name));
+      if(p)return +p.id;
+    }catch(e){}
+  }
+  return 0;
+}
+async function resolveAniListStaff(name){
+  try{
+    const d=await gql('query($s:String){Page(perPage:6){staff(search:$s,sort:SEARCH_MATCH){id name{full native}}}}',{s:name});
+    const p=(d.Page.staff||[]).find(x=>ws(x.name.full)===ws(name)||kn(x.name.native)===kn(name));
+    return p?+p.id:0;
+  }catch(e){return 0}
+}
+/* junta tudo que o autor tem: Kitsu + catálogo + AniList (sem repetir título) */
+async function authorWorks(reset){
+  const S=src,out={novels:[],media:[],hasNext:false};
+  if(reset){
+    S.seen=new Set();
+    const [kid,alid]=await Promise.all([S.kid?S.kid:resolveKitsuPerson(S.name),S.alid?S.alid:resolveAniListStaff(S.name)]);
+    S.kid=kid||0;S.alid=alid||0;S.k={off:0,done:!S.kid};S.al={p:0,done:!S.alid};
+  }
+  const [kl,al]=await Promise.all([
+    S.k.done?[]:kitsuWorks(S.kid,S.k).catch(()=>{S.k.done=true;return []}),
+    S.al.done?[]:anilistWorks(S.alid,S.al).catch(()=>{S.al.done=true;return []})
+  ]);
+  const dupe=t=>{const k=kn(t);if(!k||S.seen.has(k))return true;S.seen.add(k);return false};
+  kl.forEach(n=>{if(!dupe(n.title))out.novels.push(n)});
+  if(reset)catalogWorksBy(S.name).forEach(n=>{if(!dupe(n.title))out.novels.push(n)});
+  al.forEach(m=>{if(!dupe(title(m)))out.media.push(m)});
+  out.hasNext=!S.k.done||!S.al.done;
+  return out;
+}
+
+async function kitsuAuthorsFor(s){
+  try{
+    const r=await fetch(KITSU+'?filter[text]='+encodeURIComponent(String(s.title).replace(/[’‘]/g,"'"))+'&page[limit]=10&include=staff.person',kH);
+    if(!r.ok)return [];
+    const j=await r.json(),m=kPick(j.data||[],s.title,s.native);
+    return m?kAuthors(m,kInc(j)):[];
+  }catch(e){return []}
+}
+async function anilistAuthorsFor(s){
+  try{
+    const d=await gql('query($s:String){Page(perPage:8){media(search:$s,type:MANGA,format:NOVEL){id title{romaji english native}synonyms staff(perPage:8,sort:RELEVANCE){edges{role node{id name{full}}}}}}}',{s:String(s.title)});
+    const want=[kn(s.title),kn(s.native)].filter(Boolean);
+    const m=(d.Page.media||[]).find(x=>[x.title.english,x.title.romaji,x.title.native,...(x.synonyms||[])].map(kn).some(k=>k&&want.includes(k)));
+    if(!m)return [];
+    const seen={},all=m.staff.edges.filter(e=>!seen[e.node.id]&&(seen[e.node.id]=1));
+    const main=all.filter(e=>/story|original|creator|author/i.test(e.role));
+    return (main.length?main:all).slice(0,3).map(e=>({id:-e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
+  }catch(e){return []}
+}
+/* descobre o autor por 3 caminhos: Kitsu → AniList → nome que já vem no catálogo */
+async function ensureAuthors(s){
+  if(authTried.has(s.id))return false;authTried.add(s.id);
+  let au=(s.authors||[]).filter(a=>a&&a.name),ch=false;
+  const real=()=>au.some(a=>a.id!==0);
+  if(!real()){const k=await kitsuAuthorsFor(s);if(k.length){au=k;ch=true}}
+  if(!real()){const a=await anilistAuthorsFor(s);if(a.length){au=a.concat(au.filter(x=>!a.some(y=>kn(y.name)===kn(x.name))));ch=true}}
+  const c=catFind({title:s.title,alternative:s.native});
+  if(c)splitNames(c.author).forEach(nm=>{if(!au.some(x=>kn(x.name)===kn(nm))){au.push({id:0,name:nm,role:'Autor'});ch=true}});
+  if(ch){[s,current[s.id],lib[s.id]].forEach(o=>{if(o)o.authors=au});if(lib[s.id])save(lib[s.id])}
+  return ch;
+}
+function novelCredits(s){
+  const cr=$('#credits');if(!cr)return;
+  const RL={'Story':'História','Art':'Arte','Story & Art':'História e arte','Author':'Autor','Original Story':'História original','Original Creator':'Criador original','Illustration':'Ilustração'};
+  const au=(s.authors||[]).filter(a=>a&&a.name);
+  cr.dataset.id=String(s.id);
+  if(!au.length){cr.style.display='none';cr.innerHTML='';return}
+  cr.innerHTML='<div class="wh"><b>Autor e criador</b><div class="gen">'+au.map(a=>`<button class="lk" style="border:0;cursor:pointer" data-k="${a.id>0?a.id:0}" data-a="${a.id<0?-a.id:0}" data-n="${esc(a.name)}">${esc(a.name)}${a.role&&a.role!=='Autor'?' ('+esc(RL[a.role]||a.role)+')':''}</button>`).join('')+'</div></div><small>Toque em um nome para ver as outras obras do autor.</small>';
+  cr.style.display='';
+  cr.onclick=e=>{const b=e.target.closest('button');if(b)openAuthor(b.dataset.n,+b.dataset.k,+b.dataset.a)};
+}
+function openAuthor(name,kid,alid){closeModal();tab('s');setSrc({type:'author',name,kid:kid||0,alid:alid||0})}
+
+function drawSearchGenres(){genreBox($('#gsearch'),gSet,gMode,()=>search(true),()=>kSet.has('webnovel'))}
+let novelExtra=[];
+const NOVEL_SOURCES=[
+  {site:'NovelFull.com',base:'https://novelfull.com/search?keyword=',kind:'search'},
+  {site:'NovelFull.net',base:'https://novelfull.net/search?keyword=',kind:'search'},
+  {site:'Wuxiaworld',base:'https://www.google.com/search?q=',kind:'google'}
+];
+function novelSlug(t){return norm(t).replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
+function novelSourceLinks(s){
+  if(!s||s.kind!=='novel')return [];
+  const q=(s.title+' '+((s.authors&&s.authors[0]&&s.authors[0].name)||'')).trim();
+  const e=encodeURIComponent(q);
+  const slug=novelSlug(s.title);
+  return [
+    {site:'NovelFull.com',url:'https://novelfull.com/search?keyword='+e,lang:'EN'},
+    {site:'NovelFull.net',url:'https://novelfull.net/search?keyword='+e,lang:'EN'},
+    {site:'Wuxiaworld',url:'https://www.google.com/search?q='+encodeURIComponent('site:wuxiaworld.com/novel '+q),lang:'EN'}
+  ];
+}
+function attachNovelSources(s){
+  if(!s||s.kind!=='novel')return s;
+  const add=novelSourceLinks(s);
+  const old=Array.isArray(s.links)?s.links:[];
+  const seen=new Set(old.map(x=>x.site+'|'+x.url));
+  s.links=old.concat(add.filter(x=>!seen.has(x.site+'|'+x.url))).slice(0,40);
+  return s;
+}
+
+function toggleFav(id){
+  let l=lib[id];
+  if(!l){const s=current[id];if(!s)return;delete dels[id];l=lib[id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};attachNovelSources(l)}
+  l.fav=!l.fav;save(l);refresh();
+  if($('#modal').classList.contains('on'))openModal(id);
+}
+function toggleRec(id){
+  let l=lib[id],source=current[id]||(typeof curX!=='undefined'?curX[id]:null);
+  if(!l){
+    if(!source)return;
+    delete dels[id];
+    l=lib[id]={...source,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,rec:false,added:Date.now()};
+    if(typeof attachNovelSources==='function')attachNovelSources(l);
+  }
+  l.rec=!l.rec;save(l);refresh();
+  if($('#modal').classList.contains('on'))(typeof KX!=='undefined'&&KX[l.kind]?openX(id,1):openModal(id));
+}
+
+/* ---------- onde assistir / ler ---------- */
+const TIERS=[['free',/youtube|tubi|pluto|retrocrush|ani-?one|muse/i],['part',/manga ?plus|webtoon|tapas|comikey|shonen jump|viz|bilibili|viki|iqiyi|wetv|tappytoon|lezhin|pocket comics|mangamo|azuki|inkr|k manga|kakao|naver|manta|toomics/i],['paid',/netflix|amazon|prime|disney|hulu|hbo|\bmax\b|hidive|funimation|crunchyroll|apple|kindle|bookwalker|comixology|google play|paramount/i]];
+const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns capítulos/episódios)',paid:'Pago (assinatura ou compra)',other:'Outros (veja o preço no site)'};
+async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
+async function showWhere(id){
+  const s=lib[id]||current[id];if(!s||!$('#where'))return;
+  if(s.kind==='webnovel'){attachNovelSources(s);novelCredits(s);ensureAuthors(s).then(ch=>{const cr=$('#credits');if(ch&&cr&&cr.dataset.id===String(s.id))novelCredits(s)});const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
+  if(s.kind==='novel')attachNovelSources(s);
+  if(!s.links||!s.authors||s.tr===undefined){
+    try{
+      const d=await gql('query($id:Int){Media(id:$id){siteUrl trailer{id site} externalLinks{site url type language isDisabled} staff(perPage:25,sort:RELEVANCE){edges{role node{id name{full}}}} studios{edges{isMain node{id name}}}}}',{id:+id});
+      s.links=d.Media.externalLinks.filter(x=>x.type==='STREAMING'&&!x.isDisabled&&/^https?:\/\//i.test(x.url)).map(x=>({site:x.site,url:x.url,lang:x.language}));
+      s.page=d.Media.siteUrl;
+      const tr=d.Media.trailer;s.tr=tr&&/^[\w-]{5,20}$/.test(tr.id||'')&&/^(youtube|dailymotion)$/.test(tr.site||'')?tr.site+':'+tr.id:'-';
+      const seen={};
+      s.authors=d.Media.staff.edges.filter(e=>/^(original|story|art$|creator)/i.test(e.role)&&!seen[e.node.id]&&(seen[e.node.id]=1)).slice(0,5).map(e=>({id:e.node.id,name:e.node.name.full.replace(/[<>]/g,''),role:e.role}));
+      s.studios=d.Media.studios.edges.filter(e=>e.isMain).map(e=>({id:e.node.id,name:e.node.name}));
+      [lib[id],current[id]].forEach(o=>{if(o)Object.assign(o,{tr:s.tr,links:s.links,page:s.page,authors:s.authors,studios:s.studios})});
+      if(lib[id])save();
+    }catch(e){s.links=s.links||[];s.authors=s.authors||[];s.studios=s.studios||[];s.tr=s.tr||'-'}
+  }
+  const cr=$('#credits');
+  if(cr){
+    const RL={'Original Creator':'Criador original','Original Story':'História original','Story & Art':'História e arte','Story':'História','Art':'Arte','Creator':'Criador'};
+    const btn=(t,x,extra)=>`<button class="lk" style="border:0;cursor:pointer" data-t="${t}" data-id="${x.id}" data-n="${x.name.replace(/"/g,'&quot;')}">${x.name}${extra||''}</button>`;
+    let h='';
+    if(s.authors.length)h+=`<div class="wh"><b>${s.type==='MANGA'?'Autor e criador':'Criador e autor original'}</b><div class="gen">${s.authors.map(a=>btn('staff',a,' ('+(RL[a.role]||a.role)+')')).join('')}</div></div>`;
+    if(s.type!=='MANGA'&&s.studios.length)h+=`<div class="wh"><b>Estúdio</b><div class="gen">${s.studios.map(x=>btn('studio',x)).join('')}</div></div>`;
+    if(h)h+='<small>Toque em um nome para ver todas as obras.</small>';
+    cr.innerHTML=h;cr.style.display=h?'':'none';
+    cr.onclick=e=>{const b=e.target.closest('button');if(b)openWorks(b.dataset.t,b.dataset.id,b.dataset.n)};
+  }
+  const el=$('#where');if(!el)return;
+  const g={free:[],part:[],paid:[],other:[]};
+  s.links.forEach(x=>{const t=TIERS.find(t=>t[1].test(x.site));g[t?t[0]:'other'].push(x)});
+  Object.values(g).forEach(a=>a.sort((x,y)=>/portug/i.test(y.lang||'')-/portug/i.test(x.lang||'')));
+  const verb=s.kind==='novel'?'Onde ler':'Onde '+(s.type==='MANGA'?'ler':'assistir');
+  const best=g.free[0]||g.part[0]||g.paid[0]||g.other[0];
+  const isM=s.type==='MANGA',trm=/^(youtube|dailymotion):([\w-]+)$/.exec(s.tr||'');
+  let h=`<b>${verb}</b>`;
+  if(s.kind==='novel'){
+    const ns=novelSourceLinks(s);
+    h+=`<div class="sub" style="margin-top:6px">Fontes de novels encontradas para este título. A biblioteca guarda os links; a leitura continua no site de origem.</div>`;
+    h+=`<div class="row" style="margin:8px 0">${ns.map(x=>`<a class="btn" target="_blank" rel="noopener" href="${x.url}">🔎 ${x.site}</a>`).join('')}</div>`;
+    h+=`<div class="wh"><small style="margin:0">Atalho para o catálogo Wuxiaworld</small><div class="gen"><a class="lk" target="_blank" rel="noopener" href="https://www.wuxiaworld.com/novels">Wuxiaworld · Novels</a></div></div>`;
+  }else{
+    h+=`<div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
+  }
+  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
+  const q=encodeURIComponent(s.title);
+  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
+  const fr=s.type==='MANGA'
+    ?[['MANGA Plus','MANGA Plus'],['WEBTOON (PT-BR) 🇧🇷','WEBTOON'],['Tapas','Tapas']]
+    :[['Pluto TV Brasil 🇧🇷','Pluto TV'],['Muse Asia (YouTube)','Muse Asia'],['Ani-One Asia (YouTube)','Ani-One Asia']];
+  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
+  h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
+  el.innerHTML=h;
+  const tb=$('#trbtn');
+  if(tb)tb.onclick=()=>{const box=$('#trbox');if(box.innerHTML){box.innerHTML='';tb.textContent='🎬 Ver trailer aqui';return}
+    const url=trm[1]==='youtube'?'https://www.youtube-nocookie.com/embed/'+trm[2]:'https://www.dailymotion.com/embed/video/'+trm[2];
+    box.innerHTML=`<div style="position:relative;padding-top:56.25%;margin:8px 0;border-radius:10px;overflow:hidden;background:#000"><iframe src="${url}" title="Trailer" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;tb.textContent='Fechar trailer'};
+}
+
+/* ---------- login (Google Drive ou GitHub Gist) + sincronização ---------- */
+/* >>> COLE AQUI o Client ID criado no Google Cloud Console <<< */
+const GCID='56063293167-mr7v15hl3ep6ohb4i77k2i657b83na6n.apps.googleusercontent.com';
+const GSC='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile';
+const GH='https://api.github.com',GF='biblioteca-otaku.json',DR='https://www.googleapis.com/drive/v3',UP='https://www.googleapis.com/upload/drive/v3';
+let tk='',gid='',ghu=null,prov='',ready=false,pushT,dels={};
+try{tk=localStorage.getItem('otaku-tk')||'';gid=localStorage.getItem('otaku-gid')||'';ghu=JSON.parse(localStorage.getItem('otaku-ghu')||'null');prov=localStorage.getItem('otaku-prov')||(tk?'github':'');dels=JSON.parse(localStorage.getItem('otaku-del')||'{}')}catch(e){}
+if(prov==='google')tk=''; /* token do Google dura 1h e não é guardado */
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const payload=()=>JSON.stringify({scale:5,items:Object.fromEntries(Object.entries(lib).map(([k,v])=>{const {syn,pt,links,page,authors,studios,...r}=v;return[k,r]})),del:dels});
+function setStatus(t){const e=$('#sync');if(e)e.textContent=t}
+function renderUser(){const on=prov&&ghu;$('#user').innerHTML=on?`<img src="${esc(ghu.avatar)}" alt="" referrerpolicy="no-referrer"><span>${esc(ghu.login)}</span><span id="sync">${ready?'Sincronizado ✓':(prov==='google'&&!tk?'Reconectar':'')}</span><button class="chip" id="sbtn">Conta</button>`:'<button class="btn" id="sbtn">Entrar</button>'}
+$('#user').onclick=e=>{if(e.target.id==='sbtn')showSync()};
+function persist(){try{localStorage.setItem('otaku-prov',prov);localStorage.setItem('otaku-gid',gid);localStorage.setItem('otaku-ghu',JSON.stringify(ghu));if(prov==='github')localStorage.setItem('otaku-tk',tk)}catch(e){}}
+
+/* --- GitHub --- */
+async function gh(path,o={}){
+  const r=await fetch(GH+path,{...o,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk,...(o.body?{'Content-Type':'application/json'}:{})}});
+  if(r.status===401)throw new Error('Token inválido ou expirado');
+  if(!r.ok)throw new Error('O GitHub respondeu com erro '+r.status);
+  return r;
+}
+async function connectGH(t){
+  tk=t;prov='github';
+  try{
+    const u=await (await gh('/user')).json();
+    ghu={login:u.login,avatar:u.avatar_url};
+    let g=null;
+    for(let pg=1;pg<=3&&!g;pg++){const l=await (await gh('/gists?per_page=100&page='+pg)).json();g=l.find(x=>x.files&&x.files[GF]);if(l.length<100)break}
+    if(g){gid=g.id;await pullSync()}
+    else{
+      const r=await gh('/gists',{method:'POST',body:JSON.stringify({description:'Biblioteca Otaku (dados do site, não apague)',public:false,files:{[GF]:{content:payload()}}})});
+      gid=(await r.json()).id;ready=true;
+    }
+    persist();
+  }catch(e){tk='';gid='';ghu=null;prov='';throw e}
+}
+
+/* --- Google (Drive, pasta escondida do app) --- */
+function gAuth(prompt){return new Promise((res,rej)=>{
+  if(GCID.startsWith('COLE_'))return rej(new Error('Falta colocar o Client ID do Google no código do site'));
+  if(!window.google||!google.accounts||!google.accounts.oauth2)return rej(new Error('O script do Google não carregou. Verifique a internet'));
+  google.accounts.oauth2.initTokenClient({client_id:GCID,scope:GSC,prompt,
+    callback:r=>r.error?rej(new Error(r.error)):res(r.access_token),
+    error_callback:e=>rej(new Error(e&&e.type||'erro'))}).requestAccessToken();
+})}
+async function gd(url,o={}){
+  const r=await fetch(url,{...o,headers:{Authorization:'Bearer '+tk,...(o.headers||{})}});
+  if(r.status===401){tk='';renderUser();throw new Error('Sessão do Google expirou')}
+  if(!r.ok)throw new Error('O Google respondeu com erro '+r.status);
+  return r;
+}
+async function gCreate(){
+  const b='otkbound',body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:GF,parents:['appDataFolder']})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${payload()}\r\n--${b}--`;
+  const r=await gd(UP+'/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body});
+  return (await r.json()).id;
+}
+async function connectGoogle(){
+  tk=await gAuth('');prov='google';
+  try{
+    const u=await (await gd('https://www.googleapis.com/oauth2/v3/userinfo')).json();
+    ghu={login:u.name||u.email||'Google',avatar:u.picture||''};
+    const l=await (await gd(DR+'/files?spaces=appDataFolder&fields=files(id)&q='+encodeURIComponent("name='"+GF+"'"))).json();
+    if(l.files&&l.files[0]){gid=l.files[0].id;await pullSync()}
+    else{gid=await gCreate();ready=true}
+    persist();
+  }catch(e){tk='';gid='';ghu=null;prov='';throw e}
+}
+
+/* --- comum --- */
+function mergeData(c){
+  if(c.scale!==5)to5(c.items||{});
+  Object.entries(c.del||{}).forEach(([k,t])=>{dels[k]=Math.max(dels[k]||0,t);if(lib[k]&&(lib[k].upd||0)<t)delete lib[k]});
+  Object.values(c.items||{}).forEach(raw=>{const v=safe(raw),k=v.id;if(!k)return;if(dels[k]&&dels[k]>(v.upd||0))return;if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]={...lib[k],...v}});
+}
+function schedulePush(){if(!prov||!tk||!gid||!ready)return;clearTimeout(pushT);pushT=setTimeout(push,2000)}
+async function push(){
+  try{
+    setStatus('Salvando...');
+    if(prov==='google')await gd(UP+'/files/'+gid+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:payload()});
+    else await gh('/gists/'+gid,{method:'PATCH',body:JSON.stringify({files:{[GF]:{content:payload()}}})});
+    setStatus('Sincronizado ✓');
+  }catch(e){setStatus(prov==='google'&&!tk?'Reconectar':'Erro ao salvar: '+e.message)}
+}
+async function pullSync(){
+  setStatus('Sincronizando...');
+  let txt;
+  if(prov==='google'){txt=await (await gd(DR+'/files/'+gid+'?alt=media')).text()}
+  else{
+    const g=await (await gh('/gists/'+gid)).json();
+    const f=g.files[GF];txt=f.content;
+    if(f.truncated)txt=await (await fetch(f.raw_url)).text();
+  }
+  mergeData(JSON.parse(txt||'{}'));
+  ready=true;save();refresh();setStatus('Sincronizado ✓');
+}
+async function resync(){if(prov==='google'&&!tk)tk=await gAuth('');await pullSync()}
+function startSync(){
+  if(!prov||!gid)return;
+  if(prov==='google'){
+    const go=()=>gAuth('none').then(t=>{tk=t;return pullSync()}).catch(()=>setStatus('Reconectar'));
+    if(window.google&&google.accounts)go();else window.addEventListener('load',go);
+  }else pullSync().catch(e=>setStatus(String(e.message).startsWith('Token')?'Token expirou. Entre de novo.':'Sem conexão com o GitHub'));
+}
+function logout(){tk='';gid='';ghu=null;prov='';ready=false;['otaku-tk','otaku-gid','otaku-ghu','otaku-prov'].forEach(k=>localStorage.removeItem(k));renderUser()}
+async function pack(){
+  const str=payload();let bytes;
+  if(window.CompressionStream){bytes=new Uint8Array(await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer())}
+  else bytes=new TextEncoder().encode(str);
+  let bin='';for(let i=0;i<bytes.length;i+=8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+8000));
+  return (window.CompressionStream?'OTK1:':'OTK0:')+btoa(bin);
+}
+async function unpack(t){
+  t=t.trim();const z=t.startsWith('OTK1:');
+  if(!z&&!t.startsWith('OTK0:'))throw new Error('texto inválido');
+  const bytes=Uint8Array.from(atob(t.slice(5)),c=>c.charCodeAt(0));
+  const txt=z?await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text():new TextDecoder().decode(bytes);
+  return JSON.parse(txt);
+}
+function showSync(){
+  const on=prov&&ghu,goo=prov==='google';
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div style="flex:1;min-width:0">
+  ${on?`<h2>Conta conectada</h2><p>Você está logado como <b>${esc(ghu.login)}</b> (${goo?'Google':'GitHub'}). ${goo?'Sua lista fica numa pasta escondida do seu Google Drive':'Sua lista fica num Gist privado da sua conta'} e sincroniza sozinha a cada mudança.</p>
+    ${goo&&!tk?'<p class="sub">Por segurança, o Google pede para reconectar de tempos em tempos. Toque em Sincronizar agora.</p>':''}
+    <div class="row"><button class="btn" id="now">${goo&&!tk?'Reconectar e sincronizar':'Sincronizar agora'}</button>${goo?'':`<a class="lk" target="_blank" rel="noopener" href="https://gist.github.com/${esc(ghu.login)}/${esc(gid)}">Ver meu Gist</a>`}<button class="btn d" id="off">Sair</button></div>`
+  :`<h2>Entrar</h2>
+    <p class="sub">Guarde sua lista na nuvem e sincronize entre aparelhos. Escolha uma opção:</p>
+    <p><b>Google</b> (mais fácil)</p>
+    <div class="row"><button class="btn" id="gg">Entrar com Google</button></div>
+    <p class="sub">Sua lista fica numa pasta escondida do seu Google Drive. Só este site enxerga essa pasta e ela não ocupa nada visível no seu Drive.</p>
+    <p style="margin-top:16px"><b>GitHub</b> (com token, uma única vez, uns 2 minutos)</p>
+    <ol><li>Abra <a class="lk" target="_blank" rel="noopener" href="https://github.com/settings/tokens/new?scopes=gist&description=Biblioteca%20Otaku">esta página do GitHub</a> e faça login se pedir.</li>
+    <li>Em <b>Expiration</b>, escolha <b>No expiration</b>. Deixe marcada só a opção <b>gist</b>.</li>
+    <li>Role até o fim, clique em <b>Generate token</b> e copie o código que começa com <code>ghp_</code>.</li>
+    <li>Cole abaixo e toque em Entrar.</li></ol>
+    <div class="row"><input id="ti" type="password" placeholder="ghp_..." autocomplete="off" style="flex:1"><button class="btn" id="tc">Entrar</button></div>
+    <p class="sub">O token fica só neste navegador e dá acesso apenas aos seus gists. Trate-o como uma senha.</p><p style="margin-top:18px"><b>☁️ Supabase</b> — sincronização da Biblioteca Otaku</p><div class="row"><input id="su-email" type="email" placeholder="Seu e-mail" autocomplete="email" style="flex:1"><input id="su-pass" type="password" placeholder="Senha" autocomplete="current-password" style="flex:1"><button class="btn" id="su-login">Entrar</button><button class="btn" id="su-signup">Criar conta</button></div><p class="sub">Use a mesma conta em outros aparelhos para sincronizar sua biblioteca.</p>`}
+  <p id="ss" class="sub"></p>
+  <p class="sub" style="margin-top:14px"><b>Alternativa sem conta:</b> transfira por texto.</p>
+  <div class="row"><button class="btn" id="tcp">Copiar minha lista como texto</button></div>
+  <div class="row"><textarea id="tin" rows="2" placeholder="Cole aqui o texto vindo do outro aparelho" style="flex:1;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit"></textarea><button class="btn" id="tim">Importar texto</button></div></div>`;
+  $('#modal').classList.add('on');
+  const say=t=>{$('#ss').textContent=t};
+  if(on){
+    $('#now').onclick=()=>{say('Sincronizando...');resync().then(()=>{renderUser();say('Pronto.')},e=>say('Não foi possível sincronizar: '+e.message))};
+    $('#off').onclick=()=>{logout();showSync()};
+  }else{
+    $('#gg').onclick=async()=>{
+      say('Abrindo o Google...');
+      try{await connectGoogle();renderUser();showSync();$('#ss').textContent='Conectado. Sua lista já está na nuvem.'}
+      catch(e){say(/popup_closed|access_denied/.test(e.message)?'Login cancelado.':'Não deu certo: '+e.message)}
+    };
+    $('#su-login').onclick=async()=>{const email=$('#su-email').value.trim(),pass=$('#su-pass').value;say('Entrando no Supabase...');try{await window.OtakuSupabase.login(email,pass);await window.OtakuSupabase.sync('sync');renderUser();showSync();$('#ss').textContent='☁️ Conectado ao Supabase e sincronizado.'}catch(e){say('Supabase: '+e.message)}};
+    $('#su-signup').onclick=async()=>{const email=$('#su-email').value.trim(),pass=$('#su-pass').value;say('Criando conta no Supabase...');try{const d=await window.OtakuSupabase.signup(email,pass);if(d?.access_token){await window.OtakuSupabase.sync('push');renderUser();showSync();$('#ss').textContent='☁️ Conta criada e biblioteca enviada para a nuvem.'}else{say('Conta criada. Confirme seu e-mail no Supabase e depois entre novamente.')}}catch(e){say('Supabase: '+e.message)}};
+    $('#tc').onclick=async()=>{
+      const t=$('#ti').value.trim();
+      if(!t){say('Cole o token primeiro.');return}
+      say('Entrando...');
+      try{await connectGH(t);renderUser();showSync();$('#ss').textContent='Conectado. Sua lista já está na nuvem.'}
+      catch(e){say(e.message==='Failed to fetch'?'Sem conexão com o GitHub. Verifique a internet e se você abriu o site fora do Claude.':'Não deu certo: '+e.message)}
+    };
+  }
+  $('#tcp').onclick=async()=>{
+    const t=await pack();
+    try{await navigator.clipboard.writeText(t);say('Texto copiado. Mande para você mesmo e cole no outro aparelho.')}
+    catch(e){$('#tin').value=t;say('Copie o texto da caixa abaixo e cole no outro aparelho.')}
+  };
+  $('#tim').onclick=async()=>{
+    try{const c=await unpack($('#tin').value);mergeData(c);save();refresh();say('Lista importada. Você tem '+Object.keys(lib).length+' títulos.')}
+    catch(e){say('Não consegui ler esse texto. Copie de novo, inteiro.')}
+  };
+}
+/* links externos: abre em nova aba; se o navegador bloquear, abre na mesma aba */
+document.addEventListener('click',e=>{
+  const a=e.target.closest&&e.target.closest('a[href]');
+  if(!a||!/^https?:\/\//i.test(a.href)||a.origin===location.origin)return;
+  e.preventDefault();
+  const w=window.open(a.href,'_blank');
+  if(w){try{w.opener=null}catch(x){}}else location.href=a.href;
+});
+function closeModal(){$('#modal').classList.remove('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+document.onkeydown=e=>{if(e.key==='Escape')closeModal()};
+
+function clickCard(e){const h=e.target.closest('.heart');if(h){toggleFav(+h.dataset.h);return}const c=e.target.closest('.card');if(c)openModal(c.dataset.id)}
+$('#results').onclick=clickCard;$('#libgrid').onclick=clickCard;
+
+function refresh(){
+  $('#results').innerHTML=curOrder.map(i=>card(current[i])).join('');
+  renderLib();
+}
+
+function renderLibraryDashboard(){
+ const box=document.querySelector('#bo-lib-dashboard');if(!box)return;
+ const all=Object.values(lib).filter(isOtaku),countKind=k=>all.filter(x=>x.kind===k).length;
+ const fav=all.filter(x=>x.fav),recommend=all.filter(x=>x.rec),abandon=all.filter(x=>x.status==='Abandonado'),ten=all.filter(x=>x.rating===5),ongoing=all.filter(x=>x.status==='Em andamento');
+ const read=all.filter(x=>x.status==='Quero ver/ler'&&['manga','manhwa','manhua','novel','webnovel'].includes(x.kind));
+ const watch=all.filter(x=>x.status==='Quero ver/ler'&&['anime','donghua','aeni'].includes(x.kind));
+ const rated=all.filter(x=>x.rating>0),gs={};rated.forEach(x=>(x.genres||[]).forEach(g=>gs[g]=(gs[g]||0)+x.rating));
+ const top=Object.entries(gs).sort((a,b)=>b[1]-a[1]).slice(0,5),mx=Math.max(1,...top.map(x=>x[1]));
+ const text=all.map(x=>[x.title,x.syn,x.note,(x.tags||[]).join(' ')].join(' ')).join(' ').toLowerCase();
+ const rules=[['protagonistas fortes',['protagonista','protagonist','strong mc']],['mundos de fantasia',['fantasy','fantasia','magic','mágica','isekai','xianxia']],['evolução de poder',['cultivation','power','poder','level','sistema','martial']],['histórias sombrias',['dark','sombr','tragedy','tragédia','psychological','horror','terror']],['longas jornadas',['journey','jornada','adventure','aventura','quest']]];
+ const prefs=rules.map(r=>({label:r[0],hits:r[1].reduce((n,k)=>n+(text.split(k).length-1),0)})).filter(x=>x.hits).sort((a,b)=>b.hits-a.hits).slice(0,5);
+ const sc=(e,label,n)=>'<button class="lib-shortcut" data-ld="'+e+'">'+label+' <span style="opacity:.65">'+n+'</span></button>';
+ box.innerHTML='<div class="libdash"><div class="libdash-card"><div class="libdash-title">MINHA BIBLIOTECA</div><div class="libdash-sub">'+all.length.toLocaleString('pt-BR')+' obras</div><div class="lib-counts">'+[['Anime','anime'],['Mangá','manga'],['Manhwa','manhwa'],['Manhua','manhua'],['Novel','novel'],['Donghua','donghua'],['Aeni','aeni']].map(x=>'<div class="lib-count" data-kind="'+x[1]+'"><b>'+countKind(x[1])+'</b><span>'+x[0]+'</span></div>').join('')+'</div><div class="lib-shortcuts">'+sc('fav','⭐ Favoritos',fav.length)+sc('recommend','🔥 Recomendo',recommend.length)+sc('abandon','💀 Obras abandonadas',abandon.length)+sc('ten','👑 Obras 10/10',ten.length)+sc('read','📚 Quero ler',read.length)+sc('watch','🎬 Quero assistir',watch.length)+sc('ongoing','🕐 Em andamento',ongoing.length)+'</div></div><div class="lib-profile"><div class="libdash-card"><div class="libdash-title" style="font-size:18px">SEU PERFIL</div><div class="libdash-sub">Baseado nas suas notas e gêneros das obras avaliadas.</div><div class="profile-bars">'+(top.length?top.map(x=>'<div class="profile-row"><span>'+esc(gname(x[0]))+'</span><span class="pbar"><i style="width:'+Math.round(x[1]/mx*100)+'%"></i></span><b>'+Math.round(x[1]/mx*100)+'%</b></div>').join(''):'<span class="libdash-sub">Dê notas para formar seu perfil.</span>')+'</div></div><div class="libdash-card"><div class="libdash-title" style="font-size:18px">Preferência por:</div><ul class="pref-list">'+(prefs.length?prefs.map(x=>'<li>'+esc(x.label)+'</li>').join(''):'<li>preferências aparecerão conforme você avalia obras</li>')+'</ul></div></div></div>';
+ box.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{
+  resetLibFilters();
+  lkSet.add(el.dataset.kind);
+  renderLib();
+  document.querySelector('#libgrid')?.scrollIntoView({behavior:'smooth',block:'start'});
+});
+ box.querySelectorAll('[data-ld]').forEach(el=>el.onclick=()=>dashboardFilter(el.dataset.ld));
+}
+function resetLibFilters(){
+ favOnly=false;recOnly=false;
+ $('#lq').value='';
+ $('#lstatus').value='';
+ $('#lmin').value='0';
+ lkSet.clear();lgSet.clear();lgTags.clear();
+ $('#lfav').classList.remove('on');
+}
+function dashboardFilter(t){
+ resetLibFilters();
+ const status=$('#lstatus');
+ if(t==='fav'){favOnly=true}
+ if(t==='recommend'){recOnly=true}
+ if(t==='abandon')status.value='Abandonado';
+ if(t==='ten')$('#lmin').value=5;
+ if(t==='read'){status.value='Quero ver/ler';['manga','manhwa','manhua','novel','webnovel'].forEach(k=>lkSet.add(k))}
+ if(t==='watch'){status.value='Quero ver/ler';['anime','donghua','aeni'].forEach(k=>lkSet.add(k))}
+ if(t==='ongoing')status.value='Em andamento';
+ renderLib();
+ document.querySelector('#libgrid')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderLib(){
+  renderLibraryDashboard();
+  const q=$('#lq').value.toLowerCase(),st=$('#lstatus').value,so=$('#lsort').value;
+  const tc={};Object.values(lib).filter(isOtaku).forEach(x=>(x.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));
+  [...lgTags].forEach(t=>{if(!tc[t])lgTags.delete(t)});
+  $('#ltags').innerHTML=Object.keys(tc).sort((a,b)=>a.localeCompare(b)).map(t=>`<button class="chip ${lgTags.has(t)?'on':''}" data-t="${esc(t)}">🏷 ${esc(t)} (${tc[t]})</button>`).join('');
+  let items=Object.values(lib).filter(isOtaku).filter(s=>(!lkSet.size||lkSet.has(s.kind))&&genOk(s.genres,lgSet,lgMode.all)&&[...lgTags].every(t=>(s.tags||[]).includes(t))&&(!st||s.status===st)&&(!favOnly||s.fav)&&(!recOnly||s.rec)&&(!(+$('#lmin').value)||(s.rating||0)>=+$('#lmin').value)&&(!q||(s.title+' '+(s.native||'')).toLowerCase().includes(q)));
+  items.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
+  const rated=items.filter(s=>s.rating);
+  const avg=rated.length?(rated.reduce((a,s)=>a+s.rating,0)/rated.length).toFixed(1):'–';
+  $('#stats').textContent=`${items.length} título(s) · ${items.filter(s=>s.status==='Completo').length} completos · sua média: ${avg}`;
+  $('#libgrid').innerHTML=items.length?items.map(card).join(''):'';
+  kitsuBatch(items.filter(x=>x.kind==='webnovel').slice(0,30));
+  if(!items.length) $('#libgrid').innerHTML='<div class="msg" style="grid-column:1/-1">Nada aqui ainda. Vá em Descobrir, abra um título e toque em “Adicionar à biblioteca”.</div>';
+}
+
+function tab(t){
+  $('#v-search').style.display=t==='s'?'':'none';$('#v-lib').style.display=t==='l'?'':'none';$('#v-stats').style.display=t==='x'?'':'none';
+  $('#t-search').classList.toggle('on',t==='s');$('#t-lib').classList.toggle('on',t==='l');$('#t-stats').classList.toggle('on',t==='x');
+  if(t==='l')renderLib();if(t==='x')renderStats();
+}
+$('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;$('#novelCatalogBtn').onclick=()=>{kSet.clear();kSet.add('webnovel');multiKinds($('#kinds'),kSet,()=>{drawSearchGenres();search(true)});drawSearchGenres();$('#novelCatalogStatus').style.display='';search(true)};$('#importNovelsBtn').onclick=importNovelCatalog;
+$('#ltags').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.t;lgTags.has(t)?lgTags.delete(t):lgTags.add(t);renderLib()};
+
+let tm;
+$('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>search(true),450)};
+$('#sort').onchange=()=>search(true);
+$('#more').onclick=()=>{page++;search(false)};
+['#lq','#lstatus','#lmin'].forEach(s=>$(s).oninput=()=>{
+  favOnly=false;recOnly=false;
+  $('#lfav').classList.remove('on');
+  renderLib();
+});
+$('#lsort').oninput=renderLib;
+$('#lfav').onclick=e=>{
+  favOnly=!favOnly;
+  recOnly=false;
+  e.target.classList.toggle('on',favOnly);
+  renderLib();
+};
+
+$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
+$('#imp').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{{const o=JSON.parse(r.result);if(Object.values(o).some(l=>l.rating>5))to5(o);Object.values(o).forEach(x=>{const v=safe(x);if(v.id)lib[v.id]=v})}save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
+
+function seedNovelSourceCatalog(){
+  try{
+    const key='otaku-novel-sources';
+    if(localStorage.getItem(key))return;
+    localStorage.setItem(key,JSON.stringify([{title:'Martial World',author:'Cocooned Cow',chapters:2276,status:'Completed',links:[
+      {site:'NovelFull.com',url:'https://novelfull.com/martial-world.html'},
+      {site:'NovelFull.net',url:'https://novelfull.net/martial-world.html'},
+      {site:'Wuxiaworld',url:'https://www.wuxiaworld.com/novel/martial-world'}
+    ]}]));
+  }catch(e){}
+}
+
+(function init(){
+  seedNovelSourceCatalog();
+  multiKinds($('#kinds'),kSet,()=>{drawSearchGenres();search(true)});drawSearchGenres();
+  multiKinds($('#lkinds'),lkSet,renderLib);genreBox($('#glib'),lgSet,lgMode,renderLib,()=>Object.values(lib).some(x=>x.kind==='webnovel'||x.kind==='novel'));
+  filterBox();save();renderUser();startSync();
+  try{if(!localStorage.getItem('otaku-seen')){$('#tip').style.display='';$('#tipx').onclick=()=>{$('#tip').style.display='none';localStorage.setItem('otaku-seen','1')}}}catch(e){}
+  loadNovelCatalog().then(()=>{if(novelCatalogLoaded&&novelCatalog.length){const b=$('#novelCatalogStatus');b.style.display='';b.textContent=novelCatalog.length+' WEB novels no catálogo';}});
+  search(true);
+})();
+
+
+
+/* ===== Abas extras: Livros e Filmes · Jogos ===== */
+(function(){
+'use strict';
+/* Filmes usam a API do TMDB e jogos a do RAWG (as duas têm chave gratuita).
+   Cole as chaves aqui ou use o campo que aparece dentro de cada aba. Livros não precisam de chave. */
+const TMDB_KEY='',RAWG_KEY='';
+const lsKey=n=>{try{return localStorage.getItem('otaku-key-'+n)||''}catch(e){return ''}};
+const key=n=>(n==='tmdb'?TMDB_KEY:RAWG_KEY)||lsKey(n);
+const T=x=>String(x==null?'':x).replace(/[<>]/g,'').trim();
+const U=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'';
+const PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#373739"/></svg>');
+const API_CACHE_TTL=24*60*60*1000;
+const API_CACHE_PREFIX='otaku-api-cache-v1:';
+const API_INFLIGHT=new Map();
+const cacheKey=u=>API_CACHE_PREFIX+btoa(unescape(encodeURIComponent(String(u)))).replace(/[^a-zA-Z0-9]/g,'').slice(0,180);
+const cachedGet=async(u,h)=>{
+  const key=cacheKey(u);
+  const now=Date.now();
+  try{
+    const raw=localStorage.getItem(key);
+    if(raw){
+      const c=JSON.parse(raw);
+      if(c&&c.time&&now-c.time<API_CACHE_TTL&&c.data!==undefined){
+        console.log('⚡ Cache:',u);
+        return c.data;
+      }
+    }
+  }catch(e){}
+  if(API_INFLIGHT.has(key))return API_INFLIGHT.get(key);
+  const p=(async()=>{
+    try{
+      const r=await fetch(u,h?{headers:h}:undefined);
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const data=await r.json();
+      try{localStorage.setItem(key,JSON.stringify({time:Date.now(),data}))}catch(e){}
+      return data;
+    }catch(e){
+      try{
+        const raw=localStorage.getItem(key),c=raw&&JSON.parse(raw);
+        if(c&&c.data!==undefined){
+          console.warn('⚠ API indisponível; usando cache antigo:',u);
+          return c.data;
+        }
+      }catch(x){}
+      throw e;
+    }finally{API_INFLIGHT.delete(key)}
+  })();
+  API_INFLIGHT.set(key,p);
+  return p;
+};
+const jget=async(u,h)=>cachedGet(u,h);
+const hid=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return 5e9+(h>>>0)%1e9};
+const today=()=>new Date().toISOString().slice(0,10);
+const html2txt=h=>T(new DOMParser().parseFromString(String(h||'').replace(/<br\s*\/?>|<\/p>/gi,'\n'),'text/html').body.textContent.replace(/\n{3,}/g,'\n\n'));
+const auth=async(n,p)=>{try{return await p}catch(e){if(/HTTP 40[13]/.test(e.message))throw new Error('KEY:'+n);throw e}};
+const tm=(p,o)=>{const k=key('tmdb');if(!k)return Promise.reject(new Error('KEY:tmdb'));const a={language:'pt-BR',...o},b=k.length>40;if(!b)a.api_key=k;return auth('tmdb',jget('https://api.themoviedb.org/3'+p+'?'+new URLSearchParams(a),b?{Authorization:'Bearer '+k}:null))};
+const rw=(p,o)=>{const k=key('rawg');if(!k)return Promise.reject(new Error('KEY:rawg'));return auth('rawg',jget('https://api.rawg.io/api/'+p+'?'+new URLSearchParams({key:k,...o})))};
+
+/* ---------- gêneros ---------- */
+const BG=[['Ficção','fiction|ficç','fiction'],['Suspense','thriller|suspense','thriller'],['Mistério','mystery|mist[eé]rio','mystery'],['Policial','crime|detective|policial','crime'],['Romance','romance','romance'],['Fantasia','fantasy|fantasia','fantasy'],['Ficção científica','science fiction|sci-fi|cient[ií]fica','science fiction'],['Terror','horror|terror','horror'],['Aventura','adventure|aventura','adventure'],['Clássicos','classic|cl[aá]ssic','classics'],['Infantojuvenil','juvenile|young adult|infanto','juvenile fiction'],['Biografia','biograph','biography'],['História','history|hist[oó]ria','history'],['Autoajuda','self-help|autoajuda','self-help'],['Negócios','business|neg[oó]cios','business'],['Psicologia','psycholog','psychology'],['Filosofia','philosoph|filosofia','philosophy'],['Religião','religio|spirit','religion'],['Ciência','science|ci[eê]ncia','science'],['Poesia','poetry|poesia','poetry']];
+const BGC=BG.map((g,i)=>[i,g[0]]);
+const bg=a=>{const s=(a||[]).join(' | ').toLowerCase();return BG.filter(g=>new RegExp(g[1]).test(s)).map(g=>g[0]).slice(0,6)};
+const MG=[[28,'Ação'],[12,'Aventura'],[16,'Animação'],[35,'Comédia'],[80,'Crime'],[99,'Documentário'],[18,'Drama'],[10751,'Família'],[14,'Fantasia'],[36,'História'],[27,'Terror'],[9648,'Mistério'],[10749,'Romance'],[878,'Ficção científica'],[53,'Suspense'],[10752,'Guerra']];
+const MGN=Object.fromEntries(MG);
+const GG=[['action','Ação'],['adventure','Aventura'],['role-playing-games-rpg','RPG'],['strategy','Estratégia'],['shooter','Tiro'],['indie','Indie'],['casual','Casual'],['simulation','Simulação'],['puzzle','Quebra-cabeça'],['arcade','Arcade'],['platformer','Plataforma'],['racing','Corrida'],['massively-multiplayer','Multijogador massivo'],['sports','Esportes'],['fighting','Luta'],['family','Família']];
+const GGN=Object.fromEntries(GG);
+const PLAT=[[1,'PC'],[2,'PlayStation'],[3,'Xbox'],[7,'Nintendo'],[4,'iOS'],[8,'Android']];
+const SL={book:['Quero ler','Lendo','Lido','Abandonado'],movie:['Quero assistir','Assistindo','Assistido','Abandonado'],game:['Quero jogar','Jogando','Zerado','Abandonado']};
+const stl=(k,s)=>(SL[k]||[])[STATUS.indexOf(s)]||s;
+
+/* ---------- fontes de dados ---------- */
+const mvItem=m=>({id:3e9+m.id,ref:String(m.id),kind:'movie',type:'ANIME',title:T(m.title),native:m.original_title&&m.original_title!==m.title?T(m.original_title):'',cover:m.poster_path?'https://image.tmdb.org/t/p/w342'+m.poster_path:'',syn:T(m.overview),genres:(m.genre_ids||[]).map(i=>MGN[i]).filter(Boolean),year:(m.release_date||'').slice(0,4),avg:m.vote_count?Math.round(m.vote_average*10):0,by:''});
+async function fMovie(st,p){
+  const o={page:p,include_adult:'false'};let r;
+  if(st.q){o.query=st.q;r=await tm('/search/movie',o)}
+  else{
+    o.sort_by={pop:'popularity.desc',score:'vote_average.desc',new:'primary_release_date.desc'}[st.sort];
+    if(st.sort==='score')o['vote_count.gte']=500;
+    if(st.sort==='new'){o['primary_release_date.lte']=today();o['vote_count.gte']=20}
+    if(st.genres.length)o.with_genres=st.genres.join(',');
+    r=await tm('/discover/movie',o);
+  }
+  let items=r.results.map(mvItem);
+  if(st.q&&st.genres.length)items=items.filter(x=>st.genres.every(g=>x.genres.includes(MGN[g])));
+  return {items,more:r.page<r.total_pages};
+}
+const gmItem=g=>({id:4e9+g.id,ref:String(g.id),kind:'game',type:'ANIME',title:T(g.name),native:'',cover:U(g.background_image),syn:'',genres:(g.genres||[]).map(x=>GGN[x.slug]||T(x.name)),year:(g.released||'').slice(0,4),avg:g.metacritic||Math.round((g.rating||0)*20),by:'',pl:(g.parent_platforms||[]).map(x=>T(x.platform.name)).join(', '),url:'https://rawg.io/games/'+encodeURIComponent(g.slug||g.id)});
+const SID=new Map();
+async function fCheap(st,p){
+  const o={pageSize:24,pageNumber:p-1,sortBy:{pop:'Reviews',score:'Metacritic',new:'Release'}[st.sort],desc:'1'};
+  if(st.q)o.title=st.q;
+  const r=await jget('https://www.cheapshark.com/api/1.0/deals?'+new URLSearchParams(o));
+  const items=r.map(d=>({id:6e9+Number(d.gameID),ref:'c'+d.gameID,kind:'game',type:'ANIME',title:T(d.title),native:'',cover:d.steamAppID&&d.steamAppID!=='0'?'https://cdn.cloudflare.steamstatic.com/steam/apps/'+d.steamAppID+'/header.jpg':U(d.thumb),syn:'',genres:[],year:d.releaseDate?String(new Date(d.releaseDate*1000).getFullYear()):'',avg:Number(d.metacriticScore)||Number(d.steamRatingPercent)||0,by:'',pl:'PC',url:''}));
+  return {items,more:r.length===24};
+}
+const WP={1:'Microsoft Windows|Linux|macOS',2:'PlayStation',3:'Xbox',7:'Nintendo|Wii|Game Boy|GameCube|Super Nintendo',4:'iOS',8:'Android'};
+async function fWiki(st,p){
+  const rx=st.plat.map(i=>WP[i]).filter(Boolean).join('|');
+  const qs=st.q.replace(/["\\]/g,' '),nw=st.sort==='new'&&!qs;
+  const sr=qs?`SERVICE wikibase:mwapi{bd:serviceParam wikibase:api "EntitySearch";wikibase:endpoint "www.wikidata.org";mwapi:search "${qs}";mwapi:language "pt";wikibase:limit 100 . ?g wikibase:apiOutputItem mwapi:item.}`:'';
+  const q=`SELECT ?g (SAMPLE(?lb) AS ?l) (SAMPLE(?im) AS ?img) (MIN(?dt) AS ?d) (MAX(?s) AS ?sl) WHERE{${sr}?g wdt:P31 wd:Q7889;wikibase:sitelinks ?s.${qs?'':'FILTER(?s>='+(nw?6:12)+')'}${rx?'?g wdt:P400 ?pf.?pf rdfs:label ?pn.FILTER(LANG(?pn)="en"&&REGEX(?pn,"^('+rx+')"))':''}${qs?'OPTIONAL':''}{?g wdt:P18 ?im}OPTIONAL{?g wdt:P577 ?dt}${nw?'FILTER(BOUND(?dt)&&?dt<=NOW())':''}SERVICE wikibase:label{bd:serviceParam wikibase:language "pt,en".?g rdfs:label ?lb}}GROUP BY ?g ORDER BY ${nw?'DESC(?d)':'DESC(?sl)'} LIMIT 24 OFFSET ${(p-1)*24}`;
+  const r=await jget('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q));
+  const items=r.results.bindings.map(b=>{const qid=b.g.value.split('/').pop();return {id:7e9+Number(qid.slice(1)),ref:'w'+qid,kind:'game',type:'ANIME',title:T(b.l&&b.l.value),native:'',cover:b.img?U(b.img.value.replace('http:','https:').replace(/'/g,'%27')+'?width=400'):'',syn:'',genres:[],year:b.d?b.d.value.slice(0,4):'',avg:0,by:'',pl:'',url:''}}).filter(x=>x.title&&!/^Q\d+$/.test(x.title));
+  return {items,more:items.length>=20};
+}
+async function fGame(st,p){if(!key('rawg')){try{const r=await fWiki(st,p);if(r.items.length||p>1)return r}catch(e){}return fCheap(st,p)}
+  const o={page:p,page_size:24,exclude_additions:'true'};
+  if(st.q)o.search=st.q;
+  else{o.ordering={pop:'-added',score:'-metacritic',new:'-released'}[st.sort];if(st.sort==='score')o.metacritic='70,100';if(st.sort==='new')o.dates='2000-01-01,'+today()}
+  if(st.genres.length)o.genres=st.genres.join(',');
+  if(st.plat.length)o.parent_platforms=st.plat.join(',');
+  const r=await rw('games',o);
+  return {items:r.results.map(gmItem),more:!!r.next};
+}
+const gbItem=v=>{const i=v.volumeInfo||{},im=i.imageLinks||{},c=(im.thumbnail||im.smallThumbnail||'').replace('http:','https:').replace('&edge=curl','');
+  return {id:hid('g'+v.id),ref:'g'+v.id,kind:'book',type:'ANIME',title:T(i.title),native:'',cover:U(c),syn:html2txt(i.description),genres:bg(i.categories),year:(i.publishedDate||'').slice(0,4),avg:Math.round((i.averageRating||0)*20),by:T((i.authors||[]).slice(0,3).join(', ')),pg:i.pageCount||0,lang:T(i.language),url:U((i.infoLink||'').replace('http:','https:'))}};
+const olItem=d=>({id:hid('o'+d.key),ref:'o'+d.key,kind:'book',type:'ANIME',title:T(d.title),native:'',cover:d.cover_i?'https://covers.openlibrary.org/b/id/'+d.cover_i+'-M.jpg':'',syn:'',genres:bg(d.subject),year:String(d.first_publish_year||''),avg:Math.round((d.ratings_average||0)*20),by:T((d.author_name||[]).slice(0,3).join(', ')),pg:d.number_of_pages_median||0,lang:'',url:U('https://openlibrary.org'+d.key)});
+/* com texto ou gênero: Google Livros (acha títulos em português); sem texto: Open Library (mais lidos) */
+async function fBook(st,p){
+  const gs=st.genres.map(i=>BG[+i][2]);
+  const qs=st.src?'inauthor:"'+st.src+'"':[st.q,...gs.map(g=>'subject:"'+g+'"')].filter(Boolean).join(' ');
+  if(qs){
+    try{
+      const r=await jget('https://www.googleapis.com/books/v1/volumes?'+new URLSearchParams({q:qs,startIndex:(p-1)*24,maxResults:24,printType:'books',orderBy:st.sort==='new'?'newest':'relevance'}));
+      const items=(r.items||[]).map(gbItem).filter(x=>x.title);
+      return {items,more:items.length>0&&p*24<(r.totalItems||0)};
+    }catch(e){}
+  }
+  const base={q:st.src?'author:"'+st.src+'"':qs||'ratings_count:[20 TO *]',page:p,limit:24,fields:'key,title,author_name,first_publish_year,cover_i,subject,ratings_average,number_of_pages_median'};
+  const sort=st.q?'':{pop:'readinglog',score:'rating',new:'new'}[st.sort];
+  let r;
+  try{r=await jget('https://openlibrary.org/search.json?'+new URLSearchParams(sort?{...base,sort}:base))}
+  catch(e){if(!sort)throw e;r=await jget('https://openlibrary.org/search.json?'+new URLSearchParams(base))}
+  const items=(r.docs||[]).map(olItem).filter(x=>x.title);
+  return {items,more:p*24<(r.numFound||0)};
+}
+
+/* ---------- detalhes (sinopse, direção, onde assistir...) ---------- */
+const curX={},ext=new Map(),done=new Set();let curM=0;
+const put=(id,o)=>[lib[id],curX[id]].forEach(x=>x&&Object.assign(x,o));
+const csStores=async id=>{
+  const g=await jget('https://www.cheapshark.com/api/1.0/games?id='+id);
+  if(!SID.size)try{(await jget('https://www.cheapshark.com/api/1.0/stores')).forEach(z=>SID.set(z.storeID,T(z.storeName)))}catch(e){}
+  return (g.deals||[]).sort((a,b)=>a.price-b.price).slice(0,8).map(z=>({site:(SID.get(z.storeID)||'Loja')+' · US$ '+z.price,url:'https://www.cheapshark.com/redirect?dealID='+encodeURIComponent(z.dealID)}));
+};
+const wd=o=>jget('https://www.wikidata.org/w/api.php?'+new URLSearchParams({action:'wbgetentities',format:'json',origin:'*',...o}));
+async function load(s){
+  const o={},x={};
+  if(s.kind==='movie'){
+    const m=await tm('/movie/'+s.ref,{append_to_response:'credits,videos,watch/providers',include_video_language:'pt,en,null'});
+    o.rt=m.runtime||0;o.genres=(m.genres||[]).map(g=>T(g.name));o.syn=T(m.overview);
+    if(!o.syn){try{o.syn=T((await tm('/movie/'+s.ref,{language:'en-US'})).overview);o.en=1}catch(e){}}
+    const cr=m.credits||{};
+    o.by=(cr.crew||[]).filter(c=>c.job==='Director').map(c=>T(c.name)).slice(0,3).join(', ');
+    o.cast=(cr.cast||[]).slice(0,6).map(c=>T(c.name)).join(', ');
+    const v=((m.videos||{}).results||[]).find(z=>z.site==='YouTube'&&z.type==='Trailer'&&/^[\w-]{5,20}$/.test(z.key));
+    o.tr=v?'youtube:'+v.key:'-';
+    const w=((m['watch/providers']||{}).results||{}).BR||{};
+    x.wp={};['flatrate','free','ads','rent','buy'].forEach(k=>x.wp[k]=(w[k]||[]).map(p=>T(p.provider_name)));
+  }else if(s.kind==='game'&&s.ref[0]==='c'){
+    x.stores=await csStores(s.ref.slice(1));
+  }else if(s.kind==='game'&&s.ref[0]==='w'){
+    const qid=s.ref.slice(1),e=(await wd({ids:qid,props:'claims|sitelinks',sitefilter:'ptwiki|enwiki'})).entities[qid]||{};
+    const ids=c=>((e.claims||{})[c]||[]).map(z=>z.mainsnak&&z.mainsnak.datavalue&&z.mainsnak.datavalue.value&&z.mainsnak.datavalue.value.id).filter(Boolean);
+    const gi=ids('P136'),pi=ids('P400'),di=ids('P178'),all=[...new Set([...gi,...pi,...di])].slice(0,50),lab={};
+    if(all.length)try{Object.entries((await wd({ids:all.join('|'),props:'labels',languages:'pt|en'})).entities).forEach(([k,v])=>lab[k]=T(((v.labels||{}).pt||(v.labels||{}).en||{}).value))}catch(z){}
+    const L=a=>a.map(i=>lab[i]).filter(Boolean);
+    o.genres=L(gi).slice(0,6);o.pl=L(pi).slice(0,8).join(', ');o.by=L(di).slice(0,3).join(', ');
+    const sl=e.sitelinks||{},pg=sl.ptwiki||sl.enwiki;
+    if(pg)try{const r=await jget('https://'+(sl.ptwiki?'pt':'en')+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(pg.title.replace(/ /g,'_')));o.syn=T(r.extract);if(!sl.ptwiki)o.en=1}catch(z){}
+    try{const c=await jget('https://www.cheapshark.com/api/1.0/games?limit=5&title='+encodeURIComponent(s.title)),m=c.find(z=>z.external.toLowerCase()===s.title.toLowerCase());if(m)x.stores=await csStores(m.gameID)}catch(z){}
+  }else if(s.kind==='game'){
+    const g=await rw('games/'+s.ref,{});
+    o.syn=T(g.description_raw||html2txt(g.description));o.genres=(g.genres||[]).map(z=>GGN[z.slug]||T(z.name));
+    o.by=(g.developers||[]).map(z=>T(z.name)).slice(0,3).join(', ');
+    x.mc=g.metacritic||0;x.pt=g.playtime||0;
+    const names={};(g.stores||[]).forEach(z=>names[z.store.id]=T(z.store.name));
+    try{const st=await rw('games/'+s.ref+'/stores',{});x.stores=(st.results||[]).map(z=>({site:names[z.store_id]||'Loja',url:U(z.url)})).filter(z=>z.url)}catch(e){}
+  }else if(!s.syn){
+    if(s.ref[0]==='g')o.syn=html2txt(((await jget('https://www.googleapis.com/books/v1/volumes/'+s.ref.slice(1))).volumeInfo||{}).description);
+    else{const d=(await jget('https://openlibrary.org'+s.ref.slice(1)+'.json')).description;o.syn=T(typeof d==='string'?d:d&&d.value)}
+  }
+  put(s.id,o);ext.set(s.id,x);if(lib[s.id])save();
+}
+async function paintSyn(s){
+  const el=$('#syn'),tg=$('#tg');if(!el)return;
+  const need=s.syn&&((s.kind==='game'&&/^\d/.test(s.ref))||s.en||(s.kind==='book'&&s.lang!=='pt'));
+  el.textContent=need?(s.pt||'Traduzindo sinopse para português...'):(s.syn||'Sem sinopse disponível.');
+  if(!need)return;
+  try{if(!s.pt)put(s.id,{pt:await translate(s.syn)})}
+  catch(e){if($('#syn')===el)el.textContent=s.syn+'\n\n(Não foi possível traduzir agora. Mostrando o texto original.)';return}
+  if($('#syn')!==el)return;
+  let pt=true;const draw=()=>{el.textContent=pt?s.pt:s.syn;tg.textContent=pt?'Ver original':'Ver tradução'};
+  tg.style.display='';tg.onclick=()=>{pt=!pt;draw()};draw();
+}
+function whereHTML(s,x){
+  const e=encodeURIComponent,q=e((s.title+' '+(s.by||'').split(',')[0]).trim());
+  const A=(n,u)=>u?`<a class="lk" target="_blank" rel="noopener" href="${u}">${n}</a>`:'';
+  const G=(t,h)=>h?`<div class="wh"><small style="margin:0">${t}</small><div class="gen">${h}</div></div>`:'';
+  const sp=a=>(a||[]).map(n=>`<span>${n}</span>`).join('');
+  if(s.kind==='movie'){
+    const w=x.wp;let h='<b>Onde assistir (Brasil)</b>';
+    if(w){const any=['flatrate','free','ads','rent','buy'].some(k=>w[k].length);
+      h+=G('Streaming (assinatura)',sp(w.flatrate))+G('Grátis (pode ter anúncios)',sp([...w.free,...w.ads]))+G('Alugar',sp(w.rent))+G('Comprar',sp(w.buy))+(any?'':'<div class="wh"><small>Nenhum serviço encontrado no Brasil agora.</small></div>')}
+    h+=`<div class="row" style="margin:8px 0">${(s.tr||'').startsWith('youtube:')?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}</div><div id="trbox"></div>`;
+    return h+G('Mais opções',A('JustWatch Brasil','https://www.justwatch.com/br/busca?q='+q)+A('TMDB','https://www.themoviedb.org/movie/'+s.ref)+A('Trailer no YouTube','https://www.youtube.com/results?search_query='+e(s.title+' trailer')))+'<small>Disponibilidade por JustWatch (via TMDB). Confirme no site.</small>';
+  }
+  if(s.kind==='book')return '<b>Onde ler ou comprar</b>'+G('Lojas e bibliotecas',A('Google Livros',s.url)+A('Amazon Brasil','https://www.amazon.com.br/s?k='+q)+A('Estante Virtual','https://www.estantevirtual.com.br/busca?q='+q)+A('Skoob','https://www.google.com/search?q='+e('skoob '+s.title+' '+(s.by||'').split(',')[0]))+A('Open Library','https://openlibrary.org/search?q='+q))+'<small>Os preços e a disponibilidade mudam; confirme no site.</small>';
+  const inf=[x.mc&&'Metacritic '+x.mc,x.pt&&'Tempo médio: '+x.pt+' h'].filter(Boolean).join(' · ');
+  return '<b>Onde comprar e jogar</b>'+G('Lojas onde está à venda',(x.stores||[]).map(z=>A(z.site,z.url)).join(''))+G('Mais opções',A('Steam','https://store.steampowered.com/search/?term='+q)+A('Epic Games','https://store.epicgames.com/pt-BR/browse?q='+q)+A('HowLongToBeat','https://howlongtobeat.com/?q='+q)+A('Trailer no YouTube','https://www.youtube.com/results?search_query='+e(s.title+' trailer'))+A('RAWG',s.url))+(inf?'<small>'+inf+'</small>':'');
+}
+function paintWhere(s){
+  const el=$('#where');if(!el)return;
+  el.innerHTML=whereHTML(s,ext.get(s.id)||{});
+  const tb=$('#trbtn');
+  if(tb)tb.onclick=()=>{const b=$('#trbox');if(b.innerHTML){b.innerHTML='';tb.textContent='🎬 Ver trailer aqui';return}
+    b.innerHTML=`<div style="position:relative;padding-top:56.25%;margin:8px 0;border-radius:10px;overflow:hidden;background:#000"><iframe src="https://www.youtube-nocookie.com/embed/${s.tr.slice(8)}" title="Trailer" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;tb.textContent='Fechar trailer'};
+}
+
+/* ---------- cartão e janela de detalhes ---------- */
+function cardX(s){
+  const l=lib[s.id];
+  return `<div class="card cx${s.kind==='game'?' land':''}" data-id="${s.id}" tabindex="0"><span class="tag">${KX[s.kind]}</span>${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?'<span class="badge g">✓</span>':''}
+  <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
+  <img loading="lazy" src="${s.cover||PH}" alt=""><div class="i"><div class="t">${s.title}</div>
+  <div class="m">${[s.year,s.kind==='game'?s.pl:s.by].filter(Boolean).join(' · ')}${s.avg?' · ★ '+(s.avg/20).toFixed(1):''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${stl(s.kind,l.status)}</div>`:''}</div></div>`;
+}
+function openX(id,re){
+  const s=lib[id]||curX[id];if(!s)return;
+  curM=id;
+  const l=lib[id],k=s.kind,n=l&&l.rating||0,pr=k==='book'?'Página atual':k==='game'?'Horas jogadas':'';
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div class="bo-cover-wrap"><img src="${s.cover||PH}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
+  <div style="flex:1;min-width:0"><h2>${s.title}</h2>
+  <div class="sub">${[KX[k],s.year,s.by,s.rt&&s.rt+' min',k==='book'&&s.pg&&s.pg+' págs',s.avg&&'Nota '+(s.avg/20).toFixed(1)+'/5',s.native].filter(Boolean).join(' · ')}</div>
+  ${k==='game'&&s.pl?`<div class="sub">${s.pl}</div>`:''}${s.cast?`<div class="sub">Elenco: ${s.cast}</div>`:''}
+  <div class="gen">${(s.genres||[]).map(g=>`<span>${g}</span>`).join('')}</div>
+  ${k==='book'&&s.by?`<div class="sub" style="margin:8px 0 2px">Autor · toque para ver todas as obras</div><div class="gen">${s.by.split(', ').map(a=>`<button class="lk" style="border:0;cursor:pointer" data-au="${esc(a)}">${esc(a)}</button>`).join('')}</div>`:''}
+  <div class="syn" id="syn">Carregando sinopse...</div><button class="chip" id="tg" style="display:none">Ver original</button>
+  ${l?`<div class="row"><select id="mst">${STATUS.map((x,i)=>`<option value="${x}" ${x===l.status?'selected':''}>${SL[k][i]}</option>`).join('')}</select>${pr?`<input id="mprog" type="number" min="0" style="width:130px" placeholder="${pr}" value="${esc(l.prog)}">`:''}</div>
+  <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(i=>`<span data-n="${i}" class="${i<=n?'on':''}">★</span>`).join('')}</div><span>${n?n+'/5':'sem nota'}</span></div>
+  <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${esc(l.note)}</textarea>
+  <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`:'<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>'}
+  <div class="where" id="where"><b>Buscando detalhes...</b></div></div>`;
+  $('#modal').classList.add('on');
+  $('#fav').onclick=()=>toggleFav(id);$('#recbtn').onclick=()=>toggleRec(id);
+  if(l){
+    $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
+    if(pr)$('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
+    $('#mnote').onchange=e=>{l.note=T(e.target.value);save(l)};
+    $('#stars').onclick=e=>{const v=+e.target.dataset.n;if(!v)return;l.rating=l.rating===v?0:v;if(l.rating&&l.status===STATUS[0])l.status=STATUS[2];save(l);openX(id,1);refresh()};
+    $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
+  }else $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};save(lib[id]);openX(id,1);refresh()};
+  document.querySelectorAll('#box [data-au]').forEach(b=>b.onclick=()=>openAuthorX(b.dataset.au));
+  const go=()=>{const c=lib[id]||curX[id];paintSyn(c);paintWhere(c)};
+  if(re||done.has(id))go();
+  else{done.add(id);load(s).catch(()=>done.delete(id)).then(()=>{if(curM===id&&$('#modal').classList.contains('on'))openX(id,1)})}
+}
+
+/* ---------- abas ---------- */
+const HUBS={},CFG={
+  lf:{kinds:[['all','Tudo'],['book','Livros'],['movie','Filmes']],ph:'Buscar livro, autor ou filme (vazio = mais populares)'},
+  jg:{kinds:[['game','Jogos']],ph:'Buscar jogo (vazio = mais populares)'}
+};
+function streams(h){
+  const st={src:h.src||'',q:h.q.value.trim(),sort:h.sort.value,genres:[...h.g],plat:[...h.pl]},S=[];
+  if(h.id==='jg')S.push({k:'game',f:p=>fGame(st,p)});
+  else{if(h.kind!=='movie'||h.src)S.push({k:'book',f:p=>fBook(st,p)});if(h.kind!=='book'&&!h.src)S.push({k:'movie',f:p=>fMovie(st,p)})}
+  return S;
+}
+function keyBox(h){
+  if(h.id==='jg'&&!key('rawg')&&!h.need.size){h.ban.innerHTML='<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">Modo sem chave: catálogo da Wikidata (sem nota; gêneros, sinopse e preços aparecem ao abrir o jogo). Se quiser o catálogo completo (consoles, gêneros, nota), cole uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="https://rawg.io/apidocs">RAWG</a>: <input data-kn="rawg" placeholder="sua chave (opcional)" style="width:240px"> <button class="btn" data-ks="rawg">Salvar</button></div>';return}
+  h.ban.innerHTML=[...h.need].map(n=>`<div class="stats" style="background:var(--panel);padding:10px 14px;border-radius:10px">${lsKey(n)?'<b style="color:var(--red)">A chave salva foi recusada.</b> Confira se copiou inteira e sem espaços.<br>':''}Para buscar <b>${n==='tmdb'?'filmes':'jogos'}</b> é preciso uma chave gratuita do <a class="lk" target="_blank" rel="noopener" href="${n==='tmdb'?'https://www.themoviedb.org/settings/api':'https://rawg.io/apidocs'}">${n==='tmdb'?'TMDB':'RAWG'}</a> (cadastro rápido). Cole aqui: <input data-kn="${n}" placeholder="sua chave" style="width:260px"> <button class="btn" data-ks="${n}">Salvar</button></div>`).join('');
+}
+async function run(h,reset){
+  if(h.busy){if(reset)h.redo=1;return}
+  h.busy=true;if(h.id==='jg')chipsDraw(h);
+  if(reset){h.pg={};h.more={};h.ord=[];h.seen=new Set();h.need=new Set();h.res.innerHTML=''}
+  h.msg.textContent='Carregando...';h.mb.style.display='none';
+  const S=streams(h).filter(s=>h.more[s.k]!==false);let err=null;
+  const lists=await Promise.all(S.map(async s=>{
+    const p=(h.pg[s.k]||0)+1;
+    try{const r=await s.f(p);h.pg[s.k]=p;h.more[s.k]=r.more;return r.items}
+    catch(e){h.more[s.k]=false;if(/^KEY:/.test(e.message))h.need.add(e.message.slice(4));else err=e;return []}
+  }));
+  let html='';
+  for(let i=0,n=Math.max(0,...lists.map(l=>l.length));i<n;i++)lists.forEach(l=>{const s=l[i],tk=s&&h.src?s.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,''):'';if(s&&!h.seen.has(s.id)&&!(tk&&h.seen.has(tk))){h.seen.add(s.id);if(tk)h.seen.add(tk);curX[s.id]=curX[s.id]||s;h.ord.push(s.id);html+=cardX(curX[s.id])}});
+  h.res.insertAdjacentHTML('beforeend',html);keyBox(h);
+  h.msg.textContent=h.ord.length||h.need.size?'':err?'Não consegui carregar o catálogo ('+err.message+'). Tente de novo em instantes.':'Nada encontrado. Tente outro título ou gênero.';
+  h.mb.style.display=S.length&&Object.values(h.more).some(v=>v!==false)?'block':'none';
+  h.busy=false;if(h.redo){h.redo=0;run(h,true)}
+}
+function chipsDraw(h){
+  if(h.id==='jg')h.kd.innerHTML=[['','Todas as plataformas'],...PLAT].map(([v,l])=>`<button class="chip ${v===''?(h.pl.size?'':'on'):h.pl.has(String(v))?'on':''}" data-pl="${v}">${l}</button>`).join('');
+  else h.kd.innerHTML=CFG.lf.kinds.map(([v,l])=>`<button class="chip ${h.kind===v?'on':''}" data-kd="${v}">${l}</button>`).join('');
+  const rk=h.id!=='jg'||!!key('rawg');h.kd.style.display='';const list=!rk?null:h.id==='jg'?GG:h.kind==='book'?BGC:h.kind==='movie'?MG:null;
+  h.gn.style.display=list?'':'none';
+  if(list)h.gn.innerHTML=`<summary>Gêneros${h.g.size?' ('+h.g.size+')':''}</summary><div class="chips">${list.map(([v,l])=>`<button class="chip ${h.g.has(String(v))?'on':''}" data-g="${v}">${l}</button>`).join('')}${h.g.size?'<button class="chip" data-g="">Limpar</button>':''}</div>`;
+}
+function lrender(h){
+  const q=h.lq.value.toLowerCase(),st=h.ls.value,so=h.lo.value,kd=h.lk?h.lk.value:'';
+  const it=Object.values(lib).filter(x=>h.kinds.includes(x.kind)&&(!kd||x.kind===kd)&&(!st||x.status===st)&&(!h.fav||x.fav)&&(!q||(x.title+' '+(x.native||'')+' '+(x.by||'')).toLowerCase().includes(q)));
+  it.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
+  const r=it.filter(x=>x.rating);
+  h.lst.textContent=`${it.length} título(s) · ${it.filter(x=>x.status===STATUS[2]).length} concluídos · sua média: ${r.length?(r.reduce((a,x)=>a+x.rating,0)/r.length).toFixed(1):'–'}`;
+  h.lg.innerHTML=it.length?it.map(cardX).join(''):'<div class="msg" style="grid-column:1/-1">Nada aqui ainda. Vá em Descobrir, abra um título e toque em “Adicionar à biblioteca”.</div>';
+}
+const cnt=h=>{h.cnt.textContent=Object.values(lib).filter(x=>h.kinds.includes(x.kind)).length};
+const redraw=h=>{h.res.innerHTML=h.ord.map(i=>cardX(curX[i])).join('');if(h.sec.querySelector('[data-p="l"]').style.display!=='none')lrender(h);cnt(h)};
+function updSrc(h){h.srcb.style.display=h.src?'':'none';h.srcb.innerHTML=h.src?`<button class="chip" data-back="1">← Voltar</button> <b>Obras de ${esc(h.src)}</b>`:''}
+function openAuthorX(name){
+  const h=HUBS.lf,was=h.started;closeModal();
+  h.src=T(name).replace(/"/g,'');h.kind='book';h.g.clear();h.q.value='';chipsDraw(h);updSrc(h);
+  tab('lf');h.sec.querySelector('[data-v="d"]').click();
+  if(was)run(h,true);
+}
+function mount(id){
+  const c=CFG[id],h=HUBS[id]={id,kinds:c.kinds.map(k=>k[0]).filter(k=>k!=='all'),kind:'all',g:new Set(),pl:new Set(),fav:false,pg:{},more:{},ord:[],seen:new Set(),need:new Set()};
+  const sec=document.createElement('section');sec.id='v-'+id;sec.style.display='none';
+  sec.innerHTML=`<div class="chips"><button class="chip on" data-v="d">Descobrir</button><button class="chip" data-v="l">Minha lista (<span class="cnt">0</span>)</button></div>
+  <div data-p="d"><div class="bar"><input type="search" class="q" placeholder="${c.ph}"><select class="sort"><option value="pop">Mais populares</option><option value="score">Melhor avaliados</option><option value="new">Mais recentes</option></select></div>
+  <div class="src stats" style="display:none"></div><div class="ban"></div><div class="chips kd"></div><details class="gdet gn"></details>
+  <div class="grid res${id==='jg'?' land':''}"></div><div class="msg"></div><button class="more" style="display:none">Carregar mais</button></div>
+  <div data-p="l" style="display:none"><div class="bar"><input type="search" class="lq" placeholder="Buscar na minha lista">
+  <select class="ls"><option value="">Todos os status</option>${['Na fila','Em andamento','Concluído','Abandonado'].map((t,i)=>`<option value="${STATUS[i]}">${t}</option>`).join('')}</select>
+  ${id==='lf'?'<select class="lkd"><option value="">Livros e filmes</option><option value="book">Só livros</option><option value="movie">Só filmes</option></select>':''}
+  <button class="chip lf">♥ Só favoritos</button><select class="lo"><option value="added">Adicionados por último</option><option value="rating">Minha nota</option><option value="title">Título (A–Z)</option></select></div>
+  <div class="stats lst"></div><div class="grid lg${id==='jg'?' land':''}"></div></div>`;
+  $('main').appendChild(sec);
+  const q=s=>sec.querySelector(s);
+  Object.assign(h,{sec,btn:$('#t-'+id),q:q('.q'),sort:q('.sort'),ban:q('.ban'),srcb:q('.src'),res:q('.res'),msg:q('.msg'),mb:q('.more'),lq:q('.lq'),ls:q('.ls'),lo:q('.lo'),lk:q('.lkd'),lg:q('.lg'),lst:q('.lst'),cnt:q('.cnt'),kd:q('.kd'),gn:q('.gn')});
+  h.btn.onclick=()=>tab(id);
+  h.res.onclick=clickCard;h.lg.onclick=clickCard;
+  h.q.oninput=()=>{if(h.src){h.src='';updSrc(h)}clearTimeout(h.t);h.t=setTimeout(()=>run(h,true),450)};
+  h.sort.onchange=()=>run(h,true);
+  [h.lq,h.ls,h.lo,h.lk].forEach(x=>x&&(x.oninput=()=>lrender(h)));
+  sec.onclick=e=>{
+    const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+    if(d.v){sec.querySelectorAll('[data-p]').forEach(p=>p.style.display=p.dataset.p===d.v?'':'none');sec.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('on',x===b));if(d.v==='l')lrender(h)}
+    else if(d.back!==undefined){h.src='';updSrc(h);run(h,true)}
+    else if(d.kd!==undefined){h.kind=d.kd;h.src='';updSrc(h);h.g.clear();chipsDraw(h);run(h,true)}
+    else if(d.pl!==undefined){d.pl===''?h.pl.clear():(h.pl.has(d.pl)?h.pl.delete(d.pl):h.pl.add(d.pl));chipsDraw(h);run(h,true)}
+    else if(d.g!==undefined){d.g===''?h.g.clear():(h.g.has(d.g)?h.g.delete(d.g):h.g.add(d.g));chipsDraw(h);run(h,true)}
+    else if(d.ks){const v=T(q('[data-kn="'+d.ks+'"]').value);if(v){try{localStorage.setItem('otaku-key-'+d.ks,v)}catch(x){}run(h,true)}}
+    else if(b.classList.contains('more'))run(h,false);
+    else if(b.classList.contains('lf')){h.fav=!h.fav;b.classList.toggle('on',h.fav);lrender(h)}
+  };
+  chipsDraw(h);cnt(h);
+}
+
+/* ---------- ligação com o código existente ---------- */
+const _safe=safe;safe=function(v){
+  const o=_safe(v);
+  if(v&&KX[v.kind]){o.kind=v.kind;['ref','by','pl','lang','cast'].forEach(f=>{if(v[f])o[f]=T(v[f]).slice(0,300)});if(U(v.url))o.url=v.url;if(+v.pg)o.pg=+v.pg;if(+v.rt)o.rt=+v.rt}
+  return o;
+};
+const _om=openModal;openModal=function(id){const s=lib[id]||curX[id];return s&&KX[s.kind]?openX(id):_om(id)};
+const _tf=toggleFav;toggleFav=function(id){
+  const s=lib[id]||curX[id];if(!s||!KX[s.kind])return _tf(id);
+  let l=lib[id];
+  if(!l){delete dels[id];l=lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()}}
+  l.fav=!l.fav;save(l);refresh();
+  if($('#modal').classList.contains('on'))openX(id,1);
+};
+const _tr=toggleRec;toggleRec=function(id){
+  const s=lib[id]||curX[id];if(!s||!KX[s.kind])return _tr(id);
+  let l=lib[id];
+  if(!l){delete dels[id];l=lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,rec:false,added:Date.now()}}
+  l.rec=!l.rec;save(l);refresh();
+  if($('#modal').classList.contains('on'))openX(id,1);
+};
+const _rf=refresh;refresh=function(){_rf();Object.values(HUBS).forEach(redraw)};
+const _sv=save;save=function(l){_sv(l);Object.values(HUBS).forEach(cnt)};
+const _tab=tab;tab=function(t){
+  const hx=HUBS[t];
+  Object.values(HUBS).forEach(h=>{h.sec.style.display=h===hx?'':'none';h.btn.classList.toggle('on',h===hx)});
+  if(!hx)return _tab(t);
+  ['#v-search','#v-lib','#v-stats'].forEach(s=>$(s).style.display='none');
+  ['#t-search','#t-lib','#t-stats'].forEach(s=>$(s).classList.remove('on'));
+  if(!hx.started){hx.started=1;run(hx,true)}
+};
+mount('lf');mount('jg');
+})();
+
+
+
+/* ===== Sistema novo de recomendações: 5 resultados + filtros ===== */
+(function(){
+'use strict';
+const recCSS=document.createElement('style');
+recCSS.textContent=`
+#recs{background:var(--panel);border-radius:12px;padding:14px}
+.rec-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.rec-head b{font-size:17px}.rec-sub{color:var(--mut);font-size:12px}
+.rec-nav{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:12px}
+.rec-nav button{background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
+.rec-nav button:disabled{opacity:.35;cursor:not-allowed}
+.rec-track{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.rec-track .card{min-width:0}
+.rec-track .card .t{font-size:13px}
+@media(max-width:900px){.rec-track{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.rec-track{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rec-filter{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.rec-filter .chip{font-size:12px}
+#lf-rec{background:var(--panel);border-radius:12px;padding:14px;margin:0 0 16px}
+`;
+document.head.appendChild(recCSS);
+
+let mainRecItems=[],mainRecPage=0,mainRecMode='recommended';
+const escR=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const normR=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const wantedKinds=()=>kSet.size?[...kSet]:Object.keys(KINDS).filter(x=>x!=='all');
+const matchesKind=(x,ks)=>ks.includes('all')||ks.includes(x.kind);
+const matchesGenres=(x)=>genOk(x.genres||[],gSet,gMode.all);
+const notInLib=x=>!lib[x.id];
+
+function recPanelHTML(title,sub){
+  return `<div class="rec-head"><div><b>${title}</b><div class="rec-sub">${sub}</div></div></div><div class="rec-track" id="rec-track"></div><div class="rec-nav"><button id="rec-prev">←</button><span id="rec-page">1 / 1</span><button id="rec-next">→</button></div>`;
+}
+function paintMainRec(){
+  const box=$('#recs');if(!box)return;
+  if(!mainRecItems.length){box.innerHTML='<div class="msg" style="padding:18px">Não encontrei 5 obras novas com esses filtros. Tente selecionar menos gêneros ou mais tipos.</div>';return}
+  const total=Math.ceil(mainRecItems.length/5)||1;
+  mainRecPage=Math.max(0,Math.min(mainRecPage,total-1));
+  const pageItems=mainRecItems.slice(mainRecPage*5,mainRecPage*5+5);
+  pageItems.forEach(x=>current[x.id]=x);
+  box.innerHTML=recPanelHTML(mainRecMode==='surprise'?'🎲 Me surpreenda':'✨ Recomendados',
+    `Filtros: ${wantedKinds().map(k=>KINDS[k]||k).join(' + ')} · ${gSet.size?[...gSet].map(g=>gname(g)).join(gMode.all?' + ':' / '):'todos os gêneros'}`);
+  $('#rec-track').innerHTML=pageItems.map(x=>card(x)).join('');
+  $('#rec-page').textContent=(mainRecPage+1)+' / '+total;
+  $('#rec-prev').disabled=mainRecPage===0;
+  $('#rec-next').disabled=mainRecPage>=total-1;
+  $('#rec-prev').onclick=()=>{mainRecPage--;paintMainRec()};
+  $('#rec-next').onclick=()=>{mainRecPage++;paintMainRec()};
+  $('#rec-track').onclick=clickCard;
+}
+async function collectMainCandidates(mode){
+  const ks=wantedKinds(),out=new Map(),rated=Object.values(lib).filter(isOtaku).filter(x=>x.rating||x.fav);
+  const seeds=rated.sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
+  const add=x=>{
+    if(!x||!x.id||lib[x.id]||!matchesKind(x,ks)||!matchesGenres(x))return;
+    const key=String(x.id);if(!out.has(key))out.set(key,{x,score:0});
+    const a=out.get(key);a.score+=(x.rating||0);if(mode==='surprise')a.score=Math.random();
+  };
+  /* Obras relacionadas aos títulos que o usuário avaliou */
+  if(seeds.length){
+    for(const s of seeds.slice(0,5)){
+      try{
+        const d=await gql(`query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:30){nodes{rating mediaRecommendation{${MF}}}}}}`,{id:+s.id});
+        (d.Media&&d.Media.recommendations&&d.Media.recommendations.nodes||[]).forEach(n=>{
+          const m=n.mediaRecommendation;if(!m||m.isAdult)return;
+          const x=slim(m);add(x);if(out.has(String(x.id)))out.get(String(x.id)).score+=(s.rating||1)*((n.rating||1)/10);
+        });
+      }catch(e){}
+    }
+  }
+  /* Completa com catálogo filtrado */
+  for(const k of ks){
+    if(k==='webnovel'){
+      if(!novelCatalogLoaded){try{await loadNovelCatalog()}catch(e){}}
+      (novelCatalog||[]).forEach(n=>{
+        const id=novelId(n),x={id,kind:'webnovel',type:'MANGA',title:n.title||n.name||'',native:n.alternative||'',cover:n.cover||n.image||'',syn:n.synopsis||n.syn||'',genres:n.genres||[],year:n.year||'',avg:n.rating||n.averageRating||0,st:n.status||''};
+        add(x);
+      });
+    }else{
+      try{
+        const d=await fetchPage('',k,1,'POPULARITY_DESC',[...gSet]);
+        (d.media||[]).forEach(m=>{if(!m.isAdult){const x=slim(m);if(matchesGenres(x))add(x)}});
+      }catch(e){}
+    }
+  }
+  let arr=[...out.values()];
+  arr.sort((a,b)=>mode==='surprise'?Math.random()-.5:b.score-a.score);
+  return arr.map(a=>a.x).slice(0,40);
+}
+async function runMainRec(mode){
+  const box=$('#recs');if(!box)return;
+  box.style.display='';
+  box.innerHTML='<div class="msg" style="padding:18px">Buscando 5 recomendações...</div>';
+  mainRecMode=mode;mainRecPage=0;
+  mainRecItems=await collectMainCandidates(mode);
+  paintMainRec();
+}
+$('#rec').onclick=()=>runMainRec('recommended');
+$('#rnd').onclick=()=>runMainRec('surprise');
+
+/* Reabre a lista de recomendações quando filtros de tipo/gênero mudarem. */
+const oldSearch=window.search;
+if(typeof oldSearch==='function'){
+  /* não substitui a busca normal; apenas limpa recomendações antigas */
+  const oldK=document.querySelector('#kinds');
+  if(oldK)oldK.addEventListener('click',()=>{mainRecItems=[];mainRecPage=0});
+}
+
+/* ===== Recomendações de Livros e Filmes ===== */
+function movieGenreIds(){return typeof MG!=='undefined'?MG:[]}
+function recLfCard(x){
+  const l=lib[x.id];
+  return `<div class="card" data-id="${x.id}" tabindex="0">
+    <span class="tag">${x.kind==='movie'?'Filme':'Livro'}</span>
+    ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:''}
+    <button class="heart ${l&&l.fav?'on':''}" data-h="${x.id}">${l&&l.fav?'♥':'♡'}</button>
+    <img loading="lazy" src="${escR(x.cover||PH)}" alt="">
+    <div class="i"><div class="t">${escR(x.title)}</div>
+    <div class="m">${escR([x.year,x.by].filter(Boolean).join(' · '))}${x.avg?' · ★ '+(Number(x.avg)/20).toFixed(1):''}</div>
+    ${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'}</div>`:''}</div>
+  </div>`;
+}
+let lfRecItems=[],lfRecPage=0,lfRecType='all',lfRecGenre='';
+function lfGenreOptions(){
+  const base=typeof BG!=='undefined'?BG.map(x=>x[0]):['Ficção','Suspense','Mistério','Romance','Fantasia','Terror','Aventura'];
+  return [...new Set(base)].map(g=>'<button class="chip '+(lfRecGenre===g?'on':'')+'" data-rg="'+escR(g)+'">'+escR(g)+'</button>').join('');
+}
+function mountLfRec(){
+  const sec=document.querySelector('#v-lf');if(!sec||document.querySelector('#lf-rec'))return;
+  const anchor=sec.firstElementChild;
+  const box=document.createElement('div');box.id='lf-rec';
+  box.innerHTML=`<div class="rec-head"><div><b>✨ Recomendar</b><div class="rec-sub">Livros e filmes · baseado nas suas notas e favoritos</div></div><button class="btn" id="lf-rec-go">Recomendar</button></div>
+    <div class="rec-filter"><button class="chip on" data-rt="all">Livros + Filmes</button><button class="chip" data-rt="book">Só livros</button><button class="chip" data-rt="movie">Só filmes</button></div>
+    <details class="gdet" id="lf-rec-g"><summary>Gênero</summary><div class="chips" id="lf-rec-gen">${lfGenreOptions()}</div></details>
+    <div id="lf-rec-out" style="display:none"></div>`;
+  sec.insertBefore(box,anchor);
+  box.onclick=e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.rt){lfRecType=b.dataset.rt;box.querySelectorAll('[data-rt]').forEach(x=>x.classList.toggle('on',x===b));}
+    if(b.dataset.rg!==undefined){lfRecGenre=b.dataset.rg;box.querySelector('#lf-rec-gen').innerHTML=lfGenreOptions();}
+    if(b.id==='lf-rec-go')runLfRec();
+    const c=b.closest('.card');if(c&&c.dataset.id)openModal(c.dataset.id);
+  };
+}
+function lfMatches(x){
+  if(lfRecType!=='all'&&x.kind!==lfRecType)return false;
+  if(lfRecGenre&&!(x.genres||[]).some(g=>normR(g)===normR(lfRecGenre)))return false;
+  return !lib[x.id];
+}
+function lfSeeds(kind){
+  return Object.values(lib).filter(x=>x.kind===kind&&(x.rating||x.fav)).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
+}
+async function bookRecs(){
+  const seeds=lfSeeds('book'),terms=[];
+  seeds.forEach(s=>{if(s.title)terms.push(s.title);if(s.by)terms.push(String(s.by).split(',')[0])});
+  const q=terms[0]||'fiction';
+  let data=[];
+  try{
+    const r=await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=40&q='+encodeURIComponent(q));
+    const j=await r.json();data=(j.items||[]).map(v=>{const a=v.volumeInfo||{};return{id:7e9+Number(String(v.id).replace(/\D/g,'').slice(-8)||Math.floor(Math.random()*1e8)),kind:'book',type:'BOOK',ref:'g'+v.id,title:a.title||'',native:a.subtitle||'',cover:(a.imageLinks&&a.imageLinks.thumbnail||'').replace('http:','https:'),syn:a.description||'',genres:a.categories||[],year:(a.publishedDate||'').slice(0,4),avg:a.averageRating?Number(a.averageRating)*20:0,by:(a.authors||[]).join(', '),url:a.infoLink||''}}).filter(lfMatches);
+  }catch(e){}
+  return data;
+}
+async function movieRecs(){
+  const key=localStorage.getItem('otaku-key-tmdb')||'';
+  if(!key)return [];
+  const seeds=lfSeeds('movie'),terms=seeds.map(x=>x.title).filter(Boolean);
+  const base=terms[0]||'';
+  let url='https://api.themoviedb.org/3/discover/movie?language=pt-BR&include_adult=false&page=1&sort_by=popularity.desc';
+  if(lfRecGenre&&typeof MG!=='undefined'){const hit=MG.find(x=>normR(x[1])===normR(lfRecGenre));if(hit)url+='&with_genres='+hit[0]}
+  if(base)url='https://api.themoviedb.org/3/search/movie?language=pt-BR&include_adult=false&page=1&query='+encodeURIComponent(base);
+  try{
+    const r=await fetch(url,{headers:{Authorization:'Bearer '+key,Accept:'application/json'}});
+    if(!r.ok)return [];
+    const j=await r.json();return (j.results||[]).map(m=>({id:3e9+m.id,kind:'movie',type:'MOVIE',ref:String(m.id),title:m.title||'',native:m.original_title||'',cover:m.poster_path?'https://image.tmdb.org/t/p/w342'+m.poster_path:'',syn:m.overview||'',genres:(m.genre_ids||[]).map(i=>(typeof MGN!=='undefined'?MGN[i]:'' )).filter(Boolean),year:(m.release_date||'').slice(0,4),avg:m.vote_average?m.vote_average*20:0,by:''})).filter(lfMatches);
+  }catch(e){return []}
+}
+async function runLfRec(){
+  mountLfRec();
+  const out=document.querySelector('#lf-rec-out');if(!out)return;
+  out.style.display='';out.innerHTML='<div class="msg" style="padding:16px">Buscando 5 recomendações...</div>';
+  let arr=[];
+  if(lfRecType==='book')arr=await bookRecs();
+  else if(lfRecType==='movie')arr=await movieRecs();
+  else{const [b,m]=await Promise.all([bookRecs(),movieRecs()]);arr=b.concat(m)}
+  arr=arr.slice(0,25);lfRecItems=arr;lfRecPage=0;
+  if(!arr.length){out.innerHTML='<div class="msg" style="padding:16px">'+(lfRecType!=='book'&&!localStorage.getItem('otaku-key-tmdb')?'Para recomendar filmes, configure a chave TMDB na aba de filmes.':'Não encontrei 5 obras novas com esses filtros.')+'</div>';return}
+  const render=()=>{
+    const total=Math.ceil(lfRecItems.length/5)||1,p=Math.min(lfRecPage,total-1),items=lfRecItems.slice(p*5,p*5+5);
+    items.forEach(x=>current[x.id]=x);
+    out.innerHTML=recPanelHTML('✨ Recomendações',`Filtros: ${lfRecType==='all'?'Livros + Filmes':lfRecType==='book'?'Livros':'Filmes'} · ${lfRecGenre||'todos os gêneros'}`);
+    out.querySelector('#rec-track').innerHTML=items.map(recLfCard).join('');
+    out.querySelector('#rec-page').textContent=(p+1)+' / '+total;
+    out.querySelector('#rec-prev').disabled=p===0;out.querySelector('#rec-next').disabled=p>=total-1;
+    out.querySelector('#rec-prev').onclick=()=>{lfRecPage--;render()};out.querySelector('#rec-next').onclick=()=>{lfRecPage++;render()};
+    out.querySelector('#rec-track').onclick=e=>{const h=e.target.closest('.heart');if(h){toggleFav(+h.dataset.h);return}const c=e.target.closest('.card');if(c)openModal(c.dataset.id)};
+  };render();
+}
+function watchLfMount(){
+  if(document.querySelector('#v-lf'))mountLfRec();
+  else setTimeout(watchLfMount,100);
+}
+watchLfMount();
+})();
+
+
+
+/* =========================================================
+   BIBLIOTECA OTaku — camada de central, perfil, progresso,
+   coleções e backup. Escala de avaliação: EXATAMENTE 5 estrelas.
+   ========================================================= */
+(function(){
+  'use strict';
+
+  const BO5 = window.BO5 = {
+    version: 2,
+    stars: 5,
+    key: 'otaku-central-v2'
+  };
+
+  const q5 = s => document.querySelector(s);
+  const esc5 = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+  const arr5 = () => Object.values(lib || {});
+  const ot5 = x => typeof typeof isOtaku === 'function' ? isOtaku(x) : !['book','movie','game'].includes(x.kind);
+  const rated5 = () => arr5().filter(x => x.rating >= 1 && x.rating <= 5);
+  const stars5 = n => '★'.repeat(Math.max(0,Math.min(5,Number(n)||0))) + '☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
+  const avg5 = xs => {
+    const a=xs.filter(x=>x.rating>0);
+    return a.length ? (a.reduce((s,x)=>s+x.rating,0)/a.length).toFixed(1) : '–';
+  };
+
+  const css = document.createElement('style');
+  css.textContent = `
+    #bo5-dash{margin-top:14px}
+    .bo5-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+    .bo5-card{background:var(--panel);border-radius:var(--r);padding:14px}
+    .bo5-card h3{margin:0 0 8px;font-size:15px}
+    .bo5-big{font-size:28px;font-weight:700;color:var(--tx)}
+    .bo5-muted{color:var(--mut);font-size:12px}
+    .bo5-list{display:flex;flex-direction:column;gap:7px}
+    .bo5-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--panel2)}
+    .bo5-row:last-child{border-bottom:0}
+    .bo5-actions{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+    .bo5-chip{background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:7px 10px;cursor:pointer}
+    .bo5-chip.on{background:var(--ac);color:#020202}
+    .bo5-stars{color:var(--star);letter-spacing:1px;white-space:nowrap}
+    .bo5-bar{height:9px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:5px}
+    .bo5-fill{height:100%;background:var(--ac)}
+    .bo5-continue{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+    .bo5-continue .card{min-width:0}
+    .bo5-profile{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+    .bo5-k{font-size:12px;color:var(--mut)} .bo5-v{font-size:18px;font-weight:700}
+    #bo5-search{margin:0 0 14px;background:var(--panel);border-radius:12px;padding:12px}
+    #bo5-search .bar{margin:0}
+    #bo5-search-out{margin-top:10px}
+    @media(max-width:600px){.bo5-grid{grid-template-columns:1fr 1fr}}
+  `;
+  document.head.appendChild(css);
+
+  function ensureDashboard(){
+    const stats = q5('#v-stats');
+    if(!stats || q5('#bo5-dash')) return;
+    stats.innerHTML = `
+      <div id="bo5-dash">
+        <div class="bo5-actions">
+          <button class="bo5-chip on" data-bo5-view="profile">🧠 Meu perfil</button>
+          <button class="bo5-chip" data-bo5-view="continue">▶ Continuar</button>
+          <button class="bo5-chip" data-bo5-view="collections">🏷 Coleções</button>
+          <button class="bo5-chip" data-bo5-view="backup">💾 Backup</button>
+        </div>
+        <section id="bo5-profile"></section>
+        <section id="bo5-continue" style="display:none"></section>
+        <section id="bo5-collections" style="display:none"></section>
+        <section id="bo5-backup" style="display:none"></section>
+      </div>`;
+    stats.addEventListener('click', e => {
+      const b=e.target.closest('[data-bo5-view]');
+      if(b){
+        const v=b.dataset.bo5View;
+        stats.querySelectorAll('[data-bo5-view]').forEach(x=>x.classList.toggle('on',x===b));
+        ['profile','continue','collections','backup'].forEach(k=>{
+          const el=q5('#bo5-'+k); if(el) el.style.display=k===v?'':'none';
+        });
+        render5(v);
+      }
+    });
+    render5('profile');
+  }
+
+  function kindName5(k){ return (window.KINDS && KINDS[k]) || ({book:'Livro',movie:'Filme',game:'Jogo'}[k]||k||'Obra'); }
+
+  function profile5(){
+    const a=arr5(), r=rated5(), kinds={};
+    a.forEach(x=>kinds[x.kind]=(kinds[x.kind]||0)+1);
+    const genres={};
+    r.forEach(x=>(x.genres||[]).forEach(g=>{const n=String(g||'').trim();if(n)genres[n]=(genres[n]||0)+x.rating;}));
+    const topGenres=Object.entries(genres).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxG=topGenres[0]?.[1]||1;
+    const fav=a.filter(x=>x.fav).length;
+    const done=a.filter(x=>x.status==='Completo'||x.status==='Concluído').length;
+    const active=a.filter(x=>x.status==='Em andamento').length;
+    const abandon=a.filter(x=>x.status==='Abandonado').length;
+    const dist=[1,2,3,4,5].map(n=>[n,r.filter(x=>x.rating===n).length]);
+    q5('#bo5-profile').innerHTML=`
+      <div class="bo5-grid">
+        <div class="bo5-card"><div class="bo5-k">Total de obras</div><div class="bo5-big">${a.length}</div><div class="bo5-muted">${Object.entries(kinds).sort((a,b)=>b[1]-a[1]).map(([k,n])=>kindName5(k)+': '+n).join(' · ')||'Sua biblioteca está vazia'}</div></div>
+        <div class="bo5-card"><div class="bo5-k">Média das suas notas</div><div class="bo5-big">${avg5(a)} / 5</div><div class="bo5-stars">${stars5(Math.round(Number(avg5(a))||0))}</div></div>
+        <div class="bo5-card"><div class="bo5-k">Favoritos</div><div class="bo5-big">${fav}</div><div class="bo5-muted">${done} concluídos · ${active} em andamento</div></div>
+        <div class="bo5-card"><div class="bo5-k">Abandonados</div><div class="bo5-big">${abandon}</div><div class="bo5-muted">Avaliações registradas: ${r.length}</div></div>
+      </div>
+      <div class="bo5-grid" style="margin-top:12px">
+        <div class="bo5-card">
+          <h3>🎯 Seu perfil de gosto</h3>
+          ${topGenres.length ? topGenres.map(([g,n])=>`<div style="margin:8px 0"><div class="bo5-row" style="border:0;padding:0"><span>${esc5(g)}</span><span>${Math.round(n)}</span></div><div class="bo5-bar"><div class="bo5-fill" style="width:${Math.max(4,Math.round(n/maxG*100))}%"></div></div></div>`).join('') : '<div class="bo5-muted">Dê notas às obras para construir seu perfil automaticamente.</div>'}
+        </div>
+        <div class="bo5-card">
+          <h3>⭐ Distribuição das notas</h3>
+          ${dist.reverse().map(([n,c])=>`<div style="margin:8px 0"><div class="bo5-row" style="border:0;padding:0"><span class="bo5-stars">${stars5(n)}</span><b>${c}</b></div><div class="bo5-bar"><div class="bo5-fill" style="width:${r.length?Math.round(c/r.length*100):0}%"></div></div></div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function continue5(){
+    const items=arr5().filter(x=>x.status==='Em andamento' || (x.prog && String(x.prog).trim())).sort((a,b)=>(b.upd||b.added||0)-(a.upd||a.added||0)).slice(0,20);
+    const el=q5('#bo5-continue');
+    el.innerHTML=`
+      <div class="bo5-card" style="margin-bottom:12px"><h3>▶ Continue de onde parou</h3><div class="bo5-muted">${items.length} item(ns) com progresso ou em andamento.</div></div>
+      ${items.length ? '<div class="bo5-continue">'+items.map(x=>`<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${esc5(x.cover||'')}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(kindName5(x.kind))} · ${esc5(x.prog||x.status||'Em andamento')}</div>${x.rating?'<div class="bo5-stars">'+stars5(x.rating)+'</div>':''}</div></div>`).join('')+'</div>' : '<div class="msg">Nenhuma obra em andamento ainda.</div>'}`;
+    el.querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{
+      const id=c.dataset.bo5Id;
+      if(typeof window.openModal==='function') window.openModal(id);
+    });
+  }
+
+  function collections5(){
+    const a=arr5(), groups=[
+      ['♥ Favoritos',x=>!!x.fav],
+      ['⭐ 5 estrelas',x=>x.rating===5],
+      ['▶ Em andamento',x=>x.status==='Em andamento'],
+      ['✓ Completos',x=>x.status==='Completo'||x.status==='Concluído'],
+      ['⏳ Quero ver/ler',x=>x.status==='Quero ver/ler'||x.status==='Na fila'],
+      ['✕ Abandonados',x=>x.status==='Abandonado']
+    ];
+    const tags={};
+    a.forEach(x=>(x.tags||[]).forEach(t=>{tags[t]=(tags[t]||0)+1}));
+    const el=q5('#bo5-collections');
+    el.innerHTML='<div class="bo5-grid">'+groups.map(([n,f])=>`<div class="bo5-card"><h3>${n}</h3><div class="bo5-big">${a.filter(f).length}</div></div>`).join('')+'</div>'+
+      '<div class="bo5-card" style="margin-top:12px"><h3>🏷 Suas tags</h3><div class="chips">'+(Object.entries(tags).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<button class="chip" data-bo5-tag="${esc5(t)}">${esc5(t)} · ${n}</button>`).join('')||'<span class="bo5-muted">Você ainda não criou tags.</span>')+'</div></div>';
+    el.querySelectorAll('[data-bo5-tag]').forEach(b=>b.onclick=()=>{
+      const tag=b.dataset.bo5Tag;
+      const old=q5('#ltags'); if(old){ old.scrollIntoView({behavior:'smooth',block:'center'}); }
+    });
+  }
+
+  function backup5(){
+    q5('#bo5-backup').innerHTML=`
+      <div class="bo5-card">
+        <h3>💾 Backup completo</h3>
+        <p class="bo5-muted">Salve sua biblioteca, notas, favoritos, status, progresso e tags em um arquivo JSON. As avaliações usam uma escala fixa de 5 estrelas.</p>
+        <div class="bo5-actions">
+          <button class="btn" id="bo5-export">Exportar backup</button>
+          <button class="btn" id="bo5-import">Importar backup</button>
+          <input id="bo5-file" type="file" accept=".json" hidden>
+        </div>
+        <div id="bo5-backup-msg" class="bo5-muted"></div>
+      </div>`;
+    q5('#bo5-export').onclick=()=>{
+      const data={version:BO5.version,exportedAt:new Date().toISOString(),ratingScale:5,library:lib||{},deleted:dels||{},novelCatalog:novelCatalog||[]};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='biblioteca-otaku-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+      q5('#bo5-backup-msg').textContent='Backup exportado com sucesso.';
+    };
+    q5('#bo5-import').onclick=()=>q5('#bo5-file').click();
+    q5('#bo5-file').onchange=async e=>{
+      const f=e.target.files?.[0];if(!f)return;
+      try{
+        const d=JSON.parse(await f.text());
+        const incoming=d.library||d.lib||d;
+        if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw new Error('Formato inválido');
+        lib={...lib,...incoming};
+        if(d.deleted)dels=d.deleted;
+        Object.values(lib).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.round(Number(x.rating))))});
+        if(typeof window.save==='function')window.save();
+        else localStorage.setItem('otaku-lib',JSON.stringify(lib));
+        q5('#bo5-backup-msg').textContent='Backup importado. Sua biblioteca foi atualizada.';
+        render5('profile');
+      }catch(err){q5('#bo5-backup-msg').textContent='Não foi possível importar: '+err.message}
+      e.target.value='';
+    };
+  }
+
+  function render5(v){
+    ensureDashboard();
+    if(v==='profile')profile5();
+    if(v==='continue')continue5();
+    if(v==='collections')collections5();
+    if(v==='backup')backup5();
+  }
+
+  /* Busca global: não substitui a busca atual; adiciona uma camada rápida
+     para encontrar itens já conhecidos na biblioteca e autores/títulos. */
+  function ensureGlobalSearch(){
+    const searchSec=q5('#v-search');
+    if(!searchSec || q5('#bo5-search'))return;
+    const box=document.createElement('div');box.id='bo5-search';
+    box.innerHTML=`
+      <div class="bar">
+        <input type="search" id="bo5-q" placeholder="🔎 Busca rápida em toda a sua biblioteca — título, autor ou tag">
+        <button class="btn" id="bo5-go">Buscar</button>
+      </div>
+      <div id="bo5-search-out"></div>`;
+    searchSec.insertBefore(box,searchSec.children[1]||null);
+    const go=()=>{
+      const term=(q5('#bo5-q').value||'').trim().toLowerCase();
+      const out=q5('#bo5-search-out');
+      if(!term){out.innerHTML='';return}
+      const items=arr5().filter(x=>(x.title+' '+(x.native||'')+' '+(x.by||' ')+' '+(x.author||' ')+' '+(x.note||' ')+' '+(x.tags||[]).join(' ')).toLowerCase().includes(term)).slice(0,20);
+      out.innerHTML=items.length?`<div class="stats">${items.length} resultado(s) na sua biblioteca</div><div class="grid">${items.map(x=>{
+        const cover=esc5(x.cover||'');
+        return `<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${cover}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(kindName5(x.kind))} · ${esc5(x.by||x.author||'')}</div>${x.rating?'<div class="bo5-stars">'+stars5(x.rating)+'</div>':''}</div></div>`;
+      }).join('')}</div>`:'<div class="msg" style="padding:18px">Nenhum resultado na sua biblioteca.</div>';
+      out.querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{if(typeof window.openModal==='function')window.openModal(c.dataset.bo5Id)});
+    };
+    q5('#bo5-go').onclick=go;
+    q5('#bo5-q').oninput=()=>{clearTimeout(window.__bo5t);window.__bo5t=setTimeout(go,180)};
+  }
+
+  /* Uma área "Continuar" também fica acessível na biblioteca principal. */
+  function addContinueStrip(){
+    const libSec=q5('#v-lib');
+    if(!libSec||q5('#bo5-strip'))return;
+    const s=document.createElement('div');s.id='bo5-strip';s.className='sec';
+    s.innerHTML='<h3>▶ Continuar</h3><div class="stats">Obras em andamento ou com progresso salvo.</div><div class="grid" id="bo5-strip-grid"></div>';
+    libSec.insertBefore(s,libSec.children[1]||null);
+    const items=arr5().filter(x=>x.status==='Em andamento'||(x.prog&&String(x.prog).trim())).slice(0,6);
+    q5('#bo5-strip-grid').innerHTML=items.length?items.map(x=>`<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${esc5(x.cover||'')}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(x.prog||x.status)}</div></div></div>`).join(''):'<div class="msg" style="grid-column:1/-1;padding:18px">Nenhuma obra em andamento.</div>';
+    q5('#bo5-strip-grid').querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{if(typeof window.openModal==='function')window.openModal(c.dataset.bo5Id)});
+  }
+
+  function boot5(){
+    ensureDashboard();
+    ensureGlobalSearch();
+    addContinueStrip();
+    /* Mantém a escala de 5 estrelas mesmo em bibliotecas antigas. */
+    try{
+      if(localStorage.getItem('otaku-scale')!=='5'){
+        Object.values(lib||{}).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.ceil(Number(x.rating)/2)))});
+        localStorage.setItem('otaku-scale','5');
+        localStorage.setItem('otaku-lib',JSON.stringify(lib||{}));
+      }
+    }catch(e){}
+  }
+
+  const oldTab5=window.tab;
+  if(typeof oldTab5==='function'){
+    window.tab=function(t){
+      const r=oldTab5(t);
+      if(t==='stats')setTimeout(()=>render5('profile'),0);
+      if(t==='lib')setTimeout(addContinueStrip,0);
+      return r;
+    };
+  }
+
+  const oldSave5=window.save;
+  if(typeof oldSave5==='function'){
+    window.save=function(l){
+      const r=oldSave5(l);
+      setTimeout(()=>{if(q5('#bo5-dash'))render5('profile');if(q5('#bo5-strip'))addContinueStrip()},0);
+      return r;
+    };
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot5,300));
+  else setTimeout(boot5,300);
+  setTimeout(boot5,1200);
+})();
+
+
+
+/* ===== CAMADA 2 — motor de recomendação por perfil + busca global ===== */
+(function(){
+'use strict';
+const R2={page:0,items:[],mode:'',source:'',kind:'all',genre:''};
+const e2=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n2=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const all2=()=>Object.values(lib||{});
+const known2=x=>all2().some(l=>String(l.id)===String(x.id));
+const star2=n=>'★'.repeat(Math.max(0,Math.min(5,Number(n)||0)))+'☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
+function profile2(){
+ const rated=all2().filter(x=>x.rating>0), g={},authors={},k={};
+ rated.forEach(x=>{
+   k[x.kind]=(k[x.kind]||0)+x.rating;
+   (x.genres||[]).forEach(v=>{if(v)g[v]=(g[v]||0)+x.rating});
+   const by=x.by||x.author||''; by.split(',').map(s=>s.trim()).filter(Boolean).forEach(a=>authors[a]=(authors[a]||0)+x.rating);
+ });
+ return {g,authors,k};
+}
+function score2(x,p){
+ let s=0,genres=x.genres||[];
+ genres.forEach(g=>s+=(p.g[g]||0)*2);
+ const by=(x.by||x.author||'').split(',').map(s=>s.trim());
+ by.forEach(a=>s+=(p.authors[a]||0)*3);
+ s+=(p.k[x.kind]||0);
+ if(x.avg)s+=Number(x.avg)/10;
+ if(x.fav)s+=5;
+ return s;
+}
+function kindOk2(x){
+ if(R2.kind==='all')return true;
+ return String(x.kind)===R2.kind;
+}
+function genreOk2(x){
+ if(!R2.genre)return true;
+ return (x.genres||[]).some(g=>n2(g)===n2(R2.genre));
+}
+async function build2(mode){
+ const p=profile2(),out=new Map();
+ const add=x=>{
+   if(!x||!x.id||known2(x)||!kindOk2(x)||!genreOk2(x)||x.isAdult)return;
+   const z={x,score:score2(x,p)}; if(mode==='surprise')z.score=Math.random()*100;
+   const id=String(x.id);if(!out.has(id)||out.get(id).score<z.score)out.set(id,z);
+ };
+ const seeds=all2().filter(x=>x.rating>=4||x.fav).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
+ for(const s of seeds){
+   if(isOtaku(s)){
+     try{
+       const d=await gql('query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:30){nodes{rating mediaRecommendation{'+MF+'}}}}}',{id:+s.id});
+       (d.Media?.recommendations?.nodes||[]).forEach(z=>{if(z.mediaRecommendation){const x=slim(z.mediaRecommendation);x.avg=(z.rating||0)*10;add(x)}});
+     }catch(e){}
+   }
+ }
+ if(R2.kind==='all'||isOtaku({kind:R2.kind})){
+   const ks=R2.kind==='all'?['anime','manga','manhwa','manhua','donghua','aeni','novel']: [R2.kind];
+   for(const k of ks){
+     if(k==='webnovel')continue;
+     try{const d=await fetchPage('',k,1,'POPULARITY_DESC',R2.genre?[R2.genre]:[]);(d.media||[]).forEach(m=>{if(!m.isAdult)add(slim(m))})}catch(e){}
+   }
+ }
+ if(R2.kind==='webnovel'||R2.kind==='all'){
+   try{
+    if(!novelCatalogLoaded)await loadNovelCatalog();
+    (novelCatalog||[]).forEach(v=>add({id:novelId(v),kind:'webnovel',type:'MANGA',title:v.title||v.name||'',cover:v.cover||v.image||'',syn:v.synopsis||v.syn||'',genres:v.genres||[],avg:Number(v.rating||v.averageRating||0)}));
+   }catch(e){}
+ }
+ let a=[...out.values()].sort((a,b)=>b.score-a.score).map(z=>z.x);
+ if(mode==='surprise')a.sort(()=>Math.random()-.5);
+ return a.slice(0,50);
+}
+function paint2(){
+ const box=q5('#bo5-recs2');if(!box)return;
+ const total=Math.max(1,Math.ceil(R2.items.length/5)),p=Math.min(R2.page,total-1);
+ const items=R2.items.slice(p*5,p*5+5);
+ box.innerHTML='<div class="bo5-card"><div class="rec-head"><div><b>'+(R2.mode==='surprise'?'🎲 Me surpreenda':'✨ Recomendados')+'</b><div class="bo5-muted">Baseado nas suas notas, favoritos, gêneros e obras semelhantes.</div></div></div><div class="rec-track">'+(items.length?items.map(x=>card(x)).join(''):'<div class="msg" style="grid-column:1/-1;padding:18px">Não encontrei novas obras com esses filtros.</div>')+'</div><div class="rec-nav"><button id="r2p">←</button><span>'+(p+1)+' / '+total+'</span><button id="r2n">→</button></div></div>';
+ box.querySelectorAll('.card').forEach(c=>c.onclick=clickCard);
+ box.querySelector('#r2p').onclick=()=>{if(R2.page>0){R2.page--;paint2()}};
+ box.querySelector('#r2n').onclick=()=>{if(R2.page<total-1){R2.page++;paint2()}};
+ box.querySelector('#r2p').disabled=p===0;box.querySelector('#r2n').disabled=p>=total-1;
+}
+async function run2(mode){
+ const box=q5('#bo5-recs2');if(!box)return;
+ box.innerHTML='<div class="bo5-card"><div class="msg" style="padding:20px">🧠 Analisando sua biblioteca e procurando obras compatíveis...</div></div>';
+ R2.mode=mode;R2.page=0;R2.items=await build2(mode);paint2();
+}
+function mountRec2(){
+ const sec=q5('#v-search');if(!sec||q5('#bo5-recs2'))return;
+ const b=document.createElement('div');b.id='bo5-recs2';b.style.marginBottom='14px';
+ const k=document.createElement('div');k.className='chips';
+ k.innerHTML='<span class="bo5-muted" style="align-self:center">Recomendação por perfil:</span>';
+ Object.entries(KINDS).forEach(([v,l])=>{const z=document.createElement('button');z.className='chip'+(v==='all'?' on':'');z.dataset.r2k=v;z.textContent=l;k.appendChild(z)});
+ const g=document.createElement('select');g.style.marginLeft='6px';g.innerHTML='<option value="">Todos os gêneros</option>'+Object.keys(GEN||{}).map(x=>'<option value="'+e2(x)+'">'+e2(gname(x))+'</option>').join('');
+ k.appendChild(g);b.appendChild(k);
+ const a=document.createElement('div');a.className='bo5-actions';a.innerHTML='<button class="btn" id="bo5-rec-go">✨ Recomendados</button><button class="btn" id="bo5-rnd-go">🎲 Me surpreenda</button>';b.appendChild(a);
+ const out=document.createElement('div');out.id='bo5-recs2';b.appendChild(out);
+ sec.insertBefore(b,sec.firstElementChild?.nextSibling||sec.firstElementChild);
+ b.onclick=e=>{
+   const z=e.target.closest('[data-r2k]');
+   if(z){R2.kind=z.dataset.r2k;k.querySelectorAll('[data-r2k]').forEach(x=>x.classList.toggle('on',x===z))}
+ };
+ g.onchange=()=>{R2.genre=g.value};
+ b.querySelector('#bo5-rec-go').onclick=()=>run2('recommended');
+ b.querySelector('#bo5-rnd-go').onclick=()=>run2('surprise');
+}
+function mountGlobalAuthor(){
+ const q=q5('#q'),a=q5('#authors');if(!q||!a)return;
+ let t;
+ q.addEventListener('input',()=>{
+   clearTimeout(t);const v=q.value.trim();
+   if(v.length<3)return;
+   t=setTimeout(async()=>{
+     try{
+       const d=await gql('query($s:String){Page(perPage:8){staff(search:$s,sort:SEARCH_MATCH){id name{full native} primaryOccupations}}}',{s:v});
+       const ws=n2(v).split(/\s+/).filter(Boolean);
+       const list=(d.Page.staff||[]).filter(x=>{const z=n2(x.name.full+' '+(x.name.native||''));return ws.every(w=>z.includes(w))}).slice(0,5);
+       if(!list.length){a.style.display='none';return}
+       a.style.display='block';a.innerHTML='<div class="bo5-card"><b>✍ Autores encontrados</b><div class="chips" style="margin-top:8px">'+list.map(x=>'<button class="chip" data-author2="'+e2(x.name.full)+'">'+e2(x.name.full)+'</button>').join('')+'</div></div>';
+       a.querySelectorAll('[data-author2]').forEach(b=>b.onclick=()=>author2(b.dataset.author2));
+     }catch(e){a.style.display='none'}
+   },350);
+ });
+}
+async function author2(name){
+ const box=q5('#results'),msg=q5('#smsg'),q=q5('#q');q.value=name;
+ box.innerHTML='';msg.textContent='Buscando obras de '+name+'...';
+ try{
+  const d=await gql('query($s:String){Page(perPage:24,sort:SEARCH_MATCH){media(search:$s){id type format countryOfOrigin title{romaji english native} coverImage{large} description(asHtml:false) genres seasonYear startDate{year} episodes chapters volumes averageScore status}}}',{s:name});
+  const arr=(d.Page.media||[]).filter(x=>!x.isAdult).map(slim);
+  arr.forEach(x=>current[x.id]=x);
+  box.innerHTML=arr.length?arr.map(card).join(''):'<div class="msg" style="grid-column:1/-1">Nenhuma obra encontrada para este autor.</div>';
+  box.onclick=clickCard;msg.textContent=arr.length?arr.length+' obra(s) encontrada(s).':'';
+ }catch(e){msg.textContent='Não foi possível pesquisar este autor agora.'}
+}
+function bootR2(){mountRec2();mountGlobalAuthor()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootR2,900));else setTimeout(bootR2,900);
+setTimeout(bootR2,1800);
+})();
+
+
+
+/* ===== CAMADA 3 — descoberta profunda, fontes, progresso e histórico ===== */
+(function(){
+'use strict';
+const D3={history:[],progress:{},sources:{}};
+const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function load3(){try{D3.history=JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]');D3.progress=JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}')}catch(x){}}
+function save3(){localStorage.setItem('otaku-discovery-history',JSON.stringify(D3.history.slice(-100)));localStorage.setItem('otaku-progress-v1',JSON.stringify(D3.progress))}
+function kind3(x){return ({anime:'Anime',manga:'Mangá',manhwa:'Manhwa',manhua:'Manhua',donghua:'Donghua',aeni:'Aeni',novel:'Novel',webnovel:'WEB Novel',book:'Livro',movie:'Filme',game:'Jogo'})[x]||x||'Obra'}
+function stars3(n){n=Math.max(0,Math.min(5,Math.round(Number(n)||0)));return '★'.repeat(n)+'☆'.repeat(5-n)}
+function addHistory(x,action='abriu'){
+ if(!x?.id)return;
+ D3.history=D3.history.filter(a=>String(a.id)!==String(x.id));
+ D3.history.push({id:x.id,title:x.title||'',kind:x.kind||x.type,cover:x.cover||x.coverImage?.large||'',action,at:Date.now()});
+ save3();
+}
+function current3(id){return (lib&&lib[id])||window.current?.[id]||null}
+function modalHook3(){
+ if(typeof window.openModal!=='function')return;
+ const old=window.openModal;
+ window.openModal=function(id){const x=current3(id);if(x)addHistory(x);return old.apply(this,arguments)}
+}
+function score3(x){
+ const rated=Object.values(lib||{}).filter(a=>a.rating>0);
+ let s=0;
+ rated.forEach(a=>{
+  const r=a.rating;
+  (a.genres||[]).forEach(g=>{if((x.genres||[]).some(h=>norm(h)===norm(g)))s+=r*1.8});
+  if(a.by&&x.by&&norm(a.by)===norm(x.by))s+=r*3;
+  if(a.author&&x.author&&norm(a.author)===norm(x.author))s+=r*3;
+ });
+ if(x.avg)s+=Math.min(10,Number(x.avg)/10);
+ return s;
+}
+function addProgressUI(){
+ if(document.getElementById('d3-progress'))return;
+ const stats=q5('#v-stats');if(!stats)return;
+ const el=document.createElement('div');el.id='d3-progress';el.className='bo5-card';el.style.marginTop='12px';
+ el.innerHTML='<h3>📈 Progresso</h3><div id="d3-prog-body"></div>';
+ stats.appendChild(el);renderProgress3();
+}
+function renderProgress3(){
+ const el=q5('#d3-prog-body');if(!el)return;
+ const vals=Object.values(D3.progress).sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,20);
+ el.innerHTML=vals.length?vals.map(p=>{
+   const pct=p.total?Math.min(100,Math.round(p.current/p.total*100)):0;
+   return '<div class="bo5-row"><div><b>'+e(p.title)+'</b><div class="bo5-muted">'+e(kind3(p.kind))+' · '+e(p.current||0)+(p.total?' / '+e(p.total):'')+'</div><div class="bo5-bar"><div class="bo5-fill" style="width:'+pct+'%"></div></div></div><span>'+pct+'%</span></div>'
+ }).join(''):'<div class="bo5-muted">Seu progresso aparecerá aqui quando você registrar capítulos, episódios ou páginas.</div>';
+}
+function progressForm3(x){
+ const p=D3.progress[x.id]||{id:x.id,title:x.title,kind:x.kind,current:0,total:x.episodes||x.chapters||x.volumes||0,updated:Date.now()};
+ const cur=prompt('Progresso de '+x.title+'\nDigite episódio, capítulo, volume ou página atual:',p.current||0);
+ if(cur===null)return;
+ const total=prompt('Total conhecido (opcional):',p.total||'');
+ p.current=Math.max(0,Number(cur)||0);p.total=Math.max(0,Number(total)||0);p.updated=Date.now();p.title=x.title;p.kind=x.kind;
+ D3.progress[x.id]=p;save3();renderProgress3();
+}
+function sources3(x){
+ const title=encodeURIComponent(x.title||'');
+ const type=x.kind||x.type||'';
+ const out=[];
+ if(['anime','aeni','donghua'].includes(type)){
+  out.push(['AniList','https://anilist.co/search/anime?search='+title]);
+  out.push(['Kitsu','https://kitsu.io/anime?text='+title]);
+  out.push(['JustWatch','https://www.justwatch.com/br/busca?q='+title]);
+ }
+ if(['manga','manhwa','manhua','novel','webnovel'].includes(type)){
+  out.push(['Google','https://www.google.com/search?q='+encodeURIComponent((x.title||'')+' '+(x.by||x.author||''))]);
+  out.push(['NovelUpdates','https://www.novelupdates.com/?s='+title+'&post_type=seriesplans']);
+ }
+ return out;
+}
+function addSources3(){
+ if(q5('#d3-sources'))return;
+ const libSec=q5('#v-lib');if(!libSec)return;
+ const box=document.createElement('div');box.id='d3-sources';box.className='sec';
+ box.innerHTML='<h3>🌐 Fontes rápidas</h3><div class="bo5-muted">Abra informações, busca e serviços relacionados à obra selecionada.</div><div id="d3-source-list" class="chips" style="margin-top:8px"></div>';
+ libSec.insertBefore(box,libSec.firstElementChild?.nextSibling||libSec.firstElementChild);
+}
+function renderSources3(x){
+ const el=q5('#d3-source-list');if(!el)return;
+ el.innerHTML=sources3(x).map(a=>'<a class="chip" target="_blank" rel="noopener" href="'+e(a[1])+'">'+e(a[0])+'</a>').join('')||'<span class="bo5-muted">Nenhuma fonte rápida disponível para este tipo.</span>';
+}
+function addDiscovery3(){
+ const s=q5('#v-search');if(!s||q5('#d3-discovery'))return;
+ const box=document.createElement('div');box.id='d3-discovery';box.className='bo5-card';box.style.marginBottom='14px';
+ box.innerHTML='<h3>🧭 Descoberta profunda</h3><div class="bo5-muted">Seu histórico de navegação ajuda a ajustar novas descobertas sem alterar suas notas.</div><div id="d3-history" class="bo5-list" style="margin-top:8px"></div><button class="bo5-chip" id="d3-clear">Limpar histórico</button>';
+ s.insertBefore(box,s.firstElementChild);
+ renderHistory3();
+ q5('#d3-clear').onclick=()=>{D3.history=[];save3();renderHistory3()}
+}
+function renderHistory3(){
+ const el=q5('#d3-history');if(!el)return;
+ const h=D3.history.slice().reverse().slice(0,8);
+ el.innerHTML=h.length?h.map(x=>'<div class="bo5-row"><span><b>'+e(x.title)+'</b><br><span class="bo5-muted">'+e(kind3(x.kind))+' · '+e(x.action)+'</span></span><span class="bo5-muted">'+new Date(x.at).toLocaleDateString('pt-BR')+'</span></div>').join(''):'<span class="bo5-muted">Seu histórico de descobertas aparecerá aqui.</span>';
+}
+function enhanceModal3(){
+ if(typeof window.openModal!=='function')return;
+ const old=window.openModal;
+ window.openModal=function(id){
+  const x=current3(id);
+  const r=old.apply(this,arguments);
+  setTimeout(()=>{
+   const modal=document.querySelector('.modal.show,.modal[style*="display"],#modal');
+   if(!modal||!x)return;
+   if(modal.querySelector('#d3-modal-actions'))return;
+   const a=document.createElement('div');a.id='d3-modal-actions';a.className='bo5-actions';
+   a.innerHTML='<button class="bo5-chip" id="d3-prog">📈 Registrar progresso</button><button class="bo5-chip" id="d3-src">🌐 Ver fontes</button>';
+   modal.appendChild(a);
+   a.querySelector('#d3-prog').onclick=()=>{progressForm3(x)};
+   a.querySelector('#d3-src').onclick=()=>{addSources3();renderSources3(x);q5('#d3-sources')?.scrollIntoView({behavior:'smooth'})};
+  },80);
+  addHistory(x);
+  return r;
+ }
+}
+function improveRecommend3(){
+ const box=q5('#bo5-recs2');if(!box)return;
+ const old=box.dataset.d3;
+ if(old==='1')return;
+ box.dataset.d3='1';
+}
+function boot3(){load3();addProgressUI();addSources3();addDiscovery3();modalHook3();enhanceModal3();improveRecommend3()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot3,1400));else setTimeout(boot3,1400);
+setTimeout(boot3,2600);
+})();
+
+
+
+/* ===== CAMADA 4 — dados locais robustos, sincronização preparada e backup ===== */
+(function(){
+'use strict';
+const C4={key:'otaku-cloud-v1',version:1,last:0};
+const esc4=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function snapshot4(){
+ return {
+  version:C4.version,
+  updatedAt:Date.now(),
+  library:Object.values(window.lib||{}),
+  progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),
+  history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]'),
+  settings:{
+   scale:localStorage.getItem('otaku-scale')||'5',
+   theme:localStorage.getItem('theme')||'',
+   source:localStorage.getItem('otaku-source')||''
+  }
+ };
+}
+function saveCloudLocal4(){
+ try{
+  const d=snapshot4();
+  localStorage.setItem(C4.key,JSON.stringify(d));
+  C4.last=d.updatedAt;
+  localStorage.setItem(C4.key+'-last',String(C4.last));
+ }catch(e){}
+}
+function restoreCloudLocal4(d){
+ if(!d||typeof d!=='object')throw new Error('Backup inválido');
+ if(Array.isArray(d.library)){
+  const target=window.lib||{};
+  d.library.forEach(x=>{if(x&&x.id)target[x.id]=x});
+  try{localStorage.setItem('otaku-lib',JSON.stringify(target))}catch(e){}
+ }
+ if(d.progress)localStorage.setItem('otaku-progress-v1',JSON.stringify(d.progress));
+ if(d.history)localStorage.setItem('otaku-discovery-history',JSON.stringify(d.history));
+ if(d.settings){
+  Object.entries(d.settings).forEach(([k,v])=>{if(v!==undefined)localStorage.setItem(k,v)});
+ }
+ saveCloudLocal4();
+ return d.library?.length||0;
+}
+function download4(){
+ const data=snapshot4();
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='biblioteca-otaku-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function import4(){
+ const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
+ input.onchange=async()=>{
+  const f=input.files?.[0];if(!f)return;
+  try{
+   const d=JSON.parse(await f.text());
+   const n=restoreCloudLocal4(d);
+   alert('Backup restaurado: '+n+' obras. Recarregando a biblioteca.');
+   location.reload();
+  }catch(e){alert('Não foi possível restaurar o backup: '+e.message)}
+ };
+ input.click();
+}
+function panel4(){
+ if(document.getElementById('c4-panel'))return;
+ const stats=q5('#v-stats');if(!stats)return;
+ const box=document.createElement('div');box.id='c4-panel';box.className='bo5-card';box.style.marginTop='12px';
+ box.innerHTML='<h3>☁️ Dados e sincronização</h3><div class="bo5-muted">Seu catálogo pessoal pode ser exportado e restaurado sem depender das APIs externas.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="c4-save">💾 Fazer backup</button><button class="btn" id="c4-load">📥 Restaurar backup</button><button class="btn" id="c4-local">🔄 Salvar estado local</button></div><div id="c4-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(box);
+ q5('#c4-save').onclick=download4;
+ q5('#c4-load').onclick=import4;
+ q5('#c4-local').onclick=()=>{saveCloudLocal4();status4('Estado local salvo em '+new Date().toLocaleTimeString('pt-BR'))};
+ status4();
+}
+function status4(msg){
+ const x=q5('#c4-status');if(!x)return;
+ const t=Number(localStorage.getItem(C4.key+'-last')||0);
+ x.textContent=msg||('Último estado local: '+(t?new Date(t).toLocaleString('pt-BR'):'ainda não salvo'));
+}
+function hook4(){
+ if(typeof window.save!=='function')return;
+ if(window.save.__c4)return;
+ const old=window.save;
+ const fn=function(){
+  const r=old.apply(this,arguments);
+  setTimeout(()=>{saveCloudLocal4();status4('Alterações salvas localmente às '+new Date().toLocaleTimeString('pt-BR'))},100);
+  return r;
+ };
+ fn.__c4=true;window.save=fn;
+}
+function addCloudAdapter4(){
+ if(window.OtakuCloud)return;
+ window.OtakuCloud={
+  version:C4.version,
+  export:snapshot4,
+  import:restoreCloudLocal4,
+  save:saveCloudLocal4,
+  getLast:()=>Number(localStorage.getItem(C4.key+'-last')||0),
+  async push(adapter){
+   if(!adapter||typeof adapter.push!=='function')throw new Error('Adaptador de nuvem inválido');
+   const d=snapshot4();await adapter.push(d);C4.last=d.updatedAt;return d;
+  },
+  async pull(adapter){
+   if(!adapter||typeof adapter.pull!=='function')throw new Error('Adaptador de nuvem inválido');
+   const d=await adapter.pull();restoreCloudLocal4(d);return d;
+  }
+ };
+}
+function boot4(){panel4();hook4();addCloudAdapter4();saveCloudLocal4()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot4,1700));else setTimeout(boot4,1700);
+setTimeout(boot4,3000);
+})();
+
+
+
+/* ===== CAMADA 5 — Supabase Auth + sincronização real ===== */
+(function(){
+'use strict';
+const C5={cfg:'otaku-supabase-config-v1',session:'otaku-supabase-session-v1',table:'biblioteca_otaku_sync'};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DEFAULT_SUPABASE={url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:['sb_publishable_','KHrh5gdmZpxo2Goz0Je-0Q_','n4McPfp6'].join('')};\nconst cfg=()=>{try{const saved=JSON.parse(localStorage.getItem(C5.cfg)||'{}');return {url:saved.url||DEFAULT_SUPABASE.url,key:saved.key||DEFAULT_SUPABASE.key}}catch(e){return DEFAULT_SUPABASE}};
+const setCfg=x=>localStorage.setItem(C5.cfg,JSON.stringify(x));
+const sess=()=>{try{return JSON.parse(localStorage.getItem(C5.session)||'null')}catch(e){return null}};
+const setSess=x=>x?localStorage.setItem(C5.session,JSON.stringify(x)):localStorage.removeItem(C5.session);
+function headers(c,auth=true){const h={'apikey':c.key,'Content-Type':'application/json'};if(auth&&sess()?.access_token)h.Authorization='Bearer '+sess().access_token;return h}
+function base(c){return String(c.url||'').replace(/\/$/,'')}
+async function api5(path,opt={}){
+ const c=cfg();if(!c.url||!c.key)throw new Error('Configure a URL e a chave anon do Supabase.');
+ const r=await fetch(base(c)+path,{...opt,headers:{...headers(c,opt.auth!==false),...(opt.headers||{})}});
+ const txt=await r.text();let d=null;try{d=txt?JSON.parse(txt):null}catch(e){}
+ if(!r.ok)throw new Error(d?.msg||d?.message||d?.error_description||('HTTP '+r.status));
+ return d;
+}
+function snap5(){
+ if(window.OtakuCloud?.export)return window.OtakuCloud.export();
+ return {version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
+}
+function restore5(d){
+ if(window.OtakuCloud?.import)return window.OtakuCloud.import(d);
+ return null;
+}
+async function sign5(mode,emailArg,passwordArg){
+ const email=(emailArg??q5('#c5-email')?.value)?.trim(),password=passwordArg??q5('#c5-pass')?.value||'';
+ if(!email||!password)throw new Error('Informe e-mail e senha.');
+ if(mode==='signup'){
+  const d=await api5('/auth/v1/signup',{method:'POST',auth:false,body:JSON.stringify({email,password})});
+  if(d?.access_token)setSess(d);return d;
+ }
+ const d=await api5('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:JSON.stringify({email,password})});
+ setSess(d);return d;
+}
+async function refresh5(){
+ const s=sess();if(!s?.refresh_token)return;
+ try{
+  const d=await api5('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:JSON.stringify({refresh_token:s.refresh_token})});
+  setSess(d);
+ }catch(e){setSess(null)}
+}
+async function sync5(mode){
+ const s=sess();if(!s?.user?.id&&!s?.user?.sub)throw new Error('Faça login no Supabase primeiro.');
+ const uid=s.user.id||s.user.sub,d=snap5();
+ if(mode==='push'){
+  await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
+  return 'Biblioteca enviada para a nuvem.';
+ }
+ const rows=await api5('/rest/v1/'+C5.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1');
+ if(!rows?.length)return 'Nenhum backup na nuvem para esta conta.';
+ const remote=rows[0].data;
+ const localTime=Number(d.updatedAt||0),remoteTime=Date.parse(rows[0].updated_at||'')||0;
+ if(remoteTime>=localTime){restore5(remote);return 'Biblioteca sincronizada a partir da nuvem.'}
+ await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
+ return 'A versão local era mais recente e foi enviada para a nuvem.';
+}
+function panel5(){
+ if(q5('#c5-panel'))return;
+ const stats=q5('#v-stats');if(!stats)return;
+ const c=cfg(),s=sess(),box=document.createElement('div');box.id='c5-panel';box.className='bo5-card';box.style.marginTop='12px';
+ box.innerHTML='<h3>☁️ Sincronização na nuvem</h3><div class="bo5-muted">Entre com sua conta Supabase para manter biblioteca, progresso e histórico entre dispositivos.</div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px">'+
+ '<input id="c5-url" placeholder="URL do Supabase" value="'+esc(c.url||'')+'">'+
+ '<input id="c5-key" placeholder="Chave anon/public do Supabase" value="'+esc(c.key||'')+'">'+
+ '<input id="c5-email" type="email" placeholder="E-mail">'+
+ '<input id="c5-pass" type="password" placeholder="Senha">'+
+ '</div><div class="bo5-actions" style="margin-top:10px">'+
+ '<button class="btn" id="c5-config">⚙️ Salvar conexão</button><button class="btn" id="c5-login">🔐 Entrar</button><button class="btn" id="c5-signup">➕ Criar conta</button><button class="btn" id="c5-push">☁️ Enviar</button><button class="btn" id="c5-pull">⬇️ Baixar</button><button class="btn" id="c5-sync">🔄 Sincronizar</button><button class="btn" id="c5-logout">Sair</button></div>'+
+ '<div id="c5-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(box);
+ q5('#c5-config').onclick=()=>{setCfg({url:q5('#c5-url').value.trim(),key:q5('#c5-key').value.trim()});status5('Configuração salva neste navegador.')};
+ q5('#c5-login').onclick=async()=>action5(()=>sign5('login'));
+ q5('#c5-signup').onclick=async()=>action5(()=>sign5('signup'));
+ q5('#c5-push').onclick=async()=>action5(()=>sync5('push'));
+ q5('#c5-pull').onclick=async()=>action5(()=>sync5('pull'),true);
+ q5('#c5-sync').onclick=async()=>action5(()=>sync5('sync'));
+ q5('#c5-logout').onclick=()=>{setSess(null);status5('Sessão encerrada.')};
+ status5(s?'Conta conectada.':'Não conectado.');
+}
+async function action5(fn,reload){
+ try{const msg=await fn();status5(msg||'Concluído.');if(reload)setTimeout(()=>location.reload(),500)}catch(e){status5('❌ '+e.message)}
+}
+function status5(msg){
+ const x=q5('#c5-status');if(!x)return;
+ const s=sess();x.textContent=msg+(s?.user?.email?' · '+s.user.email:'');
+}
+function boot5(){panel5();refresh5().then(()=>status5(sess()?'Sessão atualizada.':'Não conectado.')).catch(()=>{})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot5,2000));else setTimeout(boot5,2000);
+setTimeout(boot5,3500);
+window.OtakuSupabase={config:cfg,setConfig:setCfg,login:(email,password)=>sign5('login',email,password),signup:(email,password)=>sign5('signup',email,password),sync:sync5,logout:()=>setSess(null),session:sess};
+})();
+
+
+
+/* ===== CAMADA 6 — sincronização automática + configuração SQL ===== */
+(function(){
+'use strict';
+const C6={table:'biblioteca_otaku_sync',timer:null};
+const cfg=()=>{try{const saved=JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}');return {url:saved.url||'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:saved.key||'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}catch(e){return {url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}};
+const sess=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
+const base=()=>String(cfg().url||'').replace(/\/$/,'');
+const snapshot=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
+async function api6(path,opt={}){
+ const c=cfg(),s=sess();if(!c.url||!c.key||!s?.access_token)throw new Error('Supabase não configurado ou usuário não conectado.');
+ const h={apikey:c.key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',...(opt.headers||{})};
+ const r=await fetch(base()+path,{...opt,headers:h});const t=await r.text();let d=null;try{d=t?JSON.parse(t):null}catch(e){}
+ if(!r.ok)throw new Error(d?.message||d?.msg||d?.hint||('HTTP '+r.status));return d;
+}
+async function push6(silent=true){
+ const s=sess();if(!s?.user)return false;
+ const uid=s.user.id||s.user.sub,d=snapshot();
+ await api6('/rest/v1/'+C6.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
+ localStorage.setItem('otaku-cloud-last-push',String(Date.now()));
+ if(!silent)alert('☁️ Biblioteca sincronizada com a nuvem.');
+ return true;
+}
+async function pull6(silent=true){
+ const s=sess();if(!s?.user)return false;
+ const uid=s.user.id||s.user.sub;
+ const rows=await api6('/rest/v1/'+C6.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1');
+ if(!rows?.length)return false;
+ const remote=rows[0].data,remoteTime=Date.parse(rows[0].updated_at||'')||0,localTime=Number(snapshot().updatedAt||0);
+ if(remoteTime>localTime){
+   if(window.OtakuCloud?.import)window.OtakuCloud.import(remote);
+   localStorage.setItem('otaku-cloud-last-pull',String(Date.now()));
+   if(!silent)setTimeout(()=>location.reload(),100);
+   return true;
+ }
+ return false;
+}
+async function auto6(){
+ if(!sess()?.access_token||!cfg().url||!cfg().key)return;
+ try{
+   const changed=await pull6(true);
+   if(!changed)await push6(true);
+   const s=q6('#c6-auto-status');if(s)s.textContent='☁️ Sincronizado automaticamente · '+new Date().toLocaleTimeString('pt-BR');
+ }catch(e){
+   const s=q6('#c6-auto-status');if(s)s.textContent='⚠️ Nuvem indisponível · dados locais preservados';
+ }
+}
+function q6(s){return document.querySelector(s)}
+function sql6(){
+ return `create table if not exists public.biblioteca_otaku_sync (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.biblioteca_otaku_sync enable row level security;
+drop policy if exists "otaku_select_own" on public.biblioteca_otaku_sync;
+drop policy if exists "otaku_insert_own" on public.biblioteca_otaku_sync;
+drop policy if exists "otaku_update_own" on public.biblioteca_otaku_sync;
+create policy "otaku_select_own" on public.biblioteca_otaku_sync for select using (auth.uid()=user_id);
+create policy "otaku_insert_own" on public.biblioteca_otaku_sync for insert with check (auth.uid()=user_id);
+create policy "otaku_update_own" on public.biblioteca_otaku_sync for update using (auth.uid()=user_id) with check (auth.uid()=user_id);
+grant select,insert,update on public.biblioteca_otaku_sync to authenticated;`;
+}
+function panel6(){
+ if(q6('#c6-panel'))return;
+ const stats=q6('#v-stats');if(!stats)return;
+ const b=document.createElement('div');b.id='c6-panel';b.className='bo5-card';b.style.marginTop='12px';
+ b.innerHTML='<h3>⚡ Sincronização automática</h3><div class="bo5-muted">Depois de configurar a tabela no Supabase, a biblioteca será sincronizada automaticamente. Os dados locais continuam funcionando offline.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="c6-sql">📋 Copiar SQL do Supabase</button><button class="btn" id="c6-now">🔄 Sincronizar agora</button></div><div id="c6-auto-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(b);
+ q6('#c6-sql').onclick=async()=>{
+   try{await navigator.clipboard.writeText(sql6());q6('#c6-auto-status').textContent='SQL copiado. Cole no SQL Editor do Supabase e execute.'}
+   catch(e){prompt('Copie este SQL:',sql6())}
+ };
+ q6('#c6-now').onclick=async()=>{q6('#c6-auto-status').textContent='Sincronizando...';await auto6()};
+}
+function hookSave6(){
+ if(typeof window.save!=='function'||window.save.__c6)return;
+ const old=window.save;
+ const fn=function(){const r=old.apply(this,arguments);setTimeout(()=>push6(true).catch(()=>{}),350);return r};
+ fn.__c6=true;window.save=fn;
+}
+function boot6(){
+ panel6();hookSave6();
+ if(C6.timer)clearInterval(C6.timer);
+ setTimeout(()=>auto6(),1200);
+ C6.timer=setInterval(auto6,60000);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot6,2400));else setTimeout(boot6,2400);
+setTimeout(boot6,4000);
+window.OtakuAutoSync={push:push6,pull:pull6,sync:auto6,sql:sql6};
+})();
+
+
+
+/* ===== CAMADA 7 — Supabase Realtime robusto + reconexão + sessão ===== */
+(function(){
+'use strict';
+const R7={
+ channel:null,client:null,busy:false,lastRemote:0,retry:0,timer:null,connecting:false,
+ maxRetry:30000
+};
+const cfg7=()=>{try{const saved=JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}');return {url:saved.url||'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:saved.key||'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}catch(e){return {url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:'sb_publishable_KHrh5gdmZpxo2Goz0Je-0Q_n4McPfp6'}}};
+const sess7=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
+const saveSess7=s=>{try{localStorage.setItem('otaku-supabase-session-v1',JSON.stringify(s))}catch(e){}};
+const base7=()=>String(cfg7().url||'').replace(/\/$/,'');
+const q7=s=>document.querySelector(s);
+const snap7=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{
+ version:1,updatedAt:Date.now(),
+ library:Object.values(window.lib||{}),
+ progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),
+ history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')
+};
+function status7(t){const x=q7('#r7-status');if(x)x.textContent=t}
+function sleep7(ms){return new Promise(r=>setTimeout(r,ms))}
+async function refreshToken7(){
+ const c=cfg7(),s=sess7(),rt=s?.refresh_token;
+ if(!c.url||!c.key||!rt)return false;
+ try{
+  const r=await fetch(base7()+'/auth/v1/token?grant_type=refresh_token',{
+   method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},
+   body:JSON.stringify({refresh_token:rt})
+  });
+  const d=await r.json().catch(()=>null);
+  if(!r.ok||!d?.access_token)return false;
+  saveSess7({...s,...d,user:d.user||s.user});
+  return true;
+ }catch(e){return false}
+}
+async function auth7(){
+ const c=cfg7(),s=sess7();
+ if(!c.url||!c.key||!s?.access_token)return false;
+ try{
+  let r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+s.access_token}});
+  if(r.ok)return true;
+  if(await refreshToken7()){
+   const n=sess7();
+   r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+n.access_token}});
+   return r.ok;
+  }
+ }catch(e){}
+ return false;
+}
+function restore7(d){
+ try{
+  if(window.OtakuCloud?.import)window.OtakuCloud.import(d);
+  else if(Array.isArray(d?.library)){
+   window.lib=window.lib||{};
+   d.library.forEach(x=>{if(x?.id)window.lib[x.id]=x});
+  }
+  localStorage.setItem('otaku-realtime-last',String(Date.now()));
+ }catch(e){console.warn('Realtime restore:',e)}
+}
+function merge7(local,remote){
+ const lm=new Map((local.library||[]).map(x=>[String(x.id),x]));
+ const rm=new Map((remote.library||[]).map(x=>[String(x.id),x]));
+ const merged=new Map(lm);
+ rm.forEach((x,id)=>{
+  const l=lm.get(id);
+  if(!l)merged.set(id,x);
+  else{
+   const lt=Number(l.updatedAt||l._updatedAt||0),rt=Number(x.updatedAt||x._updatedAt||0);
+   if(rt>lt)merged.set(id,x);
+   else if(rt===lt&&Number(x.rating||0)>Number(l.rating||0))merged.set(id,{...l,rating:x.rating});
+  }
+ });
+ return {
+  ...remote,...local,
+  library:[...merged.values()],
+  updatedAt:Math.max(Number(local.updatedAt||0),Number(remote.updatedAt||0))
+ };
+}
+function schedule7(delay){
+ clearTimeout(R7.timer);
+ R7.timer=setTimeout(()=>realtime7(true),Math.max(1000,delay||0));
+}
+function close7(){
+ try{if(R7.channel)R7.channel.unsubscribe()}catch(e){}
+ R7.channel=null;
+ R7.client=null;
+}
+async function realtime7(isRetry=false){
+ if(R7.connecting)return;
+ if(R7.channel)return;
+ R7.connecting=true;
+ try{
+  const c=cfg7();
+  if(!c.url||!c.key){status7('⚪ Configure o Supabase para ativar o Realtime.');return}
+  if(!(await auth7())){status7('⚠️ Sessão do Supabase expirada ou não conectada.');schedule7(30000);return}
+  const s=sess7(),uid=s?.user?.id||s?.user?.sub;
+  if(!uid){status7('⚠️ Usuário do Supabase não identificado.');return}
+  const mod=window.supabase;
+  if(!mod?.createClient){status7('⚠️ Cliente Supabase JS não carregado.');schedule7(10000);return}
+  const client=mod.createClient(c.url,c.key,{
+   global:{headers:{Authorization:'Bearer '+s.access_token}},
+   auth:{persistSession:false,autoRefreshToken:false}
+  });
+  R7.client=client;
+  const name='otaku-library-'+String(uid).replace(/[^a-zA-Z0-9_-]/g,'');
+  const ch=client.channel(name)
+   .on('postgres_changes',{event:'INSERT',schema:'public',table:'biblioteca_otaku_sync',filter:'user_id=eq.'+uid},p=>remote7(p.new?.data))
+   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'biblioteca_otaku_sync',filter:'user_id=eq.'+uid},p=>remote7(p.new?.data));
+  R7.channel=ch;
+  ch.subscribe(st=>{
+   if(st==='SUBSCRIBED'){
+    R7.retry=0;
+    status7('🟢 Realtime conectado · alterações chegam automaticamente');
+   }else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
+    close7();
+    R7.retry=Math.min(R7.retry+1,6);
+    const delay=Math.min(R7.maxRetry,1000*Math.pow(2,R7.retry-1));
+    status7('🟡 Realtime reconectando em '+Math.ceil(delay/1000)+'s…');
+    schedule7(delay);
+   }
+  });
+ }catch(e){
+  close7();
+  R7.retry=Math.min(R7.retry+1,6);
+  const delay=Math.min(R7.maxRetry,1000*Math.pow(2,R7.retry-1));
+  status7('🟡 Realtime indisponível · nova tentativa em '+Math.ceil(delay/1000)+'s');
+  schedule7(delay);
+ }finally{
+  R7.connecting=false;
+ }
+}
+function remote7(remote){
+ if(R7.busy||!remote)return;
+ R7.busy=true;
+ try{
+  const local=snap7(),merged=merge7(local,remote);
+  restore7(merged);
+  R7.lastRemote=Date.now();
+  status7('🟢 Alteração recebida · '+new Date().toLocaleTimeString('pt-BR'));
+  setTimeout(()=>{try{
+   if(typeof window.render==='function')window.render();
+   document.dispatchEvent(new CustomEvent('otaku-realtime-update',{detail:merged}));
+  }catch(e){}},80);
+ }finally{setTimeout(()=>R7.busy=false,500)}
+}
+function sql7(){
+ return `alter table public.biblioteca_otaku_sync replica identity full;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'biblioteca_otaku_sync'
+  ) then
+    alter publication supabase_realtime add table public.biblioteca_otaku_sync;
+  end if;
+end $$;`;
+}
+function panel7(){
+ if(q7('#r7-panel'))return;
+ const stats=q7('#v-stats');if(!stats)return;
+ const b=document.createElement('div');b.id='r7-panel';b.className='bo5-card';b.style.marginTop='12px';
+ b.innerHTML='<h3>⚡ Tempo real</h3><div class="bo5-muted">Sincroniza a biblioteca entre dispositivos e reconecta automaticamente se a conexão cair.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="r7-copy">📋 Copiar SQL Realtime</button><button class="btn" id="r7-connect">🟢 Conectar agora</button></div><div id="r7-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(b);
+ q7('#r7-copy').onclick=async()=>{try{await navigator.clipboard.writeText(sql7());status7('SQL copiado. Execute no SQL Editor do Supabase.')}catch(e){prompt('Copie este SQL:',sql7())}};
+ q7('#r7-connect').onclick=()=>{R7.retry=0;close7();realtime7()};
+}
+function boot7(){panel7();setTimeout(()=>realtime7(false),800)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot7,2700));else setTimeout(boot7,2700);
+setTimeout(boot7,4500);
+window.OtakuRealtime={
+ connect:()=>{R7.retry=0;close7();return realtime7()},
+ merge:merge7,sql:sql7,
+ status:()=>({connected:!!R7.channel,retry:R7.retry,lastRemote:R7.lastRemote})
+};
+})();
+
+
+
+/* ===== CAMADA 8 — nível único por tempo + XP ===== */
+(function(){
+'use strict';
+const LV8={
+  cat:{anime:'Anime/Donghua',donghua:'Anime/Donghua',aeni:'Anime/Donghua',manga:'Mangá/Manhwa/Manhua',manhwa:'Mangá/Manhwa/Manhua',manhua:'Mangá/Manhwa/Manhua',novel:'Novel',webnovel:'WEB Novel',book:'Livros',movie:'Filmes',game:'Jogos'},
+  mins(l){
+    const k=l.kind,p=Number(String(l.prog||'').replace(',','.'))||0;
+    if(k==='anime'||k==='donghua'||k==='aeni')return p*24;
+    if(k==='manga'||k==='manhwa'||k==='manhua')return p*5;
+    if(k==='novel'||k==='webnovel')return p*10;
+    if(k==='book')return p*1.5;
+    if(k==='movie')return Number(l.rt)||0;
+    if(k==='game')return p*60;
+    return 0;
+  },
+  titleBonus(l){return ['Completo','Lido','Assistido','Zerado'].includes(l.status)?100:0},
+  xp(l){return Math.floor(this.mins(l))+this.titleBonus(l)+(Number(l.rating)>0?20:0)+(l.note&&String(l.note).trim()?10:0)+(l.added?5:0)},
+  needed(n){return Math.floor(100*Math.pow(Math.max(1,n),1.5))},
+  totalTo(n){let t=0;for(let i=1;i<=n;i++)t+=this.needed(i);return t},
+  calc(){
+    const cats={};let total=0;
+    Object.values(lib||{}).forEach(l=>{
+      const x=this.xp(l);total+=x;const c=this.cat[l.kind]||'Outros';cats[c]=(cats[c]||0)+x;
+    });
+    let level=1;while(total>=this.totalTo(level+1)&&level<999)level++;
+    const prev=this.totalTo(level),next=this.totalTo(level+1),cur=Math.max(0,total-prev);
+    const name=level<10?'Novato':level<20?'Leitor':level<30?'Otaku':level<40?'Veterano':'Sensei';
+    return {total,level,name,prev,next,cur,pct:Math.max(0,Math.min(100,cur/Math.max(1,next-prev)*100)),cats};
+  }
+};
+function draw8(){
+  if(typeof lib==='undefined')return;
+  const d=LV8.calc(),host=document.querySelector('#user');
+  if(host){
+    let el=document.querySelector('#bo-level');
+    if(!el){el=document.createElement('div');el.id='bo-level';host.prepend(el)}
+    el.innerHTML='<span class="bo-lv-name">Nv. '+d.level+' · '+d.name+'</span><span class="bo-lv-track"><i class="bo-lv-fill" style="width:'+d.pct+'%"></i></span><span class="bo-xp">'+d.total+' XP</span>';
+    el.onclick=()=>show8();
+  }
+  const st=document.querySelector('#v-stats');
+  if(st&&!document.querySelector('#bo-level-stats')){
+    const box=document.createElement('div');box.id='bo-level-stats';box.className='sec';box.innerHTML='<h3>🏆 Nível</h3><div id="bo-level-detail"></div>';st.prepend(box);
+  }
+  const det=document.querySelector('#bo-level-detail');
+  if(det){
+    const entries=Object.entries(d.cats).sort((a,b)=>b[1]-a[1]);
+    det.innerHTML='<div><b>NV. '+d.level+' · '+d.name+'</b> · '+d.total+' XP</div><div class="stats" style="margin-top:5px">Próximo nível: '+Math.max(0,d.next-d.total)+' XP</div><div class="bo-xp-detail">'+(entries.map(([k,v])=>'<div><b>'+v+' XP</b><small>'+k+'</small></div>').join('')||'<div><b>0 XP</b><small>Sem categorias ainda</small></div>')+'</div>'+entries.map(([k,v])=>'<div class="bar2"><span class="n">'+k+'</span><span class="b" style="width:'+Math.max(2,(v/Math.max(1,d.total))*55)+'%"></span><span>'+v+' XP</span></div>').join('');
+  }
+}
+function show8(){
+  const st=document.querySelector('#v-stats');if(!st)return;
+  document.querySelectorAll('#v-search,#v-lib').forEach(x=>x.style.display='none');
+  st.style.display='';document.querySelectorAll('#t-search,#t-lib,#t-stats').forEach(x=>x.classList.remove('on'));
+  document.querySelector('#t-stats')?.classList.add('on');draw8();st.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.OtakuLevel={calc:()=>LV8.calc(),redraw:draw8};
+const oldSave8=window.save;
+if(typeof oldSave8==='function')window.save=function(l){const r=oldSave8.apply(this,arguments);setTimeout(draw8,30);return r};
+const oldRefresh8=window.refresh;
+if(typeof oldRefresh8==='function')window.refresh=function(){const r=oldRefresh8.apply(this,arguments);setTimeout(draw8,30);return r};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(draw8,250));else setTimeout(draw8,250);
+setTimeout(draw8,1500);
+})();
