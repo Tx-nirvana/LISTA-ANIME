@@ -28,9 +28,22 @@ function collections(){
 }
 function feedbackPanel(id){
  const v=store().ai.feedback?.[String(id)]||'';
- const d=document.createElement('div');d.className='ai-panel';d.innerHTML='<b>Seu feedback</b><div class="ai-actions">'+
- ['like|👍 Gostei','love|❤️ Adorei','dislike|👎 Não gostei','avoid|🚫 Não recomendar','seen|👁 Já conheço'].map(x=>{const [a,b]=x.split('|');return '<button class="chip '+(v===a?'on':'')+'" data-f="'+a+'">'+b+'</button>'}).join('')+'</div>';
- d.onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;window.OtakuStore.feedback(id,b.dataset.f);d.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));if(typeof window.save==='function')window.save()};
+ const d=document.createElement('div');d.className='ai-panel';
+ d.innerHTML='<b>Como essa obra te marcou?</b><div class="ai-actions ai-tags-row">'+
+ ['love|🥲 Me destruiu emocionalmente','like|👍 Gostei','dislike|👎 Não gostei','avoid|🚫 Não recomendar','seen|👁 Já conheço'].map(x=>{const [a,b]=x.split('|');return '<button class="chip '+(v===a?'on':'')+'" data-f="'+a+'">'+b+'</button>'}).join('')+'</div>';
+ d.onclick=e=>{
+   const b=e.target.closest('[data-f]');if(!b)return;
+   const f=b.dataset.f;
+   window.OtakuStore.feedback(id,f);
+   const w=works().find(x=>String(x.id)===String(id));
+   if(w){
+     const tags=Array.isArray(w.tags)?w.tags:(w.tags=[]);
+     const tag=f==='love'?'Me destruiu emocionalmente':f==='like'?'Gostei':'';
+     if(tag&&!tags.some(t=>norm(t)===norm(tag)))tags.push(tag);
+     if((f==='love'||f==='like')&&typeof window.save==='function')window.save(w);
+   }
+   d.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));
+ };
  return d;
 }
 function attachFeedback(){
@@ -38,7 +51,10 @@ function attachFeedback(){
  const id=box.querySelector('[data-id]')?.dataset.id||window.__openOtakuId;
  if(!id||box.querySelector('.ai-feedback'))return;
  const w=works().find(x=>String(x.id)===String(id));if(!w)return;
- const d=feedbackPanel(id);d.classList.add('ai-feedback');box.appendChild(d);
+ const d=feedbackPanel(id);d.classList.add('ai-feedback');
+ const anchor=box.querySelector('.bo-cover-wrap');
+ if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(d,anchor.nextSibling);
+ else box.appendChild(d);
 }
 async function authorSearch(name){
  const d=await window.OtakuAPI.anilist('query($s:String){Staff(search:$s){id name{full native}image{large}primaryOccupations works(sort:POPULARITY_DESC,perPage:30){edges{role node{id type format title{romaji english native}coverImage{large}genres averageScore popularity}}}}}',{s:name});
