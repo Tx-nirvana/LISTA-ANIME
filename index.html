@@ -1146,27 +1146,7 @@ async function fWiki(st,p){
   const items=r.results.bindings.map(b=>{const qid=b.g.value.split('/').pop();return {id:7e9+Number(qid.slice(1)),ref:'w'+qid,kind:'game',type:'ANIME',title:T(b.l&&b.l.value),native:'',cover:b.img?U(b.img.value.replace('http:','https:').replace(/'/g,'%27')+'?width=400'):'',syn:'',genres:[],year:b.d?b.d.value.slice(0,4):'',avg:0,by:'',pl:'',url:''}}).filter(x=>x.title&&!/^Q\d+$/.test(x.title));
   return {items,more:items.length>=20};
 }
-const HUB_CACHE=new Map();
-const hubCacheKey=(id,st,p)=>id+'|'+p+'|'+JSON.stringify({q:st.q,sort:st.sort,genres:st.genres,plat:st.plat,src:st.src});
-async function cachedHub(id,st,p,fn){
-  const k=hubCacheKey(id,st,p),now=Date.now(),hit=HUB_CACHE.get(k);
-  if(hit&&now-hit.t<5*60*1000)return hit.v;
-  const v=await fn();HUB_CACHE.set(k,{t:now,v});return v;
-}
-async function fGame(st,p){
-  if(!key('rawg')){
-    /* Sem chave: CheapShark é mais rápido para catálogo inicial; Wikidata fica como fallback. */
-    try{const r=await fCheap(st,p);if(r.items.length||p>1)return r}catch(e){}
-    try{return await fWiki(st,p)}catch(e){return {items:[],more:false}}
-  }
-  const o={page:p,page_size:24,exclude_additions:'true'};
-  if(st.q)o.search=st.q;
-  else{o.ordering={pop:'-added',score:'-metacritic',new:'-released'}[st.sort];if(st.sort==='score')o.metacritic='70,100';if(st.sort==='new')o.dates='2000-01-01,'+today()}
-  if(st.genres.length)o.genres=st.genres.join(',');
-  if(st.plat.length)o.parent_platforms=st.plat.join(',');
-  const r=await rw('games',o);
-  return {items:r.results.map(gmItem),more:!!r.next};
-}
+async function fGame(st,p){if(!key('rawg')){try{const r=await fWiki(st,p);if(r.items.length||p>1)return r}catch(e){}return fCheap(st,p)}
   const o={page:p,page_size:24,exclude_additions:'true'};
   if(st.q)o.search=st.q;
   else{o.ordering={pop:'-added',score:'-metacritic',new:'-released'}[st.sort];if(st.sort==='score')o.metacritic='70,100';if(st.sort==='new')o.dates='2000-01-01,'+today()}
@@ -1342,10 +1322,7 @@ async function run(h,reset){
   const S=streams(h).filter(s=>h.more[s.k]!==false);let err=null;
   const lists=await Promise.all(S.map(async s=>{
     const p=(h.pg[s.k]||0)+1;
-    try{
-      const r=await cachedHub(h.id+'-'+s.k,{src:h.src||'',q:h.q.value.trim(),sort:h.sort.value,genres:[...h.g],plat:[...h.pl]},p,()=>s.f(p));
-      h.pg[s.k]=p;h.more[s.k]=r.more;return r.items
-    }
+    try{const r=await s.f(p);h.pg[s.k]=p;h.more[s.k]=r.more;return r.items}
     catch(e){h.more[s.k]=false;if(/^KEY:/.test(e.message))h.need.add(e.message.slice(4));else err=e;return []}
   }));
   let html='';
@@ -1435,39 +1412,10 @@ const _tab=tab;tab=function(t){
   if(!hx)return _tab(t);
   ['#v-search','#v-lib','#v-stats'].forEach(s=>$(s).style.display='none');
   ['#t-search','#t-lib','#t-stats'].forEach(s=>$(s).classList.remove('on'));
-  if(!hx.started){
-    hx.started=1;
-    hx.msg.textContent='Preparando catálogo...';
-    /* Deixa a aba pintar primeiro; a consulta externa começa depois. */
-    setTimeout(()=>run(hx,true),30);
-  }
+  if(!hx.started){hx.started=1;run(hx,true)}
 };
 mount('lf');mount('jg');
-
-/* Garantia de navegação das abas extras: não depende da função tab original. */
-function openExtraTab(id){
-  const h=HUBS[id];
-  if(!h||!h.sec)return;
-  $('#v-search').style.display='none';
-  $('#v-lib').style.display='none';
-  $('#v-stats').style.display='none';
-  Object.values(HUBS).forEach(x=>{
-    x.sec.style.display=x===h?'':'none';
-    if(x.btn)x.btn.classList.toggle('on',x===h);
-  });
-  $('#t-search').classList.remove('on');
-  $('#t-lib').classList.remove('on');
-  $('#t-stats').classList.remove('on');
-  if(!h.started){
-    h.started=1;
-    h.msg.textContent='Carregando catálogo...';
-    setTimeout(()=>run(h,true),0);
-  }
-}
-$('#t-lf').onclick=()=>openExtraTab('lf');
-$('#t-jg').onclick=()=>openExtraTab('jg');
 })();
-
 </script>
 </body>
 
