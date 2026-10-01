@@ -21,8 +21,6 @@ function dna(){
 function collections(){
  const w=works();
  return {
-  thinking:w.filter(x=>(x.genres||[]).some(g=>/psych|mystery|thriller|seinen|drama|philos/i.test(g))||/filosof|psicol|mister|moral|complex/i.test([x.note,x.syn,(x.tags||[]).join(' ')].join(' '))),
-  emotional:w.filter(x=>Number(x.rating)>=4&&(x.genres||[]).some(g=>/drama|romance|tragedy|psychological|melodrama/i.test(g))),
   favorites:w.filter(x=>x.fav),perfect:w.filter(x=>Number(x.rating)===5),abandoned:w.filter(x=>x.status==='Abandonado')
  };
 }
@@ -54,8 +52,6 @@ function renderDashboard(){
  const d=dna(),c=collections(),authors=Object.values(store().ai.authors||{}).filter(x=>x.favorite);
  p=document.createElement('div');p.id='ai-dashboard';p.innerHTML=
  '<div class="ai-panel"><div class="ai-title">🧬 DNA Otaku</div><div class="ai-sub">Gêneros, formatos, autores, notas e comportamento de leitura/visualização.</div><div class="ai-grid">'+(d.genres.length?d.genres.slice(0,6).map(x=>'<div class="ai-mini"><b>'+esc(x.name)+'</b><span>'+x.value+'%</span><div class="ai-bar"><i style="width:'+x.value+'%"></i></div></div>').join(''):'<span class="ai-sub">Avalie obras para formar seu DNA.</span>')+'</div><div class="ai-sub" style="margin-top:10px">Média: '+(d.average?d.average.toFixed(2):'—')+'/5 · '+d.rated+' avaliadas</div></div>'+
- '<div class="ai-panel"><div class="ai-title">🧠 Coleções automáticas</div><div class="ai-chips">'+
- '<button class="ai-chip" data-col="thinking">🧠 Para pensar ('+c.thinking.length+')</button><button class="ai-chip" data-col="emotional">🥲 Me destruiu emocionalmente ('+c.emotional.length+')</button><button class="ai-chip" data-col="favorites">⭐ Favoritos ('+c.favorites.length+')</button><button class="ai-chip" data-col="perfect">👑 5 estrelas ('+c.perfect.length+')</button><button class="ai-chip" data-col="abandoned">💀 Abandonados ('+c.abandoned.length+')</button></div></div>'+
  '<div class="ai-panel"><div class="ai-title">👤 Autores favoritos</div><div class="ai-chips" id="ai-authors"></div></div>';
  host.appendChild(p);
  const ag=p.querySelector('#ai-authors');if(authors.length)authors.forEach(a=>{const b=document.createElement('button');b.className='ai-author';b.textContent='★ '+a.name;b.onclick=()=>authorPage(a.name);ag.appendChild(b)});else ag.innerHTML='<span class="ai-sub">Nenhum autor favorito ainda.</span>';
