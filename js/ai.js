@@ -29,19 +29,11 @@ function collections(){
 function feedbackPanel(id){
  const v=store().ai.feedback?.[String(id)]||'';
  const d=document.createElement('div');d.className='ai-feedback';
- d.innerHTML='<div class="ai-actions ai-tags-row">'+
- ['love|🥲 Me destruiu emocionalmente','like|👍 Gostei','dislike|👎 Não gostei','avoid|🚫 Não recomendar','seen|👁 Já conheço'].map(x=>{const [a,b]=x.split('|');return '<button class="chip '+(v===a?'on':'')+'" data-f="'+a+'">'+b+'</button>'}).join('')+'</div>';
+ d.innerHTML='<div class="ai-actions ai-tags-row"><button class="chip '+(v==='avoid'?'on':'')+'" data-f="avoid">🚫 Não recomendar</button></div>';
  d.onclick=e=>{
    const b=e.target.closest('[data-f]');if(!b)return;
    const f=b.dataset.f;
    window.OtakuStore.feedback(id,f);
-   const w=works().find(x=>String(x.id)===String(id));
-   if(w){
-     const tags=Array.isArray(w.tags)?w.tags:(w.tags=[]);
-     const tag=f==='love'?'Me destruiu emocionalmente':f==='like'?'Gostei':'';
-     if(tag&&!tags.some(t=>norm(t)===norm(tag)))tags.push(tag);
-     if((f==='love'||f==='like')&&typeof window.save==='function')window.save(w);
-   }
    d.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));
  };
  return d;
