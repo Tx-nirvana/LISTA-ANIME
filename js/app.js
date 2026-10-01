@@ -688,6 +688,7 @@ async function showWhere(id){
   const best=g.free[0]||g.part[0]||g.paid[0]||g.other[0];
   const isM=s.type==='MANGA',trm=/^(youtube|dailymotion):([\w-]+)$/.exec(s.tr||'');
   let h=`<b>${verb}</b>`;
+  if(isM)h+=`<div class="row" style="margin:8px 0"><button class="btn" id="readOnlineBtn" data-title="${esc(s.title)}">📖 Ler no site</button></div>`;
   if(s.kind==='novel'){
     const ns=novelSourceLinks(s);
     h+=`<div class="sub" style="margin-top:6px">Fontes de novels encontradas para este título. A biblioteca guarda os links; a leitura continua no site de origem.</div>`;
@@ -705,6 +706,8 @@ async function showWhere(id){
   h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
   h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
+  const rb=$('#readOnlineBtn');
+  if(rb)rb.onclick=()=>{if(window.OtakuReader&&window.OtakuReader.openOnline){$('#modal').classList.remove('on');window.OtakuReader.openOnline(rb.dataset.title)}else alert('O leitor online ainda está carregando. Tente novamente em instantes.')};
   const tb=$('#trbtn');
   if(tb)tb.onclick=()=>{const box=$('#trbox');if(box.innerHTML){box.innerHTML='';tb.textContent='🎬 Ver trailer aqui';return}
     const url=trm[1]==='youtube'?'https://www.youtube-nocookie.com/embed/'+trm[2]:'https://www.dailymotion.com/embed/video/'+trm[2];
