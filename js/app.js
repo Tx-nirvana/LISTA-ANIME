@@ -20,7 +20,7 @@ function safe(v){
   return o;
 }
 function to5(o){Object.values(o).forEach(l=>{if(l&&l.rating)l.rating=Math.max(1,Math.ceil(l.rating/2))})}
-try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}');if(localStorage.getItem('otaku-scale')!=='5'){to5(lib);localStorage.setItem('otaku-scale','5')}}catch(e){lib={}}
+try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}');if(localStorage.getItem('otaku-scale')!=='5'){to5(lib);localStorage.setItem('otaku-scale','5')}Object.values(lib).forEach(x=>{if(x&&!x.updatedAt)x.updatedAt=Number(x.upd||Date.now())})}catch(e){lib={}}
 function save(l){if(l){const now=Date.now();l.upd=now;l.updatedAt=now;}try{localStorage.setItem('otaku-lib',JSON.stringify(lib));localStorage.setItem('otaku-del',JSON.stringify(dels))}catch(e){}$('#cnt').textContent=Object.values(lib).filter(isOtaku).length;schedulePush()}
 
 function kindOf(m){
@@ -1894,9 +1894,8 @@ const R2={page:0,items:[],mode:'',source:'',kind:'all',genre:''};
 const e2=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n2=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const all2=()=>Object.values(lib||{});
-const ai2=(()=>{try{return JSON.parse(localStorage.getItem('otaku-ai-v2')||'{}')}catch(e){return{}}})();
 const known2=x=>all2().some(l=>String(l.id)===String(x.id));
-const blocked2=x=>!!ai2.noRecommend?.[String(x.id)]||['avoid','dislike'].includes(ai2.feedback?.[String(x.id)]);
+const blocked2=x=>{try{const a=JSON.parse(localStorage.getItem('otaku-ai-v2')||'{}');return !!a.noRecommend?.[String(x.id)]||['avoid','dislike'].includes(a.feedback?.[String(x.id)])}catch(e){return false}};
 
 const star2=n=>'★'.repeat(Math.max(0,Math.min(5,Number(n)||0)))+'☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
 function profile2(){
