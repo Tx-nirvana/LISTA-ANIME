@@ -1907,26 +1907,30 @@ const e2=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const n2=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const all2=()=>Object.values(lib||{});
 const known2=x=>all2().some(l=>String(l.id)===String(x.id));
-const blocked2=x=>{try{const a=JSON.parse(localStorage.getItem('otaku-ai-v2')||'{}');return !!a.noRecommend?.[String(x.id)]||['avoid','dislike'].includes(a.feedback?.[String(x.id)])}catch(e){return false}};
+const blocked2=x=>{const a=window.OtakuStore?.get?.().ai||{};return !!a.noRecommend?.[String(x.id)]||['avoid','dislike'].includes(a.feedback?.[String(x.id)])};
 
 const star2=n=>'★'.repeat(Math.max(0,Math.min(5,Number(n)||0)))+'☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
 function profile2(){
- const rated=all2().filter(x=>x.rating>0), g={},authors={},k={};
- rated.forEach(x=>{
-   k[x.kind]=(k[x.kind]||0)+x.rating;
-   (x.genres||[]).forEach(v=>{if(v)g[v]=(g[v]||0)+x.rating});
-   const by=x.by||x.author||''; by.split(',').map(s=>s.trim()).filter(Boolean).forEach(a=>authors[a]=(authors[a]||0)+x.rating);
- });
- return {g,authors,k};
+ const w=all2(),p={g:{},authors:{},k:{},tags:{},years:{}};
+ w.filter(x=>Number(x.rating)>0).forEach(x=>{
+  const r=Number(x.rating)||0;p.k[x.kind]=(p.k[x.kind]||0)+r;
+  (x.genres||[]).forEach(g=>p.g[g]=(p.g[g]||0)+r);
+  (x.tags||[]).forEach(t=>p.tags[t]=(p.tags[t]||0)+r);
+  (x.authors||[]).forEach(a=>{const n=typeof a==='string'?a:a?.name;if(n)p.authors[n]=(p.authors[n]||0)+r});
+  const by=(x.by||x.author||'').split(',').map(s=>s.trim()).filter(Boolean);by.forEach(a=>p.authors[a]=(p.authors[a]||0)+r);
+  if(x.year)p.years[x.year]=(p.years[x.year]||0)+r;
+ });return p;
 }
 function score2(x,p){
- let s=0,genres=x.genres||[];
- genres.forEach(g=>s+=(p.g[g]||0)*2);
- const by=(x.by||x.author||'').split(',').map(s=>s.trim());
- by.forEach(a=>s+=(p.authors[a]||0)*3);
- s+=(p.k[x.kind]||0);
- if(x.avg)s+=Number(x.avg)/10;
- if(x.fav)s+=5;
+ let s=0;
+ (x.genres||[]).forEach(g=>s+=(p.g[g]||0)*2.4);
+ (x.tags||[]).forEach(t=>s+=(p.tags[t]||0)*1.4);
+ (x.authors||[]).forEach(a=>{const n=typeof a==='string'?a:a?.name;s+=(p.authors[n]||0)*3.2});
+ (x.by||x.author||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(a=>s+=(p.authors[a]||0)*3.2);
+ s+=(p.k[x.kind]||0)*1.1;if(x.avg)s+=Number(x.avg)*0.7;if(x.fav)s+=7;
+ const ai=window.OtakuStore?.get?.().ai||{},fb=ai.feedback?.[String(x.id)];
+ if(fb==='like')s+=18;if(fb==='love')s+=28;if(fb==='seen')s-=10;if(fb==='dislike'||fb==='avoid')s-=1000;
+ if(ai.recommended?.[String(x.id)])s-=Math.min(80,(ai.recommended[String(x.id)].count||1)*12);
  return s;
 }
 function kindOk2(x){
@@ -1938,37 +1942,19 @@ function genreOk2(x){
  return (x.genres||[]).some(g=>n2(g)===n2(R2.genre));
 }
 async function build2(mode){
- const p=profile2(),out=new Map();
+ const p=profile2(),out=new Map(),ai=window.OtakuStore?.get?.().ai||{};
  const add=x=>{
-   if(!x||!x.id||known2(x)||blocked2(x)||!kindOk2(x)||!genreOk2(x)||x.isAdult)return;
-   const z={x,score:score2(x,p)}; if(mode==='surprise')z.score=z.score*0.45+Math.random()*55;
-   const id=String(x.id);if(!out.has(id)||out.get(id).score<z.score)out.set(id,z);
+  if(!x||!x.id||known2(x)||blocked2(x)||!kindOk2(x)||!genreOk2(x)||x.isAdult)return;
+  const id=String(x.id);if(ai.recommended?.[id])return;
+  let score=score2(x,p);
+  if(mode==='surprise')score=score*.25+Math.random()*80-(x.genres||[]).filter(g=>p.g[g]).length*3;
+  if(!out.has(id)||out.get(id).score<score)out.set(id,{x,score});
  };
- const seeds=all2().filter(x=>x.rating>=4||x.fav).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,6);
- for(const s of seeds){
-   if(isOtaku(s)){
-     try{
-       const d=await gql('query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:30){nodes{rating mediaRecommendation{'+MF+'}}}}}',{id:+s.id});
-       (d.Media?.recommendations?.nodes||[]).forEach(z=>{if(z.mediaRecommendation){const x=slim(z.mediaRecommendation);x.avg=(z.rating||0)*10;add(x)}});
-     }catch(e){}
-   }
- }
- if(R2.kind==='all'||isOtaku({kind:R2.kind})){
-   const ks=R2.kind==='all'?['anime','manga','manhwa','manhua','donghua','aeni','novel']: [R2.kind];
-   for(const k of ks){
-     if(k==='webnovel')continue;
-     try{const d=await fetchPage('',k,1,'POPULARITY_DESC',R2.genre?[R2.genre]:[]);(d.media||[]).forEach(m=>{if(!m.isAdult)add(slim(m))})}catch(e){}
-   }
- }
- if(R2.kind==='webnovel'||R2.kind==='all'){
-   try{
-    if(!novelCatalogLoaded)await loadNovelCatalog();
-    (novelCatalog||[]).forEach(v=>add({id:novelId(v),kind:'webnovel',type:'MANGA',title:v.title||v.name||'',cover:v.cover||v.image||'',syn:v.synopsis||v.syn||'',genres:v.genres||[],avg:Number(v.rating||v.averageRating||0)}));
-   }catch(e){}
- }
- let a=[...out.values()].sort((a,b)=>b.score-a.score).map(z=>z.x);
- if(mode==='surprise')a.sort(()=>Math.random()-.5);
- return a.slice(0,50);
+ const seeds=all2().filter(x=>Number(x.rating)>=4||x.fav||['love','like'].includes(ai.feedback?.[String(x.id)])).sort((a,b)=>score2(b,p)-score2(a,p)).slice(0,8);
+ for(const s of seeds)if(isOtaku(s)){try{const d=await gql('query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:50){nodes{rating mediaRecommendation{'+MF+'}}}}}',{id:+s.id});(d.Media?.recommendations?.nodes||[]).forEach(z=>{if(z.mediaRecommendation){const x=slim(z.mediaRecommendation);x.avg=(z.rating||0)*10;add(x)}})}catch(e){}}
+ const ks=R2.kind==='all'?['anime','manga','manhwa','manhua','donghua','aeni','novel','webnovel']:[R2.kind];
+ for(const k of ks){try{if(k==='webnovel'){if(!novelCatalogLoaded)await loadNovelCatalog();(novelCatalog||[]).forEach(v=>add({id:novelId(v),kind:'webnovel',type:'MANGA',title:v.title||v.name||'',cover:v.cover||v.image||'',synopsis:v.synopsis||v.syn||'',genres:v.genres||[],avg:Number(v.rating||v.averageRating||0)}));}else{const d=await fetchPage('',k,1,'POPULARITY_DESC',R2.genre?[R2.genre]:[]);(d.media||[]).forEach(m=>{if(!m.isAdult)add(slim(m))})}}catch(e){}}
+ return [...out.values()].sort((a,b)=>b.score-a.score).map(z=>z.x).slice(0,50);
 }
 function paint2(){
  const box=q5('#bo5-recs2');if(!box)return;
