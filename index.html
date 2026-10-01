@@ -1091,7 +1091,46 @@ const key=n=>(n==='tmdb'?TMDB_KEY:RAWG_KEY)||lsKey(n);
 const T=x=>String(x==null?'':x).replace(/[<>]/g,'').trim();
 const U=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'';
 const PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#2a2640"/></svg>');
-const jget=async(u,h)=>{const r=await fetch(u,h?{headers:h}:undefined);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()};
+const API_CACHE_TTL=24*60*60*1000;
+const API_CACHE_PREFIX='otaku-api-cache-v1:';
+const API_INFLIGHT=new Map();
+const cacheKey=u=>API_CACHE_PREFIX+btoa(unescape(encodeURIComponent(String(u)))).replace(/[^a-zA-Z0-9]/g,'').slice(0,180);
+const cachedGet=async(u,h)=>{
+  const key=cacheKey(u);
+  const now=Date.now();
+  try{
+    const raw=localStorage.getItem(key);
+    if(raw){
+      const c=JSON.parse(raw);
+      if(c&&c.time&&now-c.time<API_CACHE_TTL&&c.data!==undefined){
+        console.log('⚡ Cache:',u);
+        return c.data;
+      }
+    }
+  }catch(e){}
+  if(API_INFLIGHT.has(key))return API_INFLIGHT.get(key);
+  const p=(async()=>{
+    try{
+      const r=await fetch(u,h?{headers:h}:undefined);
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const data=await r.json();
+      try{localStorage.setItem(key,JSON.stringify({time:Date.now(),data}))}catch(e){}
+      return data;
+    }catch(e){
+      try{
+        const raw=localStorage.getItem(key),c=raw&&JSON.parse(raw);
+        if(c&&c.data!==undefined){
+          console.warn('⚠ API indisponível; usando cache antigo:',u);
+          return c.data;
+        }
+      }catch(x){}
+      throw e;
+    }finally{API_INFLIGHT.delete(key)}
+  })();
+  API_INFLIGHT.set(key,p);
+  return p;
+};
+const jget=async(u,h)=>cachedGet(u,h);
 const hid=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return 5e9+(h>>>0)%1e9};
 const today=()=>new Date().toISOString().slice(0,10);
 const html2txt=h=>T(new DOMParser().parseFromString(String(h||'').replace(/<br\s*\/?>|<\/p>/gi,'\n'),'text/html').body.textContent.replace(/\n{3,}/g,'\n\n'));
