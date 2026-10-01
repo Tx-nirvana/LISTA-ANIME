@@ -117,6 +117,8 @@ function cardFeedback(){
  document.querySelectorAll('#recs .card,#bo5-recs2 .card').forEach(card=>{
   if(card.querySelector('.ai-card-tools'))return;
   const id=card.dataset.id;if(!id)return;
+  if(!A.recommended[id])A.recommended[id]={last:Date.now(),count:1};else A.recommended[id].count=(A.recommended[id].count||0)+1;
+  if(!A.history.some(h=>String(h.id)===String(id))){A.history.push({id:id,title:card.querySelector('.t')?.textContent||'',kind:(window.current?.[id]?.kind||''),mode:'recommend',at:Date.now()});A.history=A.history.slice(-300);save()}
   const d=document.createElement('div');d.className='ai-card-tools';d.innerHTML='<button class="chip" data-aicard="like">👍</button><button class="chip" data-aicard="dislike">👎</button><button class="chip" data-aicard="avoid">🚫</button>';
   d.onclick=e=>{const b=e.target.closest('[data-aicard]');if(!b)return;A.feedback[id]=b.dataset.aicard;if(b.dataset.aicard!=='like')A.noRecommend[id]=Date.now();else delete A.noRecommend[id];A.history.push({id,title:card.querySelector('.t')?.textContent||'',kind:(window.current?.[id]?.kind||''),mode:'recommend',at:Date.now()});A.history=A.history.slice(-300);save();if(b.dataset.aicard==='avoid'||b.dataset.aicard==='dislike')card.remove();};
   card.appendChild(d);
