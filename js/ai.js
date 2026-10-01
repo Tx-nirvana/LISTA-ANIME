@@ -28,7 +28,7 @@ function collections(){
 }
 function feedbackPanel(id){
  const v=store().ai.feedback?.[String(id)]||'';
- const d=document.createElement('div');d.className='ai-panel ai-feedback';
+ const d=document.createElement('div');d.className='ai-feedback';
  d.innerHTML='<div class="ai-actions ai-tags-row">'+
  ['love|🥲 Me destruiu emocionalmente','like|👍 Gostei','dislike|👎 Não gostei','avoid|🚫 Não recomendar','seen|👁 Já conheço'].map(x=>{const [a,b]=x.split('|');return '<button class="chip '+(v===a?'on':'')+'" data-f="'+a+'">'+b+'</button>'}).join('')+'</div>';
  d.onclick=e=>{
