@@ -385,8 +385,31 @@ def main():
     if args.query:
         write_results(search_catalog(args.query), args.format, args.output)
         return
-    if not args.build:
-        print("Catálogo pronto. Use --query \"nome\" para pesquisar ou --build para atualizar.")
+
+    # Modo interativo para uso direto no terminal.
+    try:
+        query = input("Nome da WEB Novel (Enter para sair): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return
+    if not query:
+        return
+    results = search_catalog(query)
+    print(f"\\nEncontradas: {len(results)}")
+    for i, item in enumerate(results, 1):
+        print(f"{i}. {item.get('title')} — {item.get('source')} — {item.get('chapters') or '?'} capítulos")
+        print(f"   {item.get('url')}")
+    if not results:
+        return
+    try:
+        choice = input("\\nSalvar resultado em arquivo? [N]ão / [J]SON / [T]XT: ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return
+    if choice.startswith("j"):
+        write_results(results, "json", input("Nome do arquivo [resultados.json]: ").strip() or "resultados.json")
+    elif choice.startswith("t"):
+        write_results(results, "txt", input("Nome do arquivo [resultados.txt]: ").strip() or "resultados.txt")
 
 
 if __name__ == "__main__":
