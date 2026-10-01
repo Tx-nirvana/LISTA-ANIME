@@ -2511,56 +2511,135 @@ window.OtakuAutoSync={push:push6,pull:pull6,sync:auto6,sql:sql6};
 </script>
 
 <script>
-/* ===== CAMADA 7 — Supabase Realtime + resolução de conflitos ===== */
+/* ===== CAMADA 7 — Supabase Realtime robusto + reconexão + sessão ===== */
 (function(){
 'use strict';
-const R7={channel:null,busy:false,lastRemote:0};
+const R7={
+ channel:null,client:null,busy:false,lastRemote:0,retry:0,timer:null,connecting:false,
+ maxRetry:30000
+};
 const cfg7=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}')}catch(e){return {}}};
 const sess7=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
+const saveSess7=s=>{try{localStorage.setItem('otaku-supabase-session-v1',JSON.stringify(s))}catch(e){}};
 const base7=()=>String(cfg7().url||'').replace(/\/$/,'');
 const q7=s=>document.querySelector(s);
-const snap7=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
+const snap7=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{
+ version:1,updatedAt:Date.now(),
+ library:Object.values(window.lib||{}),
+ progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),
+ history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')
+};
+function status7(t){const x=q7('#r7-status');if(x)x.textContent=t}
+function sleep7(ms){return new Promise(r=>setTimeout(r,ms))}
+async function refreshToken7(){
+ const c=cfg7(),s=sess7(),rt=s?.refresh_token;
+ if(!c.url||!c.key||!rt)return false;
+ try{
+  const r=await fetch(base7()+'/auth/v1/token?grant_type=refresh_token',{
+   method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},
+   body:JSON.stringify({refresh_token:rt})
+  });
+  const d=await r.json().catch(()=>null);
+  if(!r.ok||!d?.access_token)return false;
+  saveSess7({...s,...d,user:d.user||s.user});
+  return true;
+ }catch(e){return false}
+}
+async function auth7(){
+ const c=cfg7(),s=sess7();
+ if(!c.url||!c.key||!s?.access_token)return false;
+ try{
+  let r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+s.access_token}});
+  if(r.ok)return true;
+  if(await refreshToken7()){
+   const n=sess7();
+   r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+n.access_token}});
+   return r.ok;
+  }
+ }catch(e){}
+ return false;
+}
 function restore7(d){
  try{
   if(window.OtakuCloud?.import)window.OtakuCloud.import(d);
-  else if(Array.isArray(d?.library)){window.lib=window.lib||{};d.library.forEach(x=>{if(x?.id)window.lib[x.id]=x})}
+  else if(Array.isArray(d?.library)){
+   window.lib=window.lib||{};
+   d.library.forEach(x=>{if(x?.id)window.lib[x.id]=x});
+  }
   localStorage.setItem('otaku-realtime-last',String(Date.now()));
- }catch(e){}
-}
-function status7(t){const x=q7('#r7-status');if(x)x.textContent=t}
-function token7(){return sess7()?.access_token||''}
-async function auth7(){
- const c=cfg7(),s=sess7();if(!c.url||!c.key||!s?.access_token)return false;
- try{
-  const r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+s.access_token}});
-  return r.ok;
- }catch(e){return false}
+ }catch(e){console.warn('Realtime restore:',e)}
 }
 function merge7(local,remote){
- const out={...local};
  const lm=new Map((local.library||[]).map(x=>[String(x.id),x]));
  const rm=new Map((remote.library||[]).map(x=>[String(x.id),x]));
- const merged=new Map([...lm].map(([id,x])=>[id,x]));
+ const merged=new Map(lm);
  rm.forEach((x,id)=>{
   const l=lm.get(id);
-  if(!l||Number(x.updatedAt||x._updatedAt||0)>Number(l.updatedAt||l._updatedAt||0))merged.set(id,x);
-  else if(l&&x&&Number(x.rating||0)>Number(l.rating||0)&&Number(l.updatedAt||0)===Number(x.updatedAt||0))merged.set(id,{...l,rating:x.rating});
+  if(!l)merged.set(id,x);
+  else{
+   const lt=Number(l.updatedAt||l._updatedAt||0),rt=Number(x.updatedAt||x._updatedAt||0);
+   if(rt>lt)merged.set(id,x);
+   else if(rt===lt&&Number(x.rating||0)>Number(l.rating||0))merged.set(id,{...l,rating:x.rating});
+  }
  });
- return {...remote,...local,library:[...merged.values()],updatedAt:Math.max(Number(local.updatedAt||0),Number(remote.updatedAt||0))};
+ return {
+  ...remote,...local,
+  library:[...merged.values()],
+  updatedAt:Math.max(Number(local.updatedAt||0),Number(remote.updatedAt||0))
+ };
 }
-async function realtime7(){
- if(R7.channel||!(await auth7()))return;
- const c=cfg7(),s=sess7(),uid=s.user?.id||s.user?.sub;
- if(!uid)return;
+function schedule7(delay){
+ clearTimeout(R7.timer);
+ R7.timer=setTimeout(()=>realtime7(true),Math.max(1000,delay||0));
+}
+function close7(){
+ try{if(R7.channel)R7.channel.unsubscribe()}catch(e){}
+ R7.channel=null;
+ R7.client=null;
+}
+async function realtime7(isRetry=false){
+ if(R7.connecting)return;
+ if(R7.channel)return;
+ R7.connecting=true;
  try{
+  const c=cfg7();
+  if(!c.url||!c.key){status7('⚪ Configure o Supabase para ativar o Realtime.');return}
+  if(!(await auth7())){status7('⚠️ Sessão do Supabase expirada ou não conectada.');schedule7(30000);return}
+  const s=sess7(),uid=s?.user?.id||s?.user?.sub;
+  if(!uid){status7('⚠️ Usuário do Supabase não identificado.');return}
   const mod=window.supabase;
-  if(!mod?.createClient){status7('⚠️ Realtime precisa do cliente Supabase JS.');return}
-  const client=mod.createClient(c.url,c.key,{global:{headers:{Authorization:'Bearer '+s.access_token}},auth:{persistSession:false,autoRefreshToken:false}});
-  R7.channel=client.channel('otaku-library-'+uid)
+  if(!mod?.createClient){status7('⚠️ Cliente Supabase JS não carregado.');schedule7(10000);return}
+  const client=mod.createClient(c.url,c.key,{
+   global:{headers:{Authorization:'Bearer '+s.access_token}},
+   auth:{persistSession:false,autoRefreshToken:false}
+  });
+  R7.client=client;
+  const name='otaku-library-'+String(uid).replace(/[^a-zA-Z0-9_-]/g,'');
+  const ch=client.channel(name)
    .on('postgres_changes',{event:'INSERT',schema:'public',table:'biblioteca_otaku_sync',filter:'user_id=eq.'+uid},p=>remote7(p.new?.data))
-   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'biblioteca_otaku_sync',filter:'user_id=eq.'+uid},p=>remote7(p.new?.data))
-   .subscribe(st=>{if(st==='SUBSCRIBED')status7('🟢 Realtime conectado · alterações serão recebidas automaticamente');else if(st==='CHANNEL_ERROR')status7('⚠️ Realtime não conectado; sincronização periódica continua ativa.')});
- }catch(e){status7('⚠️ Não foi possível iniciar Realtime.')}
+   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'biblioteca_otaku_sync',filter:'user_id=eq.'+uid},p=>remote7(p.new?.data));
+  R7.channel=ch;
+  ch.subscribe(st=>{
+   if(st==='SUBSCRIBED'){
+    R7.retry=0;
+    status7('🟢 Realtime conectado · alterações chegam automaticamente');
+   }else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
+    close7();
+    R7.retry=Math.min(R7.retry+1,6);
+    const delay=Math.min(R7.maxRetry,1000*Math.pow(2,R7.retry-1));
+    status7('🟡 Realtime reconectando em '+Math.ceil(delay/1000)+'s…');
+    schedule7(delay);
+   }
+  });
+ }catch(e){
+  close7();
+  R7.retry=Math.min(R7.retry+1,6);
+  const delay=Math.min(R7.maxRetry,1000*Math.pow(2,R7.retry-1));
+  status7('🟡 Realtime indisponível · nova tentativa em '+Math.ceil(delay/1000)+'s');
+  schedule7(delay);
+ }finally{
+  R7.connecting=false;
+ }
 }
 function remote7(remote){
  if(R7.busy||!remote)return;
@@ -2569,28 +2648,47 @@ function remote7(remote){
   const local=snap7(),merged=merge7(local,remote);
   restore7(merged);
   R7.lastRemote=Date.now();
-  status7('🟢 Alteração recebida da nuvem · '+new Date().toLocaleTimeString('pt-BR'));
-  setTimeout(()=>{try{if(typeof window.render==='function')window.render();if(typeof window.tab==='function')window.tab('lib')}catch(e){}},80);
+  status7('🟢 Alteração recebida · '+new Date().toLocaleTimeString('pt-BR'));
+  setTimeout(()=>{try{
+   if(typeof window.render==='function')window.render();
+   document.dispatchEvent(new CustomEvent('otaku-realtime-update',{detail:merged}));
+  }catch(e){}},80);
  }finally{setTimeout(()=>R7.busy=false,500)}
 }
 function sql7(){
  return `alter table public.biblioteca_otaku_sync replica identity full;
-alter publication supabase_realtime add table public.biblioteca_otaku_sync;`;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'biblioteca_otaku_sync'
+  ) then
+    alter publication supabase_realtime add table public.biblioteca_otaku_sync;
+  end if;
+end $$;`;
 }
 function panel7(){
  if(q7('#r7-panel'))return;
  const stats=q7('#v-stats');if(!stats)return;
  const b=document.createElement('div');b.id='r7-panel';b.className='bo5-card';b.style.marginTop='12px';
- b.innerHTML='<h3>⚡ Tempo real</h3><div class="bo5-muted">Quando o Realtime estiver habilitado no Supabase, alterações em outro dispositivo chegam automaticamente.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="r7-copy">📋 Copiar SQL Realtime</button><button class="btn" id="r7-connect">🟢 Conectar</button></div><div id="r7-status" class="bo5-muted" style="margin-top:8px"></div>';
+ b.innerHTML='<h3>⚡ Tempo real</h3><div class="bo5-muted">Sincroniza a biblioteca entre dispositivos e reconecta automaticamente se a conexão cair.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="r7-copy">📋 Copiar SQL Realtime</button><button class="btn" id="r7-connect">🟢 Conectar agora</button></div><div id="r7-status" class="bo5-muted" style="margin-top:8px"></div>';
  stats.appendChild(b);
  q7('#r7-copy').onclick=async()=>{try{await navigator.clipboard.writeText(sql7());status7('SQL copiado. Execute no SQL Editor do Supabase.')}catch(e){prompt('Copie este SQL:',sql7())}};
- q7('#r7-connect').onclick=()=>realtime7();
+ q7('#r7-connect').onclick=()=>{R7.retry=0;close7();realtime7()};
 }
-function boot7(){panel7();setTimeout(realtime7,800)}
+function boot7(){panel7();setTimeout(()=>realtime7(false),800)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot7,2700));else setTimeout(boot7,2700);
 setTimeout(boot7,4500);
-window.OtakuRealtime={connect:realtime7,merge:merge7,sql:sql7};
+window.OtakuRealtime={
+ connect:()=>{R7.retry=0;close7();return realtime7()},
+ merge:merge7,sql:sql7,
+ status:()=>({connected:!!R7.channel,retry:R7.retry,lastRemote:R7.lastRemote})
+};
 })();
-</script>
+</script>>
 
 </html>
