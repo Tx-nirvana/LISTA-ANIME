@@ -1408,26 +1408,13 @@ const _rf=refresh;refresh=function(){_rf();Object.values(HUBS).forEach(redraw)};
 const _sv=save;save=function(l){_sv(l);Object.values(HUBS).forEach(cnt)};
 const _tab=tab;tab=function(t){
   const hx=HUBS[t];
+  Object.values(HUBS).forEach(h=>{h.sec.style.display=h===hx?'':'none';h.btn.classList.toggle('on',h===hx)});
   if(!hx)return _tab(t);
-  $('#v-search').style.display='none';
-  $('#v-lib').style.display='none';
-  $('#v-stats').style.display='none';
-  Object.values(HUBS).forEach(h=>{
-    h.sec.style.display=h===hx?'':'none';
-    h.btn.classList.toggle('on',h===hx);
-  });
-  $('#t-search').classList.remove('on');
-  $('#t-lib').classList.remove('on');
-  $('#t-stats').classList.remove('on');
-  if(!hx.started){
-    hx.started=1;
-    hx.msg.textContent='Carregando...';
-    setTimeout(()=>run(hx,true),50);
-  }
+  ['#v-search','#v-lib','#v-stats'].forEach(s=>$(s).style.display='none');
+  ['#t-search','#t-lib','#t-stats'].forEach(s=>$(s).classList.remove('on'));
+  if(!hx.started){hx.started=1;run(hx,true)}
 };
 mount('lf');mount('jg');
-document.getElementById('t-lf').addEventListener('click',()=>tab('lf'));
-document.getElementById('t-jg').addEventListener('click',()=>tab('jg'));
 })();
 </script>
 </body>
