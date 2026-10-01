@@ -367,7 +367,7 @@ async function renderShelf(){
    '<div class="i"><div class="t">'+esc(b.name)+'</div>'+
    '<div class="rd-prog"><i style="width:'+p+'%"></i></div><div class="m">'+(p?p+'% lido':'Não iniciado')+'</div></div></div>';
  }).join('');
- sec.innerHTML=
+ sec.innerHTML=onlineHtml()+
   '<div class="bar"><button class="btn" id="rd-add">＋ Adicionar arquivo</button>'+
   '<input type="file" id="rd-file" accept=".epub,.pdf,.txt,.cbz,.zip" multiple hidden></div>'+
   '<div class="stats">Leia seus próprios arquivos <b>EPUB, PDF, TXT e CBZ</b> (mangá/HQ em imagens) direto aqui. Eles ficam guardados <b>só neste aparelho</b> e o ponto onde você parou é lembrado. Você também pode arrastar os arquivos para esta área.</div>'+
@@ -387,6 +387,87 @@ async function addFiles(files){
  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
  await renderShelf();
  if(bad.length)alert('Não foi possível adicionar:\n'+bad.join('\n')+'\n\nFormatos aceitos: EPUB, PDF, TXT e CBZ.');
+}
+
+
+/* ---------- leitor online (MangaDex) ---------- */
+const MD='https://api.mangadex.org';
+const OPK='otaku-reader-online-progress';
+let onlineProg=jget(OPK,{}),onlineState={manga:null,chapters:[],query:'',loading:false,error:''};
+const saveOnline=(k,v)=>{onlineProg[k]=Object.assign(onlineProg[k]||{},v,{t:Date.now()});jset(OPK,onlineProg)};
+async function mdJson(path,params){
+ const u=new URL(MD+path);
+ Object.entries(params||{}).forEach(([k,v])=>Array.isArray(v)?v.forEach(x=>u.searchParams.append(k,x)):v!=null&&u.searchParams.set(k,v));
+ const r=await fetch(u.toString(),{headers:{Accept:'application/json'}});
+ if(!r.ok)throw new Error('A fonte de capítulos respondeu com erro '+r.status+'.');
+ return r.json();
+}
+function mdTitle(a){const t=a&&a.title||{};return t['pt-br']||t.en||t.ja||Object.values(t)[0]||'Sem título'}
+function mdAlt(a){for(const x of (a&&a.altTitles||[])){const v=x['pt-br']||x.en;if(v)return v}return''}
+function mdCover(x){const rel=(x.relationships||[]).find(r=>r.type==='cover_art');const f=rel&&rel.attributes&&rel.attributes.fileName;return f?'https://uploads.mangadex.org/covers/'+x.id+'/'+f+'.256.jpg':''}
+async function searchOnline(q){
+ q=String(q||'').trim();if(!q)return;
+ onlineState={manga:null,chapters:[],query:q,loading:true,error:''};renderShelf();
+ try{
+  const j=await mdJson('/manga',{title:q,limit:18,'includes[]':['cover_art'],'order[relevance]':'desc','contentRating[]':['safe','suggestive']});
+  onlineState.results=(j.data||[]).map(x=>({id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x),status:x.attributes.status||'',year:x.attributes.year||''}));
+ }catch(e){onlineState.error=e.message||'Não foi possível pesquisar agora.';onlineState.results=[]}
+ onlineState.loading=false;renderShelf();
+}
+async function loadOnlineManga(id){
+ onlineState.loading=true;onlineState.error='';renderShelf();
+ try{
+  const m=await mdJson('/manga/'+id,{'includes[]':['cover_art']});
+  const x=m.data;onlineState.manga={id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x)};
+  let off=0,all=[];
+  while(off<500){
+   const j=await mdJson('/manga/'+id+'/feed',{limit:100,offset:off,'translatedLanguage[]':['pt-br','en'],'order[chapter]':'desc','includeFutureUpdates':'0','includeExternalUrl':'0'});
+   all.push(...(j.data||[]));off+=j.limit||100;if(off>=(j.total||0)||!(j.data||[]).length)break;
+  }
+  const seen=new Set();
+  onlineState.chapters=all.filter(c=>{const a=c.attributes||{},k=(a.translatedLanguage||'')+'|'+(a.chapter||a.title||c.id);if(seen.has(k))return false;seen.add(k);return !a.externalUrl}).map(c=>({id:c.id,chapter:c.attributes.chapter||'?',title:c.attributes.title||'',lang:c.attributes.translatedLanguage||'',pages:c.attributes.pages||0,published:c.attributes.publishAt||''}));
+ }catch(e){onlineState.error=e.message||'Não foi possível carregar os capítulos.';onlineState.chapters=[]}
+ onlineState.loading=false;renderShelf();
+}
+async function openOnlineChapter(chapterId,manga,chapter){
+ document.body.classList.add('rd-lock');
+ const ov=document.createElement('div');ov.className='rd-ov';
+ ov.innerHTML='<div class="rd-top"><button class="rd-b" data-a="back">← Voltar</button><div class="rd-ttl"></div><button class="rd-b" data-a="mode"></button><button class="rd-b" data-a="smaller">A−</button><button class="rd-b" data-a="bigger">A+</button><button class="rd-b" data-a="theme">◐</button></div><div class="rd-wrap"><div class="rd-stage"><div class="rd-msg">Carregando capítulo…</div></div></div><div class="rd-bot"><button class="rd-b" data-a="prevchap">‹ Capítulo</button><span class="rd-info"></span><button class="rd-b" data-a="nextchap">Capítulo ›</button></div>';
+ document.body.appendChild(ov);const q=s=>ov.querySelector(s),stage=q('.rd-stage');q('.rd-ttl').textContent=manga.title+' · Cap. '+chapter.chapter;
+ let imgs=[],idx=0,mode=prefs.cbzMode==='page'?'page':'web',dead=false;
+ const key='md:'+manga.id,old=onlineProg[key]||{};if(old.chapterId===chapterId)idx=Math.max(0,+old.page||0);
+ const setTheme=()=>{const t=THEMES[prefs.theme];ov.style.setProperty('--rd-bg',t.bg);ov.style.setProperty('--rd-fg',t.fg);ov.dataset.theme=prefs.theme};setTheme();
+ const save=()=>saveOnline(key,{mangaId:manga.id,mangaTitle:manga.title,chapterId,chapter:chapter.chapter,page:idx,pct:imgs.length?(idx+1)/imgs.length:0});
+ const info=()=>{q('.rd-info').textContent='Cap. '+chapter.chapter+(imgs.length?' · '+(idx+1)+' / '+imgs.length:'');save()};
+ function mount(){
+  q('[data-a=mode]').textContent='Modo: '+(mode==='web'?'Webtoon':'Página');stage.innerHTML='';
+  if(mode==='page'){
+   const box=document.createElement('div');box.className='rd-cbz';const im=document.createElement('img');im.alt='Página '+(idx+1);im.src=imgs[idx]||'';box.appendChild(im);stage.appendChild(box);info();
+  }else{
+   const box=document.createElement('div');box.className='rd-cbz rd-web';const wrap=document.createElement('div');wrap.className='rd-webin';wrap.style.maxWidth=(800*prefs.size/100)+'px';
+   imgs.forEach((u,i)=>{const im=document.createElement('img');im.alt='Página '+(i+1);im.loading=Math.abs(i-idx)>2?'lazy':'eager';im.src=u;im.dataset.i=i;wrap.appendChild(im)});box.appendChild(wrap);stage.appendChild(box);
+   requestAnimationFrame(()=>{const im=wrap.children[idx];if(im)im.scrollIntoView()});
+   box.addEventListener('scroll',debounce(()=>{const top=box.getBoundingClientRect().top;for(let i=0;i<wrap.children.length;i++){if(wrap.children[i].getBoundingClientRect().bottom>top+60){idx=i;break}}info()},180));info();
+  }
+ }
+ function go(d){if(mode==='web'){const b=stage.querySelector('.rd-cbz');b&&b.scrollBy({top:d*b.clientHeight*.9,behavior:'smooth'});return}const n=Math.max(0,Math.min(imgs.length-1,idx+d));if(n!==idx){idx=n;mount()}}
+ function sibling(d){const a=onlineState.chapters||[],i=a.findIndex(x=>x.id===chapterId),n=a[i+d];if(!n)return;close(false);openOnlineChapter(n.id,manga,n)}
+ function close(showShelf=true){dead=true;document.removeEventListener('keydown',keys,true);save();ov.remove();document.body.classList.remove('rd-lock');if(showShelf)renderShelf()}
+ function keys(e){if(e.key==='Escape')close();else if(e.key==='ArrowLeft')go(-1);else if(e.key==='ArrowRight')go(1)}document.addEventListener('keydown',keys,true);
+ ov.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;if(a==='back')close();else if(a==='mode'){mode=mode==='web'?'page':'web';prefs.cbzMode=mode;savePrefs();mount()}else if(a==='smaller'||a==='bigger'){prefs.size=Math.min(220,Math.max(60,prefs.size+(a==='bigger'?10:-10)));savePrefs();mount()}else if(a==='theme'){prefs.theme=THEME_ORDER[(THEME_ORDER.indexOf(prefs.theme)+1)%THEME_ORDER.length];savePrefs();setTheme()}else if(a==='prevchap')sibling(1);else if(a==='nextchap')sibling(-1)});
+ try{
+  const j=await mdJson('/at-home/server/'+chapterId,{});if(dead)return;const base=j.baseUrl,hash=j.chapter.hash,files=j.chapter.dataSaver&&j.chapter.dataSaver.length?j.chapter.dataSaver:j.chapter.data;const folder=(j.chapter.dataSaver&&j.chapter.dataSaver.length)?'data-saver':'data';imgs=files.map(f=>base+'/'+folder+'/'+hash+'/'+f);idx=Math.min(idx,Math.max(0,imgs.length-1));if(!imgs.length)throw new Error('Este capítulo não possui páginas disponíveis.');mount();
+ }catch(e){if(!dead)stage.innerHTML='<div class="rd-msg">'+esc(e.message||'Não foi possível abrir este capítulo.')+'</div>'}
+}
+function onlineHtml(){
+ const st=onlineState,p=st.manga&&onlineProg['md:'+st.manga.id];
+ let h='<div class="rd-online"><div class="rd-online-head"><div><b>🌐 Leitor Online</b><div class="m">Pesquise mangás e abra os capítulos diretamente aqui.</div></div><form id="rd-search"><input id="rd-q" placeholder="Ex.: One Piece, Berserk, Solo Leveling" value="'+esc(st.query||'')+'"><button class="btn">Pesquisar</button></form></div>';
+ if(st.loading)h+='<div class="msg">Buscando capítulos…</div>';
+ if(st.error)h+='<div class="msg">'+esc(st.error)+'</div>';
+ if(st.manga){h+='<div class="rd-manga-head">'+(st.manga.cover?'<img src="'+esc(st.manga.cover)+'" alt="">':'')+'<div><button class="rd-link" data-online-back>← resultados</button><h3>'+esc(st.manga.title)+'</h3>'+(st.manga.alt?'<div class="m">'+esc(st.manga.alt)+'</div>':'')+(p?'<button class="btn rd-continue" data-chapter="'+esc(p.chapterId)+'">▶ Continuar no cap. '+esc(p.chapter||'?')+'</button>':'')+'</div></div>';
+  h+='<div class="rd-chapters">'+(st.chapters.length?st.chapters.map(c=>'<button class="rd-chapter" data-chapter="'+esc(c.id)+'"><b>Capítulo '+esc(c.chapter)+'</b><span>'+(c.title?esc(c.title)+' · ':'')+(c.lang==='pt-br'?'🇧🇷 PT-BR':'🇬🇧 EN')+(c.pages?' · '+c.pages+' pág.':'')+'</span></button>').join(''):'<div class="msg">Nenhum capítulo PT-BR/EN disponível nesta fonte.</div>')+'</div>';
+ }else if(st.results&&st.results.length){h+='<div class="rd-results">'+st.results.map(x=>'<button class="rd-result" data-manga="'+esc(x.id)+'">'+(x.cover?'<img src="'+esc(x.cover)+'" alt="">':'<div class="rd-cover">?</div>')+'<span><b>'+esc(x.title)+'</b>'+(x.alt?'<small>'+esc(x.alt)+'</small>':'')+'<small>'+esc([x.year,x.status].filter(Boolean).join(' · '))+'</small></span></button>').join('')+'</div>'}
+ return h+'</div>';
 }
 
 /* ---------- integração com as abas do site ---------- */
@@ -409,6 +490,9 @@ function init(){
  }).observe(main,{attributes:true,subtree:true,attributeFilter:['style']});
 
  sec.addEventListener('click',async e=>{
+  const mg=e.target.closest('[data-manga]');if(mg){loadOnlineManga(mg.dataset.manga);return}
+  if(e.target.closest('[data-online-back]')){onlineState.manga=null;onlineState.chapters=[];renderShelf();return}
+  const ch=e.target.closest('[data-chapter]');if(ch&&onlineState.manga){const c=onlineState.chapters.find(x=>x.id===ch.dataset.chapter)||{id:ch.dataset.chapter,chapter:(onlineProg['md:'+onlineState.manga.id]||{}).chapter||'?'};openOnlineChapter(c.id,onlineState.manga,c);return}
   const del=e.target.closest('[data-del]');
   if(del){
    e.stopPropagation();
@@ -425,6 +509,7 @@ function init(){
  sec.addEventListener('change',async e=>{
   if(e.target.id==='rd-file'){const fs=[...e.target.files];e.target.value='';await addFiles(fs)}
  });
+ sec.addEventListener('submit',e=>{if(e.target.id==='rd-search'){e.preventDefault();searchOnline((sec.querySelector('#rd-q')||{}).value)}});
  ['dragover','drop'].forEach(ev=>sec.addEventListener(ev,e=>{
   e.preventDefault();
   if(ev==='drop'&&e.dataTransfer&&e.dataTransfer.files.length)addFiles([...e.dataTransfer.files]);
