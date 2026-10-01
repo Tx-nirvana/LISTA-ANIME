@@ -6,6 +6,7 @@ const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
 const KX={book:'Livro',movie:'Filme',game:'Jogo'},isOtaku=x=>!KX[x.kind];
 let src=null,favOnly=false,recOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
+Object.defineProperty(window,'lib',{configurable:true,get:()=>lib,set:v=>{lib=v}});Object.defineProperty(window,'current',{configurable:true,get:()=>current,set:v=>{current=v}});
 
 function safe(v){
   const t=x=>String(x??'').replace(/[<>]/g,''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number(x)||0;
