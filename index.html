@@ -2206,4 +2206,117 @@ setTimeout(boot3,2600);
 })();
 </script>
 
+<script>
+/* ===== CAMADA 4 — dados locais robustos, sincronização preparada e backup ===== */
+(function(){
+'use strict';
+const C4={key:'otaku-cloud-v1',version:1,last:0};
+const esc4=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function snapshot4(){
+ return {
+  version:C4.version,
+  updatedAt:Date.now(),
+  library:Object.values(window.lib||{}),
+  progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),
+  history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]'),
+  settings:{
+   scale:localStorage.getItem('otaku-scale')||'5',
+   theme:localStorage.getItem('theme')||'',
+   source:localStorage.getItem('otaku-source')||''
+  }
+ };
+}
+function saveCloudLocal4(){
+ try{
+  const d=snapshot4();
+  localStorage.setItem(C4.key,JSON.stringify(d));
+  C4.last=d.updatedAt;
+  localStorage.setItem(C4.key+'-last',String(C4.last));
+ }catch(e){}
+}
+function restoreCloudLocal4(d){
+ if(!d||typeof d!=='object')throw new Error('Backup inválido');
+ if(Array.isArray(d.library)){
+  const target=window.lib||{};
+  d.library.forEach(x=>{if(x&&x.id)target[x.id]=x});
+  try{localStorage.setItem('otaku-lib',JSON.stringify(target))}catch(e){}
+ }
+ if(d.progress)localStorage.setItem('otaku-progress-v1',JSON.stringify(d.progress));
+ if(d.history)localStorage.setItem('otaku-discovery-history',JSON.stringify(d.history));
+ if(d.settings){
+  Object.entries(d.settings).forEach(([k,v])=>{if(v!==undefined)localStorage.setItem(k,v)});
+ }
+ saveCloudLocal4();
+ return d.library?.length||0;
+}
+function download4(){
+ const data=snapshot4();
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='biblioteca-otaku-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function import4(){
+ const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
+ input.onchange=async()=>{
+  const f=input.files?.[0];if(!f)return;
+  try{
+   const d=JSON.parse(await f.text());
+   const n=restoreCloudLocal4(d);
+   alert('Backup restaurado: '+n+' obras. Recarregando a biblioteca.');
+   location.reload();
+  }catch(e){alert('Não foi possível restaurar o backup: '+e.message)}
+ };
+ input.click();
+}
+function panel4(){
+ if(document.getElementById('c4-panel'))return;
+ const stats=q5('#v-stats');if(!stats)return;
+ const box=document.createElement('div');box.id='c4-panel';box.className='bo5-card';box.style.marginTop='12px';
+ box.innerHTML='<h3>☁️ Dados e sincronização</h3><div class="bo5-muted">Seu catálogo pessoal pode ser exportado e restaurado sem depender das APIs externas.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="c4-save">💾 Fazer backup</button><button class="btn" id="c4-load">📥 Restaurar backup</button><button class="btn" id="c4-local">🔄 Salvar estado local</button></div><div id="c4-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(box);
+ q5('#c4-save').onclick=download4;
+ q5('#c4-load').onclick=import4;
+ q5('#c4-local').onclick=()=>{saveCloudLocal4();status4('Estado local salvo em '+new Date().toLocaleTimeString('pt-BR'))};
+ status4();
+}
+function status4(msg){
+ const x=q5('#c4-status');if(!x)return;
+ const t=Number(localStorage.getItem(C4.key+'-last')||0);
+ x.textContent=msg||('Último estado local: '+(t?new Date(t).toLocaleString('pt-BR'):'ainda não salvo'));
+}
+function hook4(){
+ if(typeof window.save!=='function')return;
+ if(window.save.__c4)return;
+ const old=window.save;
+ const fn=function(){
+  const r=old.apply(this,arguments);
+  setTimeout(()=>{saveCloudLocal4();status4('Alterações salvas localmente às '+new Date().toLocaleTimeString('pt-BR'))},100);
+  return r;
+ };
+ fn.__c4=true;window.save=fn;
+}
+function addCloudAdapter4(){
+ if(window.OtakuCloud)return;
+ window.OtakuCloud={
+  version:C4.version,
+  export:snapshot4,
+  import:restoreCloudLocal4,
+  save:saveCloudLocal4,
+  getLast:()=>Number(localStorage.getItem(C4.key+'-last')||0),
+  async push(adapter){
+   if(!adapter||typeof adapter.push!=='function')throw new Error('Adaptador de nuvem inválido');
+   const d=snapshot4();await adapter.push(d);C4.last=d.updatedAt;return d;
+  },
+  async pull(adapter){
+   if(!adapter||typeof adapter.pull!=='function')throw new Error('Adaptador de nuvem inválido');
+   const d=await adapter.pull();restoreCloudLocal4(d);return d;
+  }
+ };
+}
+function boot4(){panel4();hook4();addCloudAdapter4();saveCloudLocal4()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot4,1700));else setTimeout(boot4,1700);
+setTimeout(boot4,3000);
+})();
+</script>
+
 </html>
