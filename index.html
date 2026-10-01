@@ -2416,4 +2416,97 @@ window.OtakuSupabase={config:cfg,setConfig:setCfg,login:()=>sign5('login'),signu
 })();
 </script>
 
+<script>
+/* ===== CAMADA 6 — sincronização automática + configuração SQL ===== */
+(function(){
+'use strict';
+const C6={table:'biblioteca_otaku_sync',timer:null};
+const cfg=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-config-v1')||'{}')}catch(e){return {}}};
+const sess=()=>{try{return JSON.parse(localStorage.getItem('otaku-supabase-session-v1')||'null')}catch(e){return null}};
+const base=()=>String(cfg().url||'').replace(/\/$/,'');
+const snapshot=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version:1,updatedAt:Date.now(),library:Object.values(window.lib||{}),progress:JSON.parse(localStorage.getItem('otaku-progress-v1')||'{}'),history:JSON.parse(localStorage.getItem('otaku-discovery-history')||'[]')};
+async function api6(path,opt={}){
+ const c=cfg(),s=sess();if(!c.url||!c.key||!s?.access_token)throw new Error('Supabase não configurado ou usuário não conectado.');
+ const h={apikey:c.key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',...(opt.headers||{})};
+ const r=await fetch(base()+path,{...opt,headers:h});const t=await r.text();let d=null;try{d=t?JSON.parse(t):null}catch(e){}
+ if(!r.ok)throw new Error(d?.message||d?.msg||d?.hint||('HTTP '+r.status));return d;
+}
+async function push6(silent=true){
+ const s=sess();if(!s?.user)return false;
+ const uid=s.user.id||s.user.sub,d=snapshot();
+ await api6('/rest/v1/'+C6.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
+ localStorage.setItem('otaku-cloud-last-push',String(Date.now()));
+ if(!silent)alert('☁️ Biblioteca sincronizada com a nuvem.');
+ return true;
+}
+async function pull6(silent=true){
+ const s=sess();if(!s?.user)return false;
+ const uid=s.user.id||s.user.sub;
+ const rows=await api6('/rest/v1/'+C6.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1');
+ if(!rows?.length)return false;
+ const remote=rows[0].data,remoteTime=Date.parse(rows[0].updated_at||'')||0,localTime=Number(snapshot().updatedAt||0);
+ if(remoteTime>localTime){
+   if(window.OtakuCloud?.import)window.OtakuCloud.import(remote);
+   localStorage.setItem('otaku-cloud-last-pull',String(Date.now()));
+   if(!silent)setTimeout(()=>location.reload(),100);
+   return true;
+ }
+ return false;
+}
+async function auto6(){
+ if(!sess()?.access_token||!cfg().url||!cfg().key)return;
+ try{
+   const changed=await pull6(true);
+   if(!changed)await push6(true);
+   const s=q6('#c6-auto-status');if(s)s.textContent='☁️ Sincronizado automaticamente · '+new Date().toLocaleTimeString('pt-BR');
+ }catch(e){
+   const s=q6('#c6-auto-status');if(s)s.textContent='⚠️ Nuvem indisponível · dados locais preservados';
+ }
+}
+function q6(s){return document.querySelector(s)}
+function sql6(){
+ return `create table if not exists public.biblioteca_otaku_sync (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.biblioteca_otaku_sync enable row level security;
+drop policy if exists "otaku_select_own" on public.biblioteca_otaku_sync;
+drop policy if exists "otaku_insert_own" on public.biblioteca_otaku_sync;
+drop policy if exists "otaku_update_own" on public.biblioteca_otaku_sync;
+create policy "otaku_select_own" on public.biblioteca_otaku_sync for select using (auth.uid()=user_id);
+create policy "otaku_insert_own" on public.biblioteca_otaku_sync for insert with check (auth.uid()=user_id);
+create policy "otaku_update_own" on public.biblioteca_otaku_sync for update using (auth.uid()=user_id) with check (auth.uid()=user_id);
+grant select,insert,update on public.biblioteca_otaku_sync to authenticated;`;
+}
+function panel6(){
+ if(q6('#c6-panel'))return;
+ const stats=q6('#v-stats');if(!stats)return;
+ const b=document.createElement('div');b.id='c6-panel';b.className='bo5-card';b.style.marginTop='12px';
+ b.innerHTML='<h3>⚡ Sincronização automática</h3><div class="bo5-muted">Depois de configurar a tabela no Supabase, a biblioteca será sincronizada automaticamente. Os dados locais continuam funcionando offline.</div><div class="bo5-actions" style="margin-top:10px"><button class="btn" id="c6-sql">📋 Copiar SQL do Supabase</button><button class="btn" id="c6-now">🔄 Sincronizar agora</button></div><div id="c6-auto-status" class="bo5-muted" style="margin-top:8px"></div>';
+ stats.appendChild(b);
+ q6('#c6-sql').onclick=async()=>{
+   try{await navigator.clipboard.writeText(sql6());q6('#c6-auto-status').textContent='SQL copiado. Cole no SQL Editor do Supabase e execute.'}
+   catch(e){prompt('Copie este SQL:',sql6())}
+ };
+ q6('#c6-now').onclick=async()=>{q6('#c6-auto-status').textContent='Sincronizando...';await auto6()};
+}
+function hookSave6(){
+ if(typeof window.save!=='function'||window.save.__c6)return;
+ const old=window.save;
+ const fn=function(){const r=old.apply(this,arguments);setTimeout(()=>push6(true).catch(()=>{}),350);return r};
+ fn.__c6=true;window.save=fn;
+}
+function boot6(){
+ panel6();hookSave6();
+ if(C6.timer)clearInterval(C6.timer);
+ setTimeout(()=>auto6(),1200);
+ C6.timer=setInterval(auto6,60000);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot6,2400));else setTimeout(boot6,2400);
+setTimeout(boot6,4000);
+window.OtakuAutoSync={push:push6,pull:pull6,sync:auto6,sql:sql6};
+})();
+</script>
+
 </html>
