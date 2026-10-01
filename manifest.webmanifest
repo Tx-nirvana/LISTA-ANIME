@@ -1,0 +1,12 @@
+{
+  "name":"Biblioteca Otaku",
+  "short_name":"Biblioteca Otaku",
+  "description":"Biblioteca pessoal de anime, mangá, novels, livros, filmes e jogos.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#020202",
+  "theme_color":"#020202",
+  "lang":"pt-BR",
+  "icons":[]
+}
