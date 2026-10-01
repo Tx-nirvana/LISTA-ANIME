@@ -1161,7 +1161,7 @@ const olItem=d=>({id:hid('o'+d.key),ref:'o'+d.key,kind:'book',type:'ANIME',title
 /* com texto ou gênero: Google Livros (acha títulos em português); sem texto: Open Library (mais lidos) */
 async function fBook(st,p){
   const gs=st.genres.map(i=>BG[+i][2]);
-  const qs=[st.q,...gs.map(g=>'subject:"'+g+'"')].filter(Boolean).join(' ');
+  const qs=st.src?'inauthor:"'+st.src+'"':[st.q,...gs.map(g=>'subject:"'+g+'"')].filter(Boolean).join(' ');
   if(qs){
     try{
       const r=await jget('https://www.googleapis.com/books/v1/volumes?'+new URLSearchParams({q:qs,startIndex:(p-1)*24,maxResults:24,printType:'books',orderBy:st.sort==='new'?'newest':'relevance'}));
@@ -1169,7 +1169,7 @@ async function fBook(st,p){
       return {items,more:items.length>0&&p*24<(r.totalItems||0)};
     }catch(e){}
   }
-  const base={q:qs||'ratings_count:[20 TO *]',page:p,limit:24,fields:'key,title,author_name,first_publish_year,cover_i,subject,ratings_average,number_of_pages_median'};
+  const base={q:st.src?'author:"'+st.src+'"':qs||'ratings_count:[20 TO *]',page:p,limit:24,fields:'key,title,author_name,first_publish_year,cover_i,subject,ratings_average,number_of_pages_median'};
   const sort=st.q?'':{pop:'readinglog',score:'rating',new:'new'}[st.sort];
   let r;
   try{r=await jget('https://openlibrary.org/search.json?'+new URLSearchParams(sort?{...base,sort}:base))}
@@ -1277,6 +1277,7 @@ function openX(id,re){
   <div class="sub">${[KX[k],s.year,s.by,s.rt&&s.rt+' min',k==='book'&&s.pg&&s.pg+' págs',s.avg&&'Nota '+(s.avg/20).toFixed(1)+'/5',s.native].filter(Boolean).join(' · ')}</div>
   ${k==='game'&&s.pl?`<div class="sub">${s.pl}</div>`:''}${s.cast?`<div class="sub">Elenco: ${s.cast}</div>`:''}
   <div class="gen">${(s.genres||[]).map(g=>`<span>${g}</span>`).join('')}</div>
+  ${k==='book'&&s.by?`<div class="sub" style="margin:8px 0 2px">Autor · toque para ver todas as obras</div><div class="gen">${s.by.split(', ').map(a=>`<button class="lk" style="border:0;cursor:pointer" data-au="${esc(a)}">${esc(a)}</button>`).join('')}</div>`:''}
   <div class="syn" id="syn">Carregando sinopse...</div><button class="chip" id="tg" style="display:none">Ver original</button>
   ${l?`<div class="row"><select id="mst">${STATUS.map((x,i)=>`<option value="${x}" ${x===l.status?'selected':''}>${SL[k][i]}</option>`).join('')}</select>${pr?`<input id="mprog" type="number" min="0" style="width:130px" placeholder="${pr}" value="${esc(l.prog)}">`:''}</div>
   <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(i=>`<span data-n="${i}" class="${i<=n?'on':''}">★</span>`).join('')}</div><span>${n?n+'/5':'sem nota'}</span></div>
@@ -1292,6 +1293,7 @@ function openX(id,re){
     $('#stars').onclick=e=>{const v=+e.target.dataset.n;if(!v)return;l.rating=l.rating===v?0:v;if(l.rating&&l.status===STATUS[0])l.status=STATUS[2];save(l);openX(id,1);refresh()};
     $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
   }else $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};save(lib[id]);openX(id,1);refresh()};
+  document.querySelectorAll('#box [data-au]').forEach(b=>b.onclick=()=>openAuthorX(b.dataset.au));
   const go=()=>{const c=lib[id]||curX[id];paintSyn(c);paintWhere(c)};
   if(re||done.has(id))go();
   else{done.add(id);load(s).catch(()=>done.delete(id)).then(()=>{if(curM===id&&$('#modal').classList.contains('on'))openX(id,1)})}
@@ -1303,9 +1305,9 @@ const HUBS={},CFG={
   jg:{kinds:[['game','Jogos']],ph:'Buscar jogo (vazio = mais populares)'}
 };
 function streams(h){
-  const st={q:h.q.value.trim(),sort:h.sort.value,genres:[...h.g],plat:[...h.pl]},S=[];
+  const st={src:h.src||'',q:h.q.value.trim(),sort:h.sort.value,genres:[...h.g],plat:[...h.pl]},S=[];
   if(h.id==='jg')S.push({k:'game',f:p=>fGame(st,p)});
-  else{if(h.kind!=='movie')S.push({k:'book',f:p=>fBook(st,p)});if(h.kind!=='book')S.push({k:'movie',f:p=>fMovie(st,p)})}
+  else{if(h.kind!=='movie'||h.src)S.push({k:'book',f:p=>fBook(st,p)});if(h.kind!=='book'&&!h.src)S.push({k:'movie',f:p=>fMovie(st,p)})}
   return S;
 }
 function keyBox(h){
@@ -1324,7 +1326,7 @@ async function run(h,reset){
     catch(e){h.more[s.k]=false;if(/^KEY:/.test(e.message))h.need.add(e.message.slice(4));else err=e;return []}
   }));
   let html='';
-  for(let i=0,n=Math.max(0,...lists.map(l=>l.length));i<n;i++)lists.forEach(l=>{const s=l[i];if(s&&!h.seen.has(s.id)){h.seen.add(s.id);curX[s.id]=curX[s.id]||s;h.ord.push(s.id);html+=cardX(curX[s.id])}});
+  for(let i=0,n=Math.max(0,...lists.map(l=>l.length));i<n;i++)lists.forEach(l=>{const s=l[i],tk=s&&h.src?s.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,''):'';if(s&&!h.seen.has(s.id)&&!(tk&&h.seen.has(tk))){h.seen.add(s.id);if(tk)h.seen.add(tk);curX[s.id]=curX[s.id]||s;h.ord.push(s.id);html+=cardX(curX[s.id])}});
   h.res.insertAdjacentHTML('beforeend',html);keyBox(h);
   h.msg.textContent=h.ord.length||h.need.size?'':err?'Não consegui carregar o catálogo ('+err.message+'). Tente de novo em instantes.':'Nada encontrado. Tente outro título ou gênero.';
   h.mb.style.display=S.length&&Object.values(h.more).some(v=>v!==false)?'block':'none';
@@ -1347,12 +1349,19 @@ function lrender(h){
 }
 const cnt=h=>{h.cnt.textContent=Object.values(lib).filter(x=>h.kinds.includes(x.kind)).length};
 const redraw=h=>{h.res.innerHTML=h.ord.map(i=>cardX(curX[i])).join('');if(h.sec.querySelector('[data-p="l"]').style.display!=='none')lrender(h);cnt(h)};
+function updSrc(h){h.srcb.style.display=h.src?'':'none';h.srcb.innerHTML=h.src?`<button class="chip" data-back="1">← Voltar</button> <b>Obras de ${esc(h.src)}</b>`:''}
+function openAuthorX(name){
+  const h=HUBS.lf,was=h.started;closeModal();
+  h.src=T(name).replace(/"/g,'');h.kind='book';h.g.clear();h.q.value='';chipsDraw(h);updSrc(h);
+  tab('lf');h.sec.querySelector('[data-v="d"]').click();
+  if(was)run(h,true);
+}
 function mount(id){
   const c=CFG[id],h=HUBS[id]={id,kinds:c.kinds.map(k=>k[0]).filter(k=>k!=='all'),kind:'all',g:new Set(),pl:new Set(),fav:false,pg:{},more:{},ord:[],seen:new Set(),need:new Set()};
   const sec=document.createElement('section');sec.id='v-'+id;sec.style.display='none';
   sec.innerHTML=`<div class="chips"><button class="chip on" data-v="d">Descobrir</button><button class="chip" data-v="l">Minha lista (<span class="cnt">0</span>)</button></div>
   <div data-p="d"><div class="bar"><input type="search" class="q" placeholder="${c.ph}"><select class="sort"><option value="pop">Mais populares</option><option value="score">Melhor avaliados</option><option value="new">Mais recentes</option></select></div>
-  <div class="ban"></div><div class="chips kd"></div><details class="gdet gn"></details>
+  <div class="src stats" style="display:none"></div><div class="ban"></div><div class="chips kd"></div><details class="gdet gn"></details>
   <div class="grid res${id==='jg'?' land':''}"></div><div class="msg"></div><button class="more" style="display:none">Carregar mais</button></div>
   <div data-p="l" style="display:none"><div class="bar"><input type="search" class="lq" placeholder="Buscar na minha lista">
   <select class="ls"><option value="">Todos os status</option>${['Na fila','Em andamento','Concluído','Abandonado'].map((t,i)=>`<option value="${STATUS[i]}">${t}</option>`).join('')}</select>
@@ -1361,16 +1370,17 @@ function mount(id){
   <div class="stats lst"></div><div class="grid lg${id==='jg'?' land':''}"></div></div>`;
   $('main').appendChild(sec);
   const q=s=>sec.querySelector(s);
-  Object.assign(h,{sec,btn:$('#t-'+id),q:q('.q'),sort:q('.sort'),ban:q('.ban'),res:q('.res'),msg:q('.msg'),mb:q('.more'),lq:q('.lq'),ls:q('.ls'),lo:q('.lo'),lk:q('.lkd'),lg:q('.lg'),lst:q('.lst'),cnt:q('.cnt'),kd:q('.kd'),gn:q('.gn')});
+  Object.assign(h,{sec,btn:$('#t-'+id),q:q('.q'),sort:q('.sort'),ban:q('.ban'),srcb:q('.src'),res:q('.res'),msg:q('.msg'),mb:q('.more'),lq:q('.lq'),ls:q('.ls'),lo:q('.lo'),lk:q('.lkd'),lg:q('.lg'),lst:q('.lst'),cnt:q('.cnt'),kd:q('.kd'),gn:q('.gn')});
   h.btn.onclick=()=>tab(id);
   h.res.onclick=clickCard;h.lg.onclick=clickCard;
-  h.q.oninput=()=>{clearTimeout(h.t);h.t=setTimeout(()=>run(h,true),450)};
+  h.q.oninput=()=>{if(h.src){h.src='';updSrc(h)}clearTimeout(h.t);h.t=setTimeout(()=>run(h,true),450)};
   h.sort.onchange=()=>run(h,true);
   [h.lq,h.ls,h.lo,h.lk].forEach(x=>x&&(x.oninput=()=>lrender(h)));
   sec.onclick=e=>{
     const b=e.target.closest('button');if(!b)return;const d=b.dataset;
     if(d.v){sec.querySelectorAll('[data-p]').forEach(p=>p.style.display=p.dataset.p===d.v?'':'none');sec.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('on',x===b));if(d.v==='l')lrender(h)}
-    else if(d.kd!==undefined){h.kind=d.kd;h.g.clear();chipsDraw(h);run(h,true)}
+    else if(d.back!==undefined){h.src='';updSrc(h);run(h,true)}
+    else if(d.kd!==undefined){h.kind=d.kd;h.src='';updSrc(h);h.g.clear();chipsDraw(h);run(h,true)}
     else if(d.pl!==undefined){d.pl===''?h.pl.clear():(h.pl.has(d.pl)?h.pl.delete(d.pl):h.pl.add(d.pl));chipsDraw(h);run(h,true)}
     else if(d.g!==undefined){d.g===''?h.g.clear():(h.g.has(d.g)?h.g.delete(d.g):h.g.add(d.g));chipsDraw(h);run(h,true)}
     else if(d.ks){const v=T(q('[data-kn="'+d.ks+'"]').value);if(v){try{localStorage.setItem('otaku-key-'+d.ks,v)}catch(x){}run(h,true)}}
