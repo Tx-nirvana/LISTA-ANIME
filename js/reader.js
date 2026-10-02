@@ -410,7 +410,8 @@ async function searchOnline(q){
  onlineState={manga:null,chapters:[],query:q,loading:true,error:''};renderShelf();
  try{
   const j=await mdJson('/manga',{title:q,limit:18,'includes[]':['cover_art'],'order[relevance]':'desc','contentRating[]':['safe','suggestive']});
-  onlineState.results=(j.data||[]).map(x=>({id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x),status:x.attributes.status||'',year:x.attributes.year||''}));
+  onlineState.results=(j.data||[]).map(x=>({id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x),status:x.attributes.status||'',year:x.attributes.year||''}))
+   .sort((a,b)=>{const n=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(),qq=n(q),score=x=>n(x.title)===qq?0:n(x.alt)===qq?1:n(x.title).startsWith(qq)?2:n(x.alt).startsWith(qq)?3:4;return score(a)-score(b)});
  }catch(e){onlineState.error=e.message||'Não foi possível pesquisar agora.';onlineState.results=[]}
  onlineState.loading=false;renderShelf();
 }
