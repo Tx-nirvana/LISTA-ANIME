@@ -409,10 +409,36 @@ async function searchOnline(q){
  q=String(q||'').trim();if(!q)return;
  onlineState={manga:null,chapters:[],query:q,loading:true,error:''};renderShelf();
  try{
-  const j=await mdJson('/manga',{title:q,limit:18,'includes[]':['cover_art'],'order[relevance]':'desc','contentRating[]':['safe','suggestive']});
-  onlineState.results=(j.data||[]).map(x=>({id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x),status:x.attributes.status||'',year:x.attributes.year||''}))
-   .sort((a,b)=>{const n=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(),qq=n(q),score=x=>n(x.title)===qq?0:n(x.alt)===qq?1:n(x.title).startsWith(qq)?2:n(x.alt).startsWith(qq)?3:4;return score(a)-score(b)});
- }catch(e){onlineState.error=e.message||'Não foi possível pesquisar agora.';onlineState.results=[]}
+  // AniList identifica primeiro a obra correta e fornece capa/títulos canônicos.
+  const gql='query($search:String!){Page(page:1,perPage:8){media(search:$search,type:MANGA,isAdult:false,sort:[SEARCH_MATCH,POPULARITY_DESC]){id idMal title{romaji english native}coverImage{large}startDate{year}status synonyms}}}';
+  const ar=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query:gql,variables:{search:q}})});
+  if(!ar.ok)throw new Error('AniList respondeu com erro '+ar.status+'.');
+  const aj=await ar.json(),media=aj&&aj.data&&aj.data.Page&&aj.data.Page.media||[];
+  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  const qq=norm(q);
+  const ranked=media.map(m=>{const names=[m.title&&m.title.english,m.title&&m.title.romaji,m.title&&m.title.native,...(m.synonyms||[])].filter(Boolean);const exact=names.some(n=>norm(n)===qq);return{m,names,exact}}).sort((a,b)=>Number(b.exact)-Number(a.exact));
+  const out=[];
+  for(const a of ranked.slice(0,5)){
+   const m=a.m,names=a.names;
+   let found=null;
+   for(const name of names.slice(0,3)){
+    const mj=await mdJson('/manga',{title:name,limit:8,'includes[]':['cover_art'],'order[relevance]':'desc','contentRating[]':['safe','suggestive']});
+    const cand=(mj.data||[]).map(x=>({x,title:mdTitle(x.attributes),alt:mdAlt(x.attributes)}));
+    found=cand.find(c=>names.some(n=>norm(c.title)===norm(n)||norm(c.alt)===norm(n)))||cand[0]||null;
+    if(found)break;
+   }
+   if(found&&!out.some(x=>x.id===found.x.id))out.push({id:found.x.id,title:(m.title&&m.title.english)||m.title.romaji||found.title,alt:(m.title&&m.title.romaji)!==((m.title&&m.title.english)||'')?m.title.romaji:found.alt,cover:(m.coverImage&&m.coverImage.large)||mdCover(found.x),status:m.status||found.x.attributes.status||'',year:(m.startDate&&m.startDate.year)||found.x.attributes.year||'',anilistId:m.id,malId:m.idMal||null});
+  }
+  onlineState.results=out;
+  if(!out.length)throw new Error('Nenhum mangá correspondente foi encontrado.');
+ }catch(e){
+  // Fallback: se AniList estiver indisponível, MangaDex continua funcionando.
+  try{
+   const j=await mdJson('/manga',{title:q,limit:12,'includes[]':['cover_art'],'order[relevance]':'desc','contentRating[]':['safe','suggestive']});
+   onlineState.results=(j.data||[]).map(x=>({id:x.id,title:mdTitle(x.attributes),alt:mdAlt(x.attributes),cover:mdCover(x),status:x.attributes.status||'',year:x.attributes.year||''}));
+   if(!onlineState.results.length)onlineState.error=e.message||'Não foi possível pesquisar agora.';
+  }catch(e2){onlineState.error=e2.message||e.message||'Não foi possível pesquisar agora.';onlineState.results=[]}
+ }
  onlineState.loading=false;renderShelf();
 }
 async function loadOnlineManga(id){
