@@ -391,7 +391,7 @@ async function addFiles(files){
 
 
 /* ---------- leitor online (MangaDex) ---------- */
-const MD='https://api.mangadex.org';
+const MD='https://wild-hall-382b.hugoq3310.workers.dev/mangadex';
 const OPK='otaku-reader-online-progress';
 let onlineProg=jget(OPK,{}),onlineState={manga:null,chapters:[],query:'',loading:false,error:''};
 const saveOnline=(k,v)=>{onlineProg[k]=Object.assign(onlineProg[k]||{},v,{t:Date.now()});jset(OPK,onlineProg)};
