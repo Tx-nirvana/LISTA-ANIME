@@ -404,7 +404,7 @@ async function mdJson(path,params){
 }
 function mdTitle(a){const t=a&&a.title||{};return t['pt-br']||t.en||t.ja||Object.values(t)[0]||'Sem título'}
 function mdAlt(a){for(const x of (a&&a.altTitles||[])){const v=x['pt-br']||x.en;if(v)return v}return''}
-function mdCover(x){const rel=(x.relationships||[]).find(r=>r.type==='cover_art');const f=rel&&rel.attributes&&rel.attributes.fileName;return f?'https://uploads.mangadex.org/covers/'+x.id+'/'+f+'.256.jpg':''}
+function mdCover(x){const rel=(x.relationships||[]).find(r=>r.type==='cover_art');const f=rel&&rel.attributes&&rel.attributes.fileName;return f?'https://wild-hall-382b.hugoq3310.workers.dev/image/cover/'+x.id+'/'+encodeURIComponent(f)+'.256.jpg':''}
 async function searchOnline(q){
  q=String(q||'').trim();if(!q)return;
  onlineState={manga:null,chapters:[],query:q,loading:true,error:''};renderShelf();
@@ -456,7 +456,7 @@ async function openOnlineChapter(chapterId,manga,chapter){
  function keys(e){if(e.key==='Escape')close();else if(e.key==='ArrowLeft')go(-1);else if(e.key==='ArrowRight')go(1)}document.addEventListener('keydown',keys,true);
  ov.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;if(a==='back')close();else if(a==='mode'){mode=mode==='web'?'page':'web';prefs.cbzMode=mode;savePrefs();mount()}else if(a==='smaller'||a==='bigger'){prefs.size=Math.min(220,Math.max(60,prefs.size+(a==='bigger'?10:-10)));savePrefs();mount()}else if(a==='theme'){prefs.theme=THEME_ORDER[(THEME_ORDER.indexOf(prefs.theme)+1)%THEME_ORDER.length];savePrefs();setTheme()}else if(a==='prevchap')sibling(1);else if(a==='nextchap')sibling(-1)});
  try{
-  const j=await mdJson('/at-home/server/'+chapterId,{});if(dead)return;const base=j.baseUrl,hash=j.chapter.hash,files=j.chapter.dataSaver&&j.chapter.dataSaver.length?j.chapter.dataSaver:j.chapter.data;const folder=(j.chapter.dataSaver&&j.chapter.dataSaver.length)?'data-saver':'data';imgs=files.map(f=>base+'/'+folder+'/'+hash+'/'+f);idx=Math.min(idx,Math.max(0,imgs.length-1));if(!imgs.length)throw new Error('Este capítulo não possui páginas disponíveis.');mount();
+  const j=await mdJson('/at-home/server/'+chapterId,{});if(dead)return;const base=j.baseUrl,hash=j.chapter.hash,files=j.chapter.dataSaver&&j.chapter.dataSaver.length?j.chapter.dataSaver:j.chapter.data;const folder=(j.chapter.dataSaver&&j.chapter.dataSaver.length)?'data-saver':'data';imgs=files.map(f=>'https://wild-hall-382b.hugoq3310.workers.dev/image/page?url='+encodeURIComponent(base+'/'+folder+'/'+hash+'/'+f));idx=Math.min(idx,Math.max(0,imgs.length-1));if(!imgs.length)throw new Error('Este capítulo não possui páginas disponíveis.');mount();
  }catch(e){if(!dead)stage.innerHTML='<div class="rd-msg">'+esc(e.message||'Não foi possível abrir este capítulo.')+'</div>'}
 }
 function onlineHtml(){
