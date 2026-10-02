@@ -1,4 +1,4 @@
-const CACHE='biblioteca-otaku-v16';
+const CACHE='biblioteca-otaku-v17';
 const CORE=['./','./index.html','./css/style.css','./js/store.js','./js/api.js','./js/sync.js','./js/app.js','./js/ai.js','./js/reader.js','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>{
