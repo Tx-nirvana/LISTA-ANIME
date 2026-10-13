@@ -425,7 +425,7 @@ async function loadOnlineManga(id,resume=false){
  const ticket=++onlineRequest;++chapterRequest;++allSession;const st=onlineState;st.loading=true;st.loadingAll=false;st.chapterLoading=false;st.error='';st.chapters=[];st.offset=0;st.chapterMore=false;st.manga=null;st.resumeOfficial=null;renderShelf();
  try{
   const j=await readerJson('/manga/'+encodeURIComponent(id));if(ticket!==onlineRequest)return;
-  st.manga=j.manga;st.officialLinks=j.officialLinks||[];st.catalogOnly=j.catalogOnly;st.lookupFailed=j.lookupFailed;st.chapterSource='all';
+  st.manga=j.manga;st.officialLinks=j.officialLinks||[];st.readingSources=j.readingSources||[];st.indexUpdatedAt=j.indexUpdatedAt;st.catalogOnly=j.catalogOnly;st.lookupFailed=j.lookupFailed;st.chapterSource='all';
   const previous=onlineProg[j.manga.id]||{},languages=j.manga.languages||[];
   if(resume&&previous.chapterId&&!previous.lang){const saved=await readerJson('/chapter/'+encodeURIComponent(previous.chapterId));if(ticket!==onlineRequest)return;if(saved.mangaId===j.manga.id){previous.lang=saved.lang;saveOnline(j.manga.id,{lang:saved.lang,mangaId:j.manga.id})}}
   st.lang=previous.lang||(languages.includes('pt-br')?'pt-br':languages.includes('en')?'en':languages[0]||'pt-br');
@@ -435,7 +435,7 @@ async function loadOnlineManga(id,resume=false){
    while(st.chapterMore&&!st.error&&!st.chapters.some(c=>c.id===previous.chapterId)&&ticket===onlineRequest)await loadChapters(false);
    if(ticket!==onlineRequest||st.error)return;
    const c=st.chapters.find(c=>c.id===previous.chapterId);if(c&&c.externalUrl){st.resumeOfficial=c;renderShelf()}else if(c)openOnlineChapter(c.id,st.manga,c);else{st.error='O capítulo salvo não está mais disponível nessa fonte. Escolha outro capítulo.';renderShelf()}
-  }
+  }else if(st.chapterMore&&!st.error)loadAllChapters();
  }catch(e){if(ticket===onlineRequest){st.loading=false;st.error=e.message;renderShelf()}}
 }
 async function loadChapters(reset=false){
@@ -445,7 +445,7 @@ async function loadChapters(reset=false){
  renderShelf();
  try{
   const j=await readerJson('/chapters/'+encodeURIComponent(mangaId),{lang:st.lang,offset:st.offset,order:st.order});if(ticket!==chapterRequest||mangaId!==st.manga?.id)return;
-  const seen=new Set(st.chapters.map(c=>c.id));st.chapters.push(...j.chapters.filter(c=>!seen.has(c.id)));st.total=j.total;st.offset=j.nextOffset;st.chapterMore=j.more;
+  const seen=new Set(st.chapters.map(c=>c.id));st.chapters.push(...j.chapters.filter(c=>!seen.has(c.id)));st.total=j.total;st.offset=j.nextOffset;st.chapterMore=j.more;st.indexUpdatedAt=j.indexUpdatedAt||st.indexUpdatedAt;
   if(j.more&&j.nextOffset===j.offset){st.chapterMore=false;st.error='A fonte interrompeu a paginação. Recarregue a lista.'}
  }catch(e){if(ticket===chapterRequest){st.error=e.message;st.loadingAll=false}}
  if(ticket===chapterRequest){st.chapterLoading=false;renderShelf()}
@@ -512,20 +512,23 @@ async function openOnlineChapter(chapterId,manga,chapter){
 function coverHtml(x){return x.cover?'<img src="'+esc(x.cover)+'" alt="Capa de '+esc(x.title||x.mangaTitle)+'" loading="lazy" referrerpolicy="no-referrer">':'<div class="rd-cover" aria-label="Capa indisponível">📖</div>'}
 function onlineHtml(){
  const st=onlineState,p=st.manga&&onlineProg[st.manga.id];
- let h='<div class="rd-online"><div class="rd-online-head"><div><b>Leitor de mangás</b><div class="m">Busque, escolha o idioma e continue de onde parou.</div></div><form id="rd-search"><input id="rd-q" type="search" aria-label="Título do mangá" placeholder="Ex.: One Piece, Berserk, Solo Leveling" value="'+esc(st.query)+'"><select id="rd-source" aria-label="Fonte de busca"><option value="all"'+(st.source==='all'?' selected':'')+'>Todas as fontes</option><option value="mangadex"'+(st.source==='mangadex'?' selected':'')+'>MangaDex</option><option value="kitsu"'+(st.source==='kitsu'?' selected':'')+'>Kitsu · catálogo</option></select><button class="btn"'+(st.loading?' disabled':'')+'>Pesquisar</button></form></div>';
+ let h='<div class="rd-online"><div class="rd-online-head"><div><b>Leitor de mangás</b><div class="m">Busque, escolha o idioma e continue de onde parou.</div></div><form id="rd-search"><input id="rd-q" type="search" aria-label="Título do mangá" placeholder="Ex.: One Piece, Berserk, Solo Leveling" value="'+esc(st.query)+'"><select id="rd-source" aria-label="Fonte de busca"><option value="all"'+(st.source==='all'?' selected':'')+'>Todas as fontes</option><option value="mangadex"'+(st.source==='mangadex'?' selected':'')+'>MangaDex</option><option value="comikey"'+(st.source==='comikey'?' selected':'')+'>Comikey · capítulos oficiais</option><option value="kitsu"'+(st.source==='kitsu'?' selected':'')+'>Kitsu · catálogo</option></select><button class="btn"'+(st.loading?' disabled':'')+'>Pesquisar</button></form></div>';
  if(st.loading||st.chapterLoading)h+='<div class="msg" role="status">'+(st.chapterLoading?'Carregando capítulos…':'Pesquisando…')+'</div>';
  if(st.error)h+='<div class="msg rd-error" role="alert">'+esc(st.error)+'</div>';
  if(st.manga){
   h+='<div class="rd-manga-head">'+coverHtml(st.manga)+'<div><button class="rd-link" data-online-back>← Resultados</button><h3>'+esc(st.manga.title)+'</h3><div class="m">'+esc(st.manga.alt||'')+'</div>'+(p?(p.externalUrl?'<a class="btn rd-continue" href="'+esc(p.externalUrl)+'" target="_blank" rel="noopener noreferrer">Continuar no cap. '+esc(p.chapter)+' ↗</a>':'<button class="btn rd-continue" data-resume="'+esc(st.manga.id)+'">Continuar no cap. '+esc(p.chapter)+'</button>'):'')+'</div></div>';
   if(st.resumeOfficial)h+='<p><a class="btn" href="'+esc(st.resumeOfficial.externalUrl)+'" target="_blank" rel="noopener noreferrer">Retomar capítulo '+esc(st.resumeOfficial.chapter)+' em '+esc(st.resumeOfficial.source)+' ↗</a></p>';
   if(st.officialLinks?.length)h+='<div class="rd-official">'+st.officialLinks.map(x=>'<a class="chip" target="_blank" rel="noopener noreferrer" href="'+esc(x.url)+'">Abrir '+esc(x.name)+' ↗</a>').join('')+'</div>';
+  if(st.readingSources?.length)h+='<div class="msg">Outras listas desta obra: '+st.readingSources.map(x=>'<button class="btn" data-manga="'+esc(x.id)+'">'+esc(x.sourceLabel)+' · '+esc(x.chapterCount)+' capítulos</button>').join(' ')+'</div>';
   if(st.catalogOnly)h+='<div class="msg">Obra encontrada no catálogo Kitsu. '+(st.lookupFailed?'A consulta de capítulos está indisponível. Tente novamente.':'Nenhum capítulo correspondente no MangaDex.')+' Use o link oficial quando disponível ou adicione seu arquivo abaixo.</div>';
   else{
    const langs=[...new Set(['pt-br','en',...(st.manga.languages||[]),st.lang])].filter(x=>x&&x!=='all');const sources=[...new Set(st.chapters.map(c=>c.source))];
    h+='<div class="rd-filters"><label>Idioma <select id="rd-lang">'+langs.map(x=>'<option value="'+esc(x)+'"'+(st.lang===x?' selected':'')+'>'+esc(x==='pt-br'?'Português (Brasil)':x==='en'?'Inglês':x.toUpperCase())+'</option>').join('')+'<option value="all"'+(st.lang==='all'?' selected':'')+'>Todos os idiomas</option></select></label><label>Leitura <select id="rd-chapter-source"><option value="all">Todas as fontes</option>'+sources.map(x=>'<option'+(st.chapterSource===x?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label><label>Ordem <select id="rd-order"><option value="asc"'+(st.order==='asc'?' selected':'')+'>Primeiros capítulos</option><option value="desc"'+(st.order==='desc'?' selected':'')+'>Últimos capítulos</option></select></label><label class="rd-versions"><input id="rd-versions" type="checkbox"'+(st.versions?' checked':'')+'>Mostrar versões de grupos</label></div>';
-   h+='<p class="m">'+st.chapters.length+' registros carregados de '+(st.total||0)+' neste idioma. As versões repetidas são agrupadas. A disponibilidade depende da fonte e do idioma. Capítulos oficiais abrem na fonte indicada.</p>';
    const visible=visibleChapters();
-   h+='<div class="rd-chapters">'+visible.map(c=>c.externalUrl?'<a class="rd-chapter" data-official-chapter="'+esc(c.id)+'" href="'+esc(c.externalUrl)+'" target="_blank" rel="noopener noreferrer"><b>Capítulo '+esc(c.chapter)+'</b><span>'+esc([c.title,c.lang.toUpperCase(),c.source+' ↗'].filter(Boolean).join(' · '))+'</span></a>':'<button class="rd-chapter" data-chapter="'+esc(c.id)+'"'+(!c.readable?' disabled':'')+'><b>Capítulo '+esc(c.chapter)+'</b><span>'+esc([c.title,c.lang.toUpperCase(),c.group,c.pages?c.pages+' pág.':'Sem páginas disponíveis'].filter(Boolean).join(' · '))+'</span></button>').join('')+'</div>';
+   const unique=new Set(st.chapters.filter(c=>c.readable).map(c=>[c.lang,c.volume,c.chapter==='?'?c.id:c.chapter].join('|'))).size;
+   h+='<p class="m" role="note">'+unique+' números de capítulo com leitura ou link na origem · '+st.chapters.length+' de '+(st.total||0)+' registros consultados. '+(st.loadingAll?'Carregando o restante automaticamente…':st.chapterMore?'A lista ainda está parcial.':'Consulta concluída nesta fonte; a obra pode ter capítulos ausentes.')+' As versões repetidas são agrupadas.</p>';
+   if(st.indexUpdatedAt)h+='<p class="m">Índice oficial consultado em '+esc(new Date(st.indexUpdatedAt).toLocaleDateString('pt-BR'))+'. Links abrem a Comikey; acesso e cobrança dependem do serviço.</p>';
+   h+='<div class="rd-chapters">'+visible.map(c=>c.externalUrl?'<a class="rd-chapter" data-official-chapter="'+esc(c.id)+'" href="'+esc(c.externalUrl)+'" target="_blank" rel="noopener noreferrer"><b>Capítulo '+esc(c.chapter)+'</b><span>'+esc([c.title,c.lang.toUpperCase(),c.source+' ↗',c.accessLabel].filter(Boolean).join(' · '))+'</span></a>':'<button class="rd-chapter" data-chapter="'+esc(c.id)+'"'+(!c.readable?' disabled':'')+'><b>Capítulo '+esc(c.chapter)+'</b><span>'+esc([c.title,c.lang.toUpperCase(),c.group,c.pages?c.pages+' pág.':'Sem páginas disponíveis'].filter(Boolean).join(' · '))+'</span></button>').join('')+'</div>';
    if(!visible.length&&!st.chapterLoading)h+='<div class="msg">Nenhum capítulo disponível com estes filtros. Selecione outro idioma ou fonte.</div>';
    if(st.chapterMore)h+='<div class="rd-load"><button class="btn" data-more-chapters'+(st.chapterLoading||st.loadingAll?' disabled':'')+'>Carregar mais capítulos</button><button class="btn" data-all-chapters'+(st.chapterLoading&&!st.loadingAll?' disabled':'')+'>'+(st.loadingAll?'Parar carregamento':'Carregar todos disponíveis')+'</button></div>';
   }
@@ -581,8 +584,7 @@ function init(){
  });
  sec.addEventListener('change',async e=>{
   if(e.target.id==='rd-source'){onlineState.source=e.target.value;if(onlineState.query)searchOnline(onlineState.query);return}
-  if(e.target.id==='rd-lang'){++onlineRequest;++allSession;onlineState.loading=false;onlineState.loadingAll=false;onlineState.chapterSource='all';onlineState.lang=e.target.value;loadChapters(true);return}
-  if(e.target.id==='rd-order'){++onlineRequest;++allSession;onlineState.loading=false;onlineState.loadingAll=false;onlineState.order=e.target.value;loadChapters(true);return}
+  if(e.target.id==='rd-lang'||e.target.id==='rd-order'){const ticket=++onlineRequest;++allSession;onlineState.loading=false;onlineState.loadingAll=false;if(e.target.id==='rd-lang'){onlineState.chapterSource='all';onlineState.lang=e.target.value}else onlineState.order=e.target.value;await loadChapters(true);if(ticket===onlineRequest&&onlineState.chapterMore&&!onlineState.error)loadAllChapters();return}
   if(e.target.id==='rd-chapter-source'){onlineState.chapterSource=e.target.value;renderShelf();return}
   if(e.target.id==='rd-versions'){onlineState.versions=e.target.checked;renderShelf();return}
   if(e.target.id==='rd-file'){const fs=[...e.target.files];e.target.value='';await addFiles(fs)}

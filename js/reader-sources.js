@@ -1,7 +1,8 @@
 // Shared catalog adapters for GitHub Pages and optional same-origin hosting.
-let MD = 'https://api.mangadex.org', IMAGE_PROXY = '';
-export function configureReaderTransport({apiBase, imageBase}={}) {
-  MD = apiBase || 'https://api.mangadex.org'; IMAGE_PROXY = imageBase || ''; memo.clear();
+let MD = 'https://api.mangadex.org', IMAGE_PROXY = '', CATALOG_URL = new URL('../data/reader/comikey.json.gz',import.meta.url).href;
+let catalogPromise;
+export function configureReaderTransport({apiBase, imageBase, catalogUrl}={}) {
+  MD = apiBase || 'https://api.mangadex.org'; IMAGE_PROXY = imageBase || ''; CATALOG_URL = catalogUrl || new URL('../data/reader/comikey.json.gz',import.meta.url).href; memo.clear(); catalogPromise=null;
 }
 const KITSU = 'https://kitsu.io/api/edge';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -43,6 +44,22 @@ function kitsuManga(m) {
   const a = m.attributes;
   return { id: 'kt:' + m.id, source: 'kitsu', sourceLabel: 'Kitsu · catálogo', title: a.canonicalTitle || Object.values(a.titles || {})[0] || 'Sem título', names: [...Object.values(a.titles || {}), ...(a.abbreviatedTitles || [])].filter(Boolean), alt: a.titles?.en || '', cover: a.posterImage?.medium || a.posterImage?.small || '', status: a.status || '', year: (a.startDate || '').slice(0, 4), languages: [], description: a.synopsis || '', links: {} };
 }
+async function officialCatalog() {
+  catalogPromise ||= (async()=>{
+    const r=await fetch(CATALOG_URL,{signal:AbortSignal.timeout(18000)});
+    if(!r.ok)throw new Error('O índice oficial não pôde ser carregado.');
+    const data=await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).json();
+    if(!Array.isArray(data.series))throw new Error('Índice oficial inválido.');
+    return data;
+  })().catch(e=>{catalogPromise=null;throw e});
+  return catalogPromise;
+}
+function comikeyManga(m) {
+  return {id:'ck:'+m.id,source:'comikey',sourceLabel:'Comikey · leitor oficial externo',title:m.title,names:m.names,alt:'',cover:m.cover,status:'',year:'',languages:['pt-br'],description:m.description,links:{},chapterCount:m.episodes.length};
+}
+async function alternatives(item) {
+  try {const j=await officialCatalog();return j.series.filter(m=>m.names.some(n=>[item.title,...(item.names||[])].some(t=>normalize(t)===normalize(n)))).map(comikeyManga)}catch{return []}
+}
 async function aliases(q) {
   try {
     const data = await upstream('https://graphql.anilist.co', 300000, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: 'query($q:String!){Page(perPage:5){media(search:$q,type:MANGA,isAdult:false,sort:SEARCH_MATCH){title{romaji english native}synonyms externalLinks{url site}}}}', variables: { q } }) });
@@ -70,10 +87,10 @@ async function search(p) {
   const q = (p.get('q') || '').trim().slice(0, 160), page = Number(p.get('page') || 1);
   if (!Number.isInteger(page) || page < 1 || page > 100) return json({error:'Página de busca inválida.'},400);
   const source = p.get('source') || 'all';
-  if (!['all', 'mangadex', 'kitsu'].includes(source)) return json({ error: 'Fonte inválida.' }, 400);
+  if (!['all', 'mangadex', 'kitsu', 'comikey'].includes(source)) return json({ error: 'Fonte inválida.' }, 400);
   if (q.length < 2) return json({ error: 'Digite pelo menos dois caracteres.' }, 400);
   const jobs = [];
-  if (source !== 'kitsu') jobs.push((async () => {
+  if (['all','mangadex'].includes(source)) jobs.push((async () => {
     const j = await upstream(endpoint(MD, '/manga', { title: q, limit: 50, offset: (page - 1) * 50, 'includes[]': ['cover_art'], 'order[relevance]': 'desc', 'contentRating[]': ['safe', 'suggestive', 'erotica'] }));
     let items = (j.data || []).map(mdManga);
     // Direct results are never replaced by a metadata service or an arbitrary first match.
@@ -86,14 +103,19 @@ async function search(p) {
     }
     return { source: 'MangaDex', items, more: (page - 1) * 50 + (j.data || []).length < j.total, total: j.total };
   })());
-  if (source !== 'mangadex') jobs.push((async () => {
+  if (['all','kitsu'].includes(source)) jobs.push((async () => {
     const j = await upstream(endpoint(KITSU, '/manga', { 'filter[text]': q, 'page[limit]': 20, 'page[offset]': (page - 1) * 20 }));
     return { source: 'Kitsu', items: (j.data || []).filter(x => x.attributes?.ageRating !== 'R18').map(kitsuManga), more: !!j.links?.next, total: j.meta?.count };
   })());
+  if (['all','comikey'].includes(source)) jobs.push((async()=>{
+    const j=await officialCatalog(), matches=j.series.map(comikeyManga).filter(m=>score(m,q)>0);
+    return {source:'Comikey · capítulos oficiais externos',items:matches.slice((page-1)*50,page*50),more:page*50<matches.length,total:matches.length};
+  })());
+  const sourceNames=source==='all'?['MangaDex','Kitsu','Comikey']:[{mangadex:'MangaDex',kitsu:'Kitsu',comikey:'Comikey'}[source]];
   const results = await Promise.allSettled(jobs), items = [], sources = [];
   results.forEach((r, i) => {
     if (r.status === 'fulfilled') { items.push(...r.value.items); sources.push({ name: r.value.source, available: true, more: r.value.more, total: r.value.total }); }
-    else sources.push({ name: source === 'kitsu' || i === 1 ? 'Kitsu' : 'MangaDex', available: false, error: r.reason?.message || 'Fonte indisponível.' });
+    else sources.push({ name: sourceNames[i], available: false, error: r.reason?.message || 'Fonte indisponível.' });
   });
   return json({ results: mergeResults(items, q), sources, page, more: sources.some(s => s.more) }, sources.every(s => !s.available) ? 502 : 200);
 }
@@ -109,6 +131,12 @@ export function externalSource(value) {
   } catch { return null; }
 }
 async function manga(id) {
+  if(id.startsWith('ck:')) {
+    if(!/^ck:\d+$/.test(id))return json({error:'Identificador inválido.'},400);
+    const j=await officialCatalog(),m=j.series.find(x=>String(x.id)===id.slice(3));
+    if(!m)return json({error:'Obra ausente no índice oficial.'},404);
+    return json({manga:comikeyManga(m),officialLinks:[{name:'Comikey',url:'https://br.comikey.com/comics/'+m.slug+'/'+m.id+'/'}],catalogOnly:false,indexUpdatedAt:j.updatedAt});
+  }
   if (id.startsWith('kt:')) {
     const k = id.slice(3); if (!/^\d+$/.test(k)) return json({ error: 'Identificador inválido.' }, 400);
     const j = await upstream(KITSU + '/manga/' + k), item = kitsuManga(j.data);
@@ -121,20 +149,28 @@ async function manga(id) {
       } catch { lookupFailed = true; }
     }
     const a = await aliases(item.title);
-    return json({ manga: item, officialLinks: a.links.map(x => externalSource(x.url)).filter(Boolean), catalogOnly: true, lookupFailed });
+    return json({ manga: item, officialLinks: a.links.map(x => externalSource(x.url)).filter(Boolean), catalogOnly: true, lookupFailed, readingSources:await alternatives(item) });
   }
   const raw = checkedId(id.replace(/^md:/, ''));
   const j = await upstream(endpoint(MD, '/manga/' + raw, { 'includes[]': ['cover_art'] })), item = mdManga(j.data);
   const links = Object.values(item.links).map(externalSource).filter(Boolean);
-  return json({ manga: item, officialLinks: links, catalogOnly: false });
+  return json({ manga: item, officialLinks: links, catalogOnly: false, readingSources:await alternatives(item) });
 }
 async function chapters(id, p) {
-  const raw = checkedId(id.replace(/^md:/, ''));
   const offset = Number(p.get('offset') || 0);
   if (!Number.isInteger(offset) || offset < 0 || offset > 9900) return json({ error: 'Página de capítulos inválida.' }, 400);
   const lang = p.get('lang') || 'pt-br', order = p.get('order') || 'asc';
   if (!['asc','desc'].includes(order)) return json({error:'Ordem inválida.'},400);
   if (lang !== 'all' && !/^[a-z]{2}(?:-[a-z]{2})?$/.test(lang)) return json({ error: 'Idioma inválido.' }, 400);
+  if(id.startsWith('ck:')) {
+    if(!/^ck:\d+$/.test(id))return json({error:'Identificador inválido.'},400);
+    const j=await officialCatalog(),m=j.series.find(x=>String(x.id)===id.slice(3));
+    if(!m)return json({error:'Obra ausente no índice oficial.'},404);
+    let items=lang==='pt-br'||lang==='all'?m.episodes.map(([hid,number,title,access,published])=>({id:'ck:'+m.id+':'+hid,chapter:number,volume:'',title,lang:'pt-br',pages:0,published,source:'Comikey',externalUrl:'https://br.comikey.com/read/'+m.slug+'/'+hid+'/'+(m.format===2?'episode':'capitulo-portugues')+'-'+number.replace('.','-')+'/',readable:true,group:'Tradução oficial',access,accessLabel:access==='paid'?'Pode exigir compra/assinatura':access==='pass'?'Pode exigir passe, anúncio ou compra':'Gratuito na origem'})):[];
+    items.sort((a,b)=>a.chapter.localeCompare(b.chapter,undefined,{numeric:true}));if(order==='desc')items.reverse();
+    return json({chapters:items.slice(offset,offset+100),total:items.length,offset,nextOffset:Math.min(offset+100,items.length),more:offset+100<items.length,indexUpdatedAt:j.updatedAt});
+  }
+  const raw = checkedId(id.replace(/^md:/, ''));
   const j = await upstream(endpoint(MD, '/manga/' + raw + '/feed', { limit: 100, offset, ...(lang === 'all' ? {} : { 'translatedLanguage[]': [lang] }), 'includes[]': ['scanlation_group'], 'order[chapter]': order, 'order[volume]': order, includeFutureUpdates: 0, includeUnavailable: 0 }), 30000);
   const items = (j.data || []).filter(x => !x.attributes.isUnavailable).map(x => {
     const a = x.attributes, official = externalSource(a.externalUrl);

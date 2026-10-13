@@ -1,4 +1,4 @@
-const CACHE='biblioteca-otaku-v19-manga-pages';
+const CACHE='biblioteca-otaku-v20-chapter-coverage';
 const CORE=['./','./index.html','./css/style.css','./js/store.js','./js/api.js','./js/sync.js','./js/app.js','./js/ai.js','./js/reader.js','./js/reader-sources.js','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>{
@@ -19,7 +19,7 @@ self.addEventListener('fetch',e=>{
  if(u.pathname.includes('/api/')||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
 
  // HTML, JS e CSS: tenta sempre a versão mais nova primeiro.
- const freshAsset=e.request.mode==='navigate'||/\.(?:js|css)$/i.test(u.pathname);
+ const freshAsset=e.request.mode==='navigate'||/\.(?:js|css|json\.gz)$/i.test(u.pathname);
  if(freshAsset){
   e.respondWith(
    fetch(e.request).then(r=>{
