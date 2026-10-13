@@ -1,5 +1,5 @@
-const CACHE='biblioteca-otaku-v17';
-const CORE=['./','./index.html','./css/style.css','./js/store.js','./js/api.js','./js/sync.js','./js/app.js','./js/ai.js','./js/reader.js','./manifest.webmanifest'];
+const CACHE='biblioteca-otaku-v19-manga-pages';
+const CORE=['./','./index.html','./css/style.css','./js/store.js','./js/api.js','./js/sync.js','./js/app.js','./js/ai.js','./js/reader.js','./js/reader-sources.js','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>{
  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
@@ -15,6 +15,8 @@ self.addEventListener('fetch',e=>{
  if(e.request.method!=='GET')return;
  const u=new URL(e.request.url);
  if(u.origin!==location.origin)return;
+ // Live catalogs, images and authentication must never enter the offline cache.
+ if(u.pathname.includes('/api/')||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
 
  // HTML, JS e CSS: tenta sempre a versão mais nova primeiro.
  const freshAsset=e.request.mode==='navigate'||/\.(?:js|css)$/i.test(u.pathname);
