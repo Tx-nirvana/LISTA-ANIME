@@ -3,8 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.mjs",
-    "test:live": "node tests/live-pages.mjs"
+    "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "fake-indexeddb": "6.2.5",

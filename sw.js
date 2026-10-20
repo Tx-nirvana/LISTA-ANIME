@@ -1,5 +1,5 @@
-const CACHE='biblioteca-otaku-v20-chapter-coverage';
-const CORE=['./','./index.html','./css/style.css','./js/store.js','./js/api.js','./js/sync.js','./js/app.js','./js/ai.js','./js/reader.js','./js/reader-sources.js','./manifest.webmanifest'];
+const CACHE='biblioteca-otaku-v21-library-only';
+const CORE=['./','./index.html','./css/style.css','./js/store.js','./js/api.js','./js/sync.js','./js/app.js','./js/ai.js','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>{
  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
