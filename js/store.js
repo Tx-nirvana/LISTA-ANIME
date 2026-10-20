@@ -1,6 +1,10 @@
 /* Biblioteca Otaku — Store único */
 (function(){
 'use strict';
+// Apenas preferências e posições do leitor removido; a biblioteca mantém seu formato.
+['otaku-reader-progress','otaku-reader-prefs','otaku-reader-online-progress'].forEach(key=>{
+ try{localStorage.removeItem(key)}catch(e){}
+});
 const KEY='otaku-store-v1';
 const defaults=()=>({version:1,preferences:{recKind:'all',genre:'',mode:'recommended'},ai:{feedback:{},authors:{},history:[],noRecommend:{},recommended:{}},updatedAt:Date.now()});
 function read(){try{return JSON.parse(localStorage.getItem(KEY)||'null')||defaults()}catch(e){return defaults()}}

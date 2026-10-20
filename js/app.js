@@ -654,7 +654,7 @@ const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns c
 async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
 async function showWhere(id){
   const s=lib[id]||current[id];if(!s||!$('#where'))return;
-  if(s.kind==='webnovel'){attachNovelSources(s);novelCredits(s);ensureAuthors(s).then(ch=>{const cr=$('#credits');if(ch&&cr&&cr.dataset.id===String(s.id))novelCredits(s)});const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
+  if(s.kind==='webnovel'){attachNovelSources(s);novelCredits(s);ensureAuthors(s).then(ch=>{const cr=$('#credits');if(ch&&cr&&cr.dataset.id===String(s.id))novelCredits(s)});const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener noreferrer" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
   if(s.kind==='novel')attachNovelSources(s);
   if(!s.links||!s.authors||s.tr===undefined){
     try{
@@ -688,26 +688,23 @@ async function showWhere(id){
   const best=g.free[0]||g.part[0]||g.paid[0]||g.other[0];
   const isM=s.type==='MANGA',trm=/^(youtube|dailymotion):([\w-]+)$/.exec(s.tr||'');
   let h=`<b>${verb}</b>`;
-  if(isM)h+=`<div class="row" style="margin:8px 0"><button class="btn" id="readOnlineBtn" data-title="${esc(s.title)}">📖 Ler no site</button></div>`;
   if(s.kind==='novel'){
     const ns=novelSourceLinks(s);
     h+=`<div class="sub" style="margin-top:6px">Fontes de novels encontradas para este título. A biblioteca guarda os links; a leitura continua no site de origem.</div>`;
-    h+=`<div class="row" style="margin:8px 0">${ns.map(x=>`<a class="btn" target="_blank" rel="noopener" href="${x.url}">🔎 ${x.site}</a>`).join('')}</div>`;
-    h+=`<div class="wh"><small style="margin:0">Atalho para o catálogo Wuxiaworld</small><div class="gen"><a class="lk" target="_blank" rel="noopener" href="https://www.wuxiaworld.com/novels">Wuxiaworld · Novels</a></div></div>`;
+    h+=`<div class="row" style="margin:8px 0">${ns.map(x=>`<a class="btn" target="_blank" rel="noopener noreferrer" href="${x.url}">🔎 ${x.site}</a>`).join('')}</div>`;
+    h+=`<div class="wh"><small style="margin:0">Atalho para o catálogo Wuxiaworld</small><div class="gen"><a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.wuxiaworld.com/novels">Wuxiaworld · Novels</a></div></div>`;
   }else{
-    h+=`<div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
+    h+=`<div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener noreferrer" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
   }
-  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
+  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener noreferrer" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
-  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
+  h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener noreferrer" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
   const fr=s.type==='MANGA'
     ?[['MANGA Plus','MANGA Plus'],['WEBTOON (PT-BR) 🇧🇷','WEBTOON'],['Tapas','Tapas']]
     :[['Pluto TV Brasil 🇧🇷','Pluto TV'],['Muse Asia (YouTube)','Muse Asia'],['Ani-One Asia (YouTube)','Ani-One Asia']];
-  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
+  h+=`<div class="wh"><small style="margin:0">Fontes gratuitas e oficiais (abre uma busca no Google pelo título + nome do site)</small><div class="gen">${fr.map(f=>`<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=${encodeURIComponent(s.title+' '+f[1])}">${f[0]}</a>`).join('')}</div></div>`;
   h+='<small>Classificação aproximada. O catálogo e os preços mudam por país; confirme no site. 🇧🇷 = versão em português.</small>';
   el.innerHTML=h;
-  const rb=$('#readOnlineBtn');
-  if(rb)rb.onclick=()=>{if(window.OtakuReader&&window.OtakuReader.openOnline){$('#modal').classList.remove('on');window.OtakuReader.openOnline(rb.dataset.title)}else alert('O leitor online ainda está carregando. Tente novamente em instantes.')};
   const tb=$('#trbtn');
   if(tb)tb.onclick=()=>{const box=$('#trbox');if(box.innerHTML){box.innerHTML='';tb.textContent='🎬 Ver trailer aqui';return}
     const url=trm[1]==='youtube'?'https://www.youtube-nocookie.com/embed/'+trm[2]:'https://www.dailymotion.com/embed/video/'+trm[2];
