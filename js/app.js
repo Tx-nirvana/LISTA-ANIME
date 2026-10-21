@@ -118,7 +118,7 @@ async function fetchPage(q,k,p,sort,g){
   const r=await window.OtakuAPI.fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
   const j=await r.json().catch(()=>null);
   if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
-  return j.data.Page;
+  return {...j.data.Page,cachedFallback:r.headers.get('X-Otaku-Stale')==='1'};
 }
 
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -140,7 +140,7 @@ let searchPending=false,searchTicket=0;
 async function search(reset){
   if(loading){if(reset)searchPending=true;return} loading=true;const ticket=++searchTicket;
   if(reset){$('#recs').style.display='none';page=1;pgs={};mores={};$('#results').innerHTML='';current={};curOrder=[];authorsFor(src?'':$('#q').value.trim())}
-  $('#smsg').textContent='Carregando...';$('#more').style.display='none';
+  $('#smsg').textContent='Carregando...';$('#more').style.display='none';let cachedFallback=false;
   try{
     const addCard=m=>{if(searchPending||ticket!==searchTicket)return 0;const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
     const addNovel=n=>{if(searchPending||ticket!==searchTicket)return 0;const s=novelSlim(n);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
@@ -170,7 +170,7 @@ async function search(reset){
       if(!onlyWeb){
         const other=kinds.filter(k=>k!=='webnovel'&&mores[k]!==false);
         const results=await Promise.all(other.map(async k=>{
-          const pg=(pgs[k]||0)+1,d=await fetchPage(q,k,pg,$('#sort').value,[...gSet]);pgs[k]=pg;mores[k]=d.pageInfo.hasNextPage;return d.media;
+          const pg=(pgs[k]||0)+1,d=await fetchPage(q,k,pg,$('#sort').value,[...gSet]);cachedFallback=cachedFallback||d.cachedFallback;pgs[k]=pg;mores[k]=d.pageInfo.hasNextPage;return d.media;
         }));
         results.flat().filter(m=>!m.isAdult&&genOk(m.genres,gSet,gMode.all)).forEach(addCard);
         hasNext=hasNext||other.some(k=>mores[k]!==false);
@@ -182,15 +182,15 @@ async function search(reset){
       do{
         const act=keys.filter(k=>k!=='webnovel'&&mores[k]!==false);
         const batches=await Promise.all(act.map(async k=>{const pg=(pgs[k]||0)+1;return {k,pg,d:await fetchPage(q,k,pg,$('#sort').value,gs)}}));
-        batches.forEach(({k,pg,d})=>{pgs[k]=pg;mores[k]=d.pageInfo.hasNextPage});const res=batches.map(x=>x.d.media);
+        batches.forEach(({k,pg,d})=>{cachedFallback=cachedFallback||d.cachedFallback;pgs[k]=pg;mores[k]=d.pageInfo.hasNextPage});const res=batches.map(x=>x.d.media);
         const mx=Math.max(0,...res.map(r=>r.length));
         for(let i=0;i<mx;i++)res.forEach(r=>{const m=r[i];if(!m||m.isAdult)return;if(all&&!genOk(m.genres,gSet,true))return;added+=addCard(m)});
         hasNext=keys.filter(k=>k!=='webnovel').some(k=>mores[k]!==false);tries++;
       }while(all&&added<8&&hasNext&&tries<5);
     }
-    $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';$('#more').textContent='Carregar mais';delete $('#more').dataset.retry;
+    $('#smsg').textContent=cachedFallback?'O AniList não respondeu. Exibindo uma consulta salva anteriormente; os dados podem estar desatualizados.':curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';$('#more').textContent='Carregar mais';delete $('#more').dataset.retry;
     $('#more').style.display=hasNext?'block':'none';
-  }catch(e){if(!reset)page=Math.max(1,page-1);$('#smsg').textContent='Não consegui carregar o catálogo. '+e.message;$('#more').dataset.retry=reset?'reset':'next';$('#more').textContent='Tentar novamente';$('#more').style.display='block'}
+  }catch(e){if(!reset)page=Math.max(1,page-1);const message=String(e.message||'');$('#smsg').textContent=/API has been temporarily disabled/i.test(message)?'O AniList suspendeu temporariamente o acesso ao catálogo. Tente mais tarde. Sua lista salva continua disponível em Minha biblioteca.':/Failed to fetch|NetworkError|Load failed|fetch failed|offline|aborted/i.test(message)?'Não foi possível conectar ao AniList. Verifique sua conexão ou tente mais tarde. Sua lista salva continua disponível em Minha biblioteca.':/API 429/.test(message)?'O AniList limitou as consultas. Aguarde um pouco antes de tentar novamente. Sua lista salva continua disponível em Minha biblioteca.':'Não consegui carregar o catálogo. '+message;$('#more').dataset.retry=reset?'reset':'next';$('#more').textContent='Tentar novamente';$('#more').style.display='block'}
   loading=false;
   if(searchPending){searchPending=false;return search(true)}
 }

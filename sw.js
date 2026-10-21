@@ -1,5 +1,5 @@
-const CACHE='biblioteca-otaku-v29',COVERS='biblioteca-otaku-covers-v1';
-const CORE=['./','./index.html','./css/style.css?v=29','./css/features.css?v=29','./js/features-core.js?v=29','./js/store.js?v=29','./js/api.js?v=29','./js/sync.js','./js/app.js?v=29','./js/ai.js?v=29','./js/ui.js?v=29','./js/features.js?v=29','./js/profile-auth.js?v=29','./js/sharing.js?v=29','./js/discovery.js?v=29','./js/public-model.js?v=29','./js/public-config.js?v=29','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./novels-catalog.json'];
+const CACHE='biblioteca-otaku-v30',COVERS='biblioteca-otaku-covers-v1';
+const CORE=['./','./index.html','./css/style.css?v=30','./css/features.css?v=30','./js/features-core.js?v=30','./js/store.js?v=30','./js/api.js?v=30','./js/sync.js','./js/app.js?v=30','./js/ai.js?v=30','./js/ui.js?v=30','./js/features.js?v=30','./js/profile-auth.js?v=30','./js/sharing.js?v=30','./js/discovery.js?v=30','./js/public-model.js?v=30','./js/public-config.js?v=30','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./novels-catalog.json'];
 const KEEP=new Set([CACHE,COVERS,'biblioteca-otaku-api-v1']);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('biblioteca-otaku-')&&!KEEP.has(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

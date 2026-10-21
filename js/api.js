@@ -10,6 +10,11 @@ async function networkFetch(url,opt={}){
  finally{clearTimeout(timer);opt.signal?.removeEventListener('abort',abort)}
 }
 const inflight=new Map(),PUBLIC_HOSTS=new Set(['graphql.anilist.co','kitsu.io','www.googleapis.com','openlibrary.org','api.themoviedb.org','api.rawg.io','www.cheapshark.com','query.wikidata.org']);
+async function anilistSuspended(response,host){
+ if(host!=='graphql.anilist.co'||response.status!==403)return false;
+ try{const data=await response.clone().json();return data?.errors?.some(e=>/API has been temporarily disabled/i.test(e.message||''))||false}catch(e){return false}
+}
+function staleResponse(response){const headers=new Headers(response.headers);headers.set('X-Otaku-Stale','1');return new Response(response.body,{status:response.status,headers})}
 async function timedFetch(url,opt={}){
  let u;try{u=new URL(url,location.href)}catch(e){return networkFetch(url,opt)}
  const allowed=PUBLIC_HOSTS.has(u.hostname)&&!u.pathname.includes('/drive/')&&!u.pathname.includes('/upload/')&&!u.pathname.includes('/oauth')&&(!opt.method||opt.method==='GET'||u.hostname==='graphql.anilist.co'&&opt.method==='POST');
@@ -24,14 +29,14 @@ async function timedFetch(url,opt={}){
  const task=(async()=>{
   try{
    const r=await networkFetch(url,opt);
-   if(!r.ok){if(hit&&age<TTL*7&&r.status>=500)return hit;return r}
+   if(!r.ok){if(hit&&age<TTL*7&&(r.status>=500||await anilistSuspended(r,u.hostname)))return staleResponse(hit);return r}
    const type=r.headers.get('Content-Type')||'';
    if(type.includes('json')){
     const body=await r.clone().text();let valid=true;try{valid=!JSON.parse(body)?.errors?.length}catch(e){valid=false}
     if(valid&&body.length<1000000){const headers=new Headers(r.headers);headers.set('X-Otaku-Cached-At',String(Date.now()));try{await disk.put(key,new Response(body,{status:r.status,headers}));const keys=await disk.keys();await Promise.all(keys.slice(0,Math.max(0,keys.length-80)).map(k=>disk.delete(k)))}catch(e){}}
    }
    return r;
-  }catch(e){if(hit&&age<TTL*7&&e.name!=='AbortError')return hit;throw e}
+  }catch(e){if(hit&&age<TTL*7&&e.name!=='AbortError')return staleResponse(hit);throw e}
  })();
  inflight.set(key,task);try{return (await task).clone()}finally{inflight.delete(key)}
 }
