@@ -19,12 +19,13 @@ import argparse
 import json
 import re
 import time
+import os
+import sys
 from datetime import datetime, timezone
 from urllib.parse import quote, urljoin, urlparse
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
-from playwright.sync_api import sync_playwright
 
 OUT = "novels-catalog.json"
 ALLOWED_DOMAINS = {
@@ -42,8 +43,9 @@ def clean(value):
 
 def domain_allowed(url):
     try:
-        host = (urlparse(url).hostname or "").lower().removeprefix("www.")
-        return host in ALLOWED_DOMAINS
+        parsed = urlparse(url)
+        host = (parsed.hostname or "").lower().removeprefix("www.")
+        return parsed.scheme in ("http", "https") and not parsed.username and not parsed.password and host in ALLOWED_DOMAINS
     except Exception:
         return False
 
@@ -145,13 +147,13 @@ def kitsu_enrich(title):
             n = norm(name)
             if n == wanted:
                 score = max(score, 100)
-            elif wanted and (wanted in n or n in wanted):
+            elif n and wanted and (wanted in n or n in wanted):
                 score = max(score, 70)
         if score > best_score:
             best_score, best = score, a
     if not best or best_score < 70:
         return {}
-    cover = (best.get("coverImage") or {}).get("large") or (best.get("coverImage") or {}).get("original") or ""
+    cover = (best.get("posterImage") or {}).get("large") or (best.get("coverImage") or {}).get("original") or ""
     status_map = {
         "current": "Ongoing",
         "finished": "Completed",
@@ -208,12 +210,13 @@ def scrape_novelfull(page, base, source, max_pages=80):
             except Exception:
                 continue
             found = 0
+            links = []
             for a in page.locator("a[href]").all():
                 try:
-                    href = a.get_attribute("href") or ""
-                    txt = clean(a.inner_text())
+                    links.append((a.get_attribute("href") or "", clean(a.inner_text())))
                 except Exception:
                     continue
+            for href, txt in links:
                 u = safe_url(href, base)
                 if not u or source_for(u) != source:
                     continue
@@ -227,7 +230,7 @@ def scrape_novelfull(page, base, source, max_pages=80):
                 try:
                     page.goto(u, wait_until="domcontentloaded", timeout=30000)
                     page.wait_for_timeout(200)
-                    body = clean(page.locator("body").inner_text())
+                    body = page.locator("body").inner_text()
                     title = clean(page.locator("h1").first.inner_text() if page.locator("h1").count() else txt)
                     ma = re.search(r"Author\s*:\s*([^\n]+)", body, re.I)
                     ms = re.search(r"Status\s*:\s*([^\n]+)", body, re.I)
@@ -270,7 +273,7 @@ def scrape_wuxia(page, max_pages=40):
             try:
                 page.goto(u, wait_until="domcontentloaded", timeout=45000)
                 page.wait_for_timeout(400)
-                body = clean(page.locator("body").inner_text())
+                body = page.locator("body").inner_text()
                 title = clean(page.locator("h1").first.inner_text() if page.locator("h1").count() else txt)
                 ma = re.search(r"Author\s*:\s*([^\n]+)", body, re.I)
                 status = "Completed" if re.search(r"\bCompleted\b", body, re.I) else ("Ongoing" if re.search(r"\bOngoing\b", body, re.I) else "")
@@ -281,6 +284,7 @@ def scrape_wuxia(page, max_pages=40):
 
 
 def build_catalog():
+    from playwright.sync_api import sync_playwright
     items.clear()
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -326,10 +330,21 @@ def build_catalog():
         main["source"] = main["sources"][0]["site"] if main["sources"] else ""
         out.append(main)
 
+    if not out:
+        raise RuntimeError("Nenhuma fonte respondeu com obras válidas; catálogo anterior preservado.")
+    try:
+        with open(OUT, encoding="utf-8") as old_file:
+            previous = json.load(old_file).get("items", [])
+        collected = {link["site"] for entry in out for link in entry.get("sources", [])}
+        out.extend(entry for entry in previous if entry.get("source") not in collected)
+    except (FileNotFoundError, ValueError):
+        pass
     out.sort(key=lambda x: x.get("title", "").lower())
     payload = {"updated_at": datetime.now(timezone.utc).isoformat(), "items": out}
-    with open(OUT, "w", encoding="utf-8") as f:
+    temporary = OUT + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
+    os.replace(temporary, OUT)
     print("catalog entries:", len(out))
     print("allowed reading sources: NovelFull.com, NovelFull.net, Wuxiaworld")
     print("metadata source: Kitsu (auxiliary)")
@@ -386,6 +401,9 @@ def main():
         write_results(search_catalog(args.query), args.format, args.output)
         return
 
+    if args.build or not sys.stdin.isatty():
+        return
+
     # Modo interativo para uso direto no terminal.
     try:
         query = input("Nome da WEB Novel (Enter para sair): ").strip()
@@ -395,14 +413,14 @@ def main():
     if not query:
         return
     results = search_catalog(query)
-    print(f"\\nEncontradas: {len(results)}")
+    print(f"\nEncontradas: {len(results)}")
     for i, item in enumerate(results, 1):
         print(f"{i}. {item.get('title')} — {item.get('source')} — {item.get('chapters') or '?'} capítulos")
         print(f"   {item.get('url')}")
     if not results:
         return
     try:
-        choice = input("\\nSalvar resultado em arquivo? [N]ão / [J]SON / [T]XT: ").strip().lower()
+        choice = input("\nSalvar resultado em arquivo? [N]ão / [J]SON / [T]XT: ").strip().lower()
     except (EOFError, KeyboardInterrupt):
         print()
         return

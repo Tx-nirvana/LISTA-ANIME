@@ -44,11 +44,14 @@ async function authorPage(name){
   const a=await authorSearch(name);
   p.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div class="ai-title">👤 '+esc(a.name)+'</div><div class="ai-sub">'+esc(a.occupations.join(' · ')||'Autor / criador')+'</div></div><button class="chip '+(a.favorite?'on':'')+'" id="ai-fav">'+(a.favorite?'★ Autor favorito':'☆ Favoritar autor')+'</button></div>';
   const g=document.createElement('div');g.className='ai-grid';
-  (a.works||[]).slice(0,18).forEach(w=>{const x=document.createElement('div');x.className='ai-mini';x.innerHTML='<b>'+esc(w.title?.english||w.title?.romaji||w.title?.native||'')+'</b><span class="ai-sub">'+esc(w.role||'')+(w.averageScore?' · ★ '+(w.averageScore/20).toFixed(1):'')+'</span>';x.onclick=()=>{window.current[w.id]={id:w.id,title:w.title?.english||w.title?.romaji||w.title?.native||'',kind:w.type==='MANGA'?'manga':'anime',cover:w.coverImage?.large||'',genres:w.genres||[],avg:(w.averageScore||0)/10};try{openModal(w.id)}catch(e){}};g.appendChild(x)});
+  (a.works||[]).slice(0,18).forEach(w=>{const x=document.createElement('div');x.className='ai-mini';x.innerHTML='<b>'+esc(w.title?.english||w.title?.romaji||w.title?.native||'')+'</b><span class="ai-sub">'+esc(w.role||'')+(w.averageScore?' · ★ '+(w.averageScore/20).toFixed(1):'')+'</span>';x.onclick=()=>{window.current[w.id]={id:w.id,title:w.title?.english||w.title?.romaji||w.title?.native||'',type:w.type,kind:w.format==='NOVEL'?'novel':w.type==='MANGA'?'manga':'anime',cover:w.coverImage?.large||'',genres:w.genres||[],avg:w.averageScore||0};try{openModal(w.id)}catch(e){}};g.appendChild(x)});
   p.appendChild(g);p.querySelector('#ai-fav').onclick=()=>{window.OtakuStore.patch(s=>s.ai.authors[norm(a.name)].favorite=!a.favorite);authorPage(a.name)};
  }catch(e){p.innerHTML='<div class="msg">'+esc(e.message)+'</div>'}
 }
+let dashboardRevision='';
 function renderDashboard(){
+ const revision=String(typeof libraryRevision==='undefined'?0:libraryRevision)+'|'+String(store().updatedAt||0);
+ if(document.getElementById('ai-dashboard')&&dashboardRevision===revision)return;dashboardRevision=revision;
  const host=document.querySelector('#bo-lib-dashboard');if(!host)return;
  let p=document.getElementById('ai-dashboard');if(p)p.remove();
  const d=dna(),authors=Object.values(store().ai.authors||{}).filter(x=>x.favorite);
