@@ -49,3 +49,6 @@
 .public-detail-layout img{width:100%;border-radius:12px}
 @media(max-width:600px){#box{gap:16px}#box .bo-cover-wrap{flex-basis:auto;width:150px;margin:auto}.feature-tools>button{flex:1}.public-detail-layout{grid-template-columns:1fr}.public-detail-layout img{max-width:170px;margin:auto}.grid{gap:10px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.card:hover{transform:none}}
+#share-account-form label{display:grid;gap:6px;margin:12px 0}
+#share-account-form input{width:100%;min-width:0;box-sizing:border-box}
+#share-account-form button{max-width:100%;white-space:normal;margin:4px 4px 4px 0}

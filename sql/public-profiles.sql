@@ -1,4 +1,4 @@
--- Execute uma vez no SQL Editor do MESMO projeto Supabase usado pelo site.
+-- Execute no projeto dos perfis definido em js/public-config.js (csuerfegjbfjbmbmgffg).
 -- Não altera a tabela da biblioteca privada nem políticas de login existentes.
 begin;
 create schema if not exists otaku_private;

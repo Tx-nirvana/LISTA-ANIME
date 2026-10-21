@@ -1,2 +1,2 @@
-/* URL e chave anon públicas já usadas pelo aplicativo. Nunca use service_role. */
-window.OtakuPublicConfig=Object.freeze({url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:['sb_publishable_','KHrh5gdmZpxo2Goz0Je-0Q_','n4McPfp6'].join('')});
+/* Configuração pública exclusiva dos perfis; não altera a sincronização privada. */
+window.OtakuPublicConfig=Object.freeze({url:'https://csuerfegjbfjbmbmgffg.supabase.co',key:'sb_publishable_ZDM9ETTVT2dezWLNsPRpfA_T7uErG27'});

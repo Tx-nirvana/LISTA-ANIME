@@ -36,7 +36,7 @@ export function browser(options={}){
  ctx.crypto=webcrypto;ctx.matchMedia=()=>({matches:false});
  const context=vm.createContext(ctx);
  const run=code=>vm.runInContext(code,context);
- for(const file of ['features-core','store','api','sync','app','ai','ui',...(options.features?['public-model','features','sharing','discovery']:[])])run(fs.readFileSync(new URL('js/'+file+'.js',root),'utf8'));
+ for(const file of ['features-core','store','api','sync','app','ai','ui',...(options.features?['public-config','public-model','profile-auth','features','sharing','discovery']:[])])run(fs.readFileSync(new URL('js/'+file+'.js',root),'utf8'));
  document.dispatchEvent(new dom.Event('DOMContentLoaded'));
  async function flush(ms=5000){
   const until=now+ms;let count=0;
