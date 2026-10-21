@@ -21,6 +21,9 @@ import re
 import time
 import os
 import sys
+import logging
+import unicodedata
+from urllib.robotparser import RobotFileParser
 from datetime import datetime, timezone
 from urllib.parse import quote, urljoin, urlparse
 from urllib.request import Request, urlopen
@@ -35,6 +38,46 @@ ALLOWED_DOMAINS = {
 }
 UA = "Mozilla/5.0 (compatible; OtakuLibraryCatalog/2.0; +https://github.com/Tx-nirvana/LISTA-ANIME)"
 items = {}
+LOG = logging.getLogger('catalogo')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+ROBOTS = {}
+REQUEST_DELAY = 1.0
+MAX_DETAILS = int(os.getenv('CATALOG_MAX_DETAILS', '90'))
+METADATA_LIMIT = int(os.getenv('CATALOG_METADATA_LIMIT', '80'))
+
+
+def permitted(url):
+    """Não contorna robots.txt, captcha ou bloqueio da fonte."""
+    origin = '{0.scheme}://{0.netloc}'.format(urlparse(url))
+    if origin not in ROBOTS:
+        parser = RobotFileParser(origin + '/robots.txt')
+        try:
+            with urlopen(Request(parser.url, headers={'User-Agent': UA}), timeout=15) as r:
+                parser.parse(r.read().decode('utf-8', errors='replace').splitlines())
+            ROBOTS[origin] = parser
+        except HTTPError as error:
+            ROBOTS[origin] = True if error.code == 404 else False
+        except Exception:
+            ROBOTS[origin] = False
+        if ROBOTS[origin] is False:
+            LOG.warning('Sem autorização verificável em robots.txt: %s; preservando dados anteriores', origin)
+    rule = ROBOTS[origin]
+    return rule if isinstance(rule, bool) else rule.can_fetch(UA, url)
+
+
+def visit(page, url, timeout=30000):
+    if not permitted(url):
+        raise RuntimeError('A fonte não permite esta coleta')
+    rule = ROBOTS.get('{0.scheme}://{0.netloc}'.format(urlparse(url)))
+    delay = (rule.crawl_delay(UA) or rule.crawl_delay('*') or REQUEST_DELAY) if isinstance(rule, RobotFileParser) else REQUEST_DELAY
+    time.sleep(max(REQUEST_DELAY, delay))
+    response = page.goto(url, wait_until='domcontentloaded', timeout=timeout)
+    code = getattr(response, 'status', 200)
+    if code in (403, 429):
+        raise RuntimeError('Fonte bloqueada ou limite de requisições: HTTP ' + str(code))
+    if isinstance(code, int) and code >= 400:
+        raise RuntimeError('HTTP ' + str(code))
+    return response
 
 
 def clean(value):
@@ -58,6 +101,31 @@ def source_for(url):
         return ""
 
 
+def novel_url(url):
+    if not domain_allowed(url):
+        return False
+    p = urlparse(url)
+    if source_for(url) == 'Wuxiaworld':
+        return bool(re.fullmatch(r'/novel/[^/]+/?', p.path))
+    return bool(re.fullmatch(r'/[^/]+\.html', p.path)) and not re.search(r'/(?:chapter|privacy|terms|contact|dmca|login|register)', p.path, re.I)
+
+
+def novel_slug(url):
+    return norm(urlparse(url).path.strip('/').split('/')[-1].removesuffix('.html'))
+
+
+def page_title(page, fallback):
+    """H1 pode ser o gênero no rodapé; usa o título social ou o link da listagem."""
+    try:
+        meta = page.locator('meta[property="og:title"]')
+        value = clean(meta.first.get_attribute('content')) if meta.count() else ''
+        value = re.sub(r'\s*[-|]\s*(?:NovelFull|Wuxiaworld).*$', '', value, flags=re.I)
+        value = re.sub(r'^Read\s+|\s+online free$', '', value, flags=re.I).strip()
+        return value if value and len(value) <= 180 else clean(fallback)
+    except Exception:
+        return clean(fallback)
+
+
 def safe_url(url, base=None):
     if not url:
         return ""
@@ -70,7 +138,7 @@ def add(source, title, url, author="", chapters=None, status="", genres=None,
         metadata_source="", metadata_url=""):
     title = clean(title)
     url = safe_url(url)
-    if not title or not url or source != source_for(url):
+    if not title or not url or not novel_url(url) or source != source_for(url):
         return
     key = (source + "|" + url).lower()
     item = {
@@ -105,17 +173,29 @@ def number(value):
 
 def http_json(url, timeout=20):
     req = Request(url, headers={"User-Agent": UA, "Accept": "application/vnd.api+json, application/json"})
-    try:
-        with urlopen(req, timeout=timeout) as response:
-            if response.status != 200:
+    for attempt in range(3):
+        try:
+            time.sleep(REQUEST_DELAY)
+            with urlopen(req, timeout=timeout) as response:
+                if response.status != 200:
+                    return None
+                return json.loads(response.read().decode('utf-8'))
+        except HTTPError as error:
+            if error.code not in (429, 500, 502, 503, 504) or attempt == 2:
+                LOG.warning('Metadados indisponíveis: HTTP %s', error.code)
                 return None
-            return json.loads(response.read().decode("utf-8"))
-    except (HTTPError, URLError, TimeoutError, ValueError):
-        return None
+            wait = min(30, int(error.headers.get('Retry-After', '2')) if str(error.headers.get('Retry-After', '2')).isdigit() else 2 ** (attempt + 1))
+            time.sleep(wait)
+        except (URLError, TimeoutError, ValueError):
+            if attempt == 2:
+                return None
+            time.sleep(2 ** attempt)
+    return None
 
 
 def norm(value):
-    return re.sub(r"[^a-z0-9]+", "", clean(value).lower())
+    value = ''.join(c for c in unicodedata.normalize('NFKD', clean(value).casefold()) if not unicodedata.combining(c))
+    return re.sub(r'[\W_]+', '', value, flags=re.UNICODE)
 
 
 def kitsu_enrich(title):
@@ -125,7 +205,7 @@ def kitsu_enrich(title):
     endpoint = (
         "https://kitsu.io/api/edge/manga"
         "?filter[subtype]=novel"
-        "&page[limit]=10"
+        "&page[limit]=10&include=mangaStaff.person,categories"
         "&filter[text]=" + quote(title)
     )
     data = http_json(endpoint)
@@ -133,6 +213,7 @@ def kitsu_enrich(title):
         return {}
     wanted = norm(title)
     best = None
+    best_object = None
     best_score = -1
     for obj in data.get("data", []):
         a = obj.get("attributes") or {}
@@ -150,8 +231,8 @@ def kitsu_enrich(title):
             elif n and wanted and (wanted in n or n in wanted):
                 score = max(score, 70)
         if score > best_score:
-            best_score, best = score, a
-    if not best or best_score < 70:
+            best_score, best, best_object = score, a, obj
+    if not best or best_score < 100:
         return {}
     cover = (best.get("posterImage") or {}).get("large") or (best.get("coverImage") or {}).get("original") or ""
     status_map = {
@@ -161,7 +242,22 @@ def kitsu_enrich(title):
         "unreleased": "Not Yet Released",
         "upcoming": "Not Yet Released",
     }
+    included = {(x.get('type'), str(x.get('id'))): x for x in data.get('included', [])}
     genres = []
+    authors = []
+    relationships = (best_object or {}).get('relationships', {})
+    for rel in relationships.get('categories', {}).get('data', []) or []:
+        category = included.get((rel.get('type'), str(rel.get('id'))), {}).get('attributes', {})
+        if category.get('title'):
+            genres.append(clean(category['title']))
+    for rel in relationships.get('mangaStaff', {}).get('data', []) or []:
+        staff = included.get((rel.get('type'), str(rel.get('id'))), {})
+        role = clean(staff.get('attributes', {}).get('role'))
+        person_rel = staff.get('relationships', {}).get('person', {}).get('data') or {}
+        person = included.get((person_rel.get('type'), str(person_rel.get('id'))), {}).get('attributes', {})
+        name = clean(person.get('name'))
+        if name and re.search(r'author|story|original|writer', role, re.I):
+            authors.append(name)
     # A segunda chamada traz categorias/gêneros quando disponíveis.
     # Falha nessa etapa não invalida o resultado principal.
     slug = best.get("slug") or ""
@@ -177,6 +273,7 @@ def kitsu_enrich(title):
         "metadata_source": "Kitsu",
         "metadata_url": "https://kitsu.io/manga/" + slug if slug else "",
         "genres": genres,
+        "author": ', '.join(dict.fromkeys(authors)),
     }
 
 
@@ -198,17 +295,21 @@ def apply_kitsu(item):
         pass
 
 
-def scrape_novelfull(page, base, source, max_pages=80):
+def scrape_novelfull(page, base, source, max_pages=None):
+    max_pages = max_pages or int(os.getenv('CATALOG_MAX_PAGES', '4'))
     seen = set()
-    roots = [base + "/novel-list", base + "/completed-novel", base + "/"]
+    roots = [base + '/genre/Xianxia', base + '/genre/Xuanhuan', base + '/genre/Wuxia', base + '/novel-list', base + '/completed-novel']
+    rotation = datetime.now(timezone.utc).timetuple().tm_yday % len(roots)
+    roots = roots[rotation:] + roots[:rotation]
     for root in roots:
         for pno in range(1, max_pages + 1):
             url = root if pno == 1 else root + "?page=" + str(pno)
             try:
-                page.goto(url, wait_until="domcontentloaded", timeout=45000)
+                visit(page, url, timeout=45000)
                 page.wait_for_timeout(400)
-            except Exception:
-                continue
+            except Exception as error:
+                LOG.warning('%s: %s', url, error)
+                break
             found = 0
             links = []
             for a in page.locator("a[href]").all():
@@ -221,17 +322,20 @@ def scrape_novelfull(page, base, source, max_pages=80):
                 if not u or source_for(u) != source:
                     continue
                 path = urlparse(u).path.lower()
-                if not re.search(r"/[^/]+\.html$", path) or "chapter" in path:
+                if not novel_url(u) or "chapter" in path:
                     continue
                 if not txt or len(txt) < 2 or len(txt) > 180 or u in seen:
                     continue
                 seen.add(u)
+                if len(seen) > MAX_DETAILS:
+                    LOG.info('%s: orçamento de %s obras atingido', source, MAX_DETAILS)
+                    return
                 found += 1
                 try:
-                    page.goto(u, wait_until="domcontentloaded", timeout=30000)
+                    visit(page, u)
                     page.wait_for_timeout(200)
                     body = page.locator("body").inner_text()
-                    title = clean(page.locator("h1").first.inner_text() if page.locator("h1").count() else txt)
+                    title = page_title(page, txt)
                     ma = re.search(r"Author\s*:\s*([^\n]+)", body, re.I)
                     ms = re.search(r"Status\s*:\s*([^\n]+)", body, re.I)
                     mg = re.search(r"Genre\s*:\s*([^\n]+)", body, re.I)
@@ -246,16 +350,18 @@ def scrape_novelfull(page, base, source, max_pages=80):
                 break
 
 
-def scrape_wuxia(page, max_pages=40):
+def scrape_wuxia(page, max_pages=None):
+    max_pages = max_pages or int(os.getenv('CATALOG_MAX_PAGES', '4'))
     base = "https://www.wuxiaworld.com"
     seen = set()
     for pno in range(1, max_pages + 1):
         url = base + "/novels" if pno == 1 else base + "/novels?page=" + str(pno)
         try:
-            page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            visit(page, url, timeout=60000)
             page.wait_for_timeout(700)
-        except Exception:
-            continue
+        except Exception as error:
+            LOG.warning('%s: %s', url, error)
+            break
         hrefs = []
         for a in page.locator('a[href*="/novel/"]').all():
             try:
@@ -264,23 +370,73 @@ def scrape_wuxia(page, max_pages=40):
             except Exception:
                 continue
             u = safe_url(href, base)
-            if u and txt and u not in seen:
+            if u and novel_url(u) and txt and u not in seen:
                 hrefs.append((u, txt))
         if not hrefs and pno > 2:
             break
         for u, txt in hrefs:
             seen.add(u)
+            if len(seen) > MAX_DETAILS:
+                return
             try:
-                page.goto(u, wait_until="domcontentloaded", timeout=45000)
+                visit(page, u, timeout=45000)
                 page.wait_for_timeout(400)
                 body = page.locator("body").inner_text()
-                title = clean(page.locator("h1").first.inner_text() if page.locator("h1").count() else txt)
+                title = page_title(page, txt)
                 ma = re.search(r"Author\s*:\s*([^\n]+)", body, re.I)
                 status = "Completed" if re.search(r"\bCompleted\b", body, re.I) else ("Ongoing" if re.search(r"\bOngoing\b", body, re.I) else "")
                 img = page.locator('meta[property="og:image"]').first.get_attribute("content") if page.locator('meta[property="og:image"]').count() else ""
                 add("Wuxiaworld", title, u, clean(ma.group(1)) if ma else "", number(body), status, [], img or "")
             except Exception:
                 add("Wuxiaworld", txt, u)
+
+
+def merge_catalog(previous, incoming):
+    """Preserva URL/identidade antiga, agrega fontes e conserva falhas parciais."""
+    result = []
+    for entry in [*previous, *incoming]:
+        if not isinstance(entry, dict) or not novel_url(entry.get('url', '')):
+            continue
+        aliases = {norm(entry.get('title')), *[norm(s) for s in re.split(r'[,;]', entry.get('alternative', ''))]} - {''}
+        match = next((x for x in result if x.get('url') == entry['url'] or
+                      (norm(x.get('title')) in aliases and (novel_slug(x.get('url', '')) == novel_slug(entry['url']) or not x.get('author') or not entry.get('author') or norm(x.get('author')) == norm(entry.get('author'))))), None)
+        if match is None:
+            match = dict(entry)
+            result.append(match)
+        else:
+            if match.get('metadata_pending') and not entry.get('metadata_pending') and entry.get('title_origin') != 'url':
+                match['title'] = entry['title']
+                match.pop('title_origin', None)
+                match.pop('metadata_pending', None)
+            for key, value in entry.items():
+                if key not in ('url', 'source', 'sources', 'genres', 'title') and value not in (None, '', [], {}):
+                    match[key] = value
+            match['genres'] = sorted(set(match.get('genres', [])) | set(entry.get('genres', [])))
+        sources = [*match.get('sources', []), *entry.get('sources', []), {'site': source_for(entry['url']), 'url': entry['url'], 'lang': 'EN'}]
+        match['sources'] = list({s['url']: s for s in sources if novel_url(s.get('url', ''))}.values())
+    return sorted(result, key=lambda x: x.get('title', '').casefold())
+
+
+def check_link(url):
+    at = datetime.now(timezone.utc).isoformat()
+    if not domain_allowed(url) or not permitted(url):
+        return {'status': 'unknown', 'at': at}
+    try:
+        time.sleep(REQUEST_DELAY)
+        with urlopen(Request(url, method='HEAD', headers={'User-Agent': UA}), timeout=8) as response:
+            return {'status': 'ok' if 200 <= response.status < 400 else 'unknown', 'at': at}
+    except HTTPError as error:
+        return {'status': 'broken' if error.code in (404, 410) else 'unknown', 'code': error.code, 'at': at}
+    except Exception:
+        return {'status': 'unknown', 'at': at}
+
+
+def load_seeds():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'catalog-seeds.json'), encoding='utf-8') as seed_file:
+            return json.load(seed_file)
+    except (FileNotFoundError, ValueError):
+        return []
 
 
 def build_catalog():
@@ -292,14 +448,19 @@ def build_catalog():
             viewport={"width": 1440, "height": 1200},
             user_agent=UA,
         )
-        scrape_novelfull(page, "https://novelfull.com", "NovelFull.com")
-        scrape_novelfull(page, "https://novelfull.net", "NovelFull.net")
-        scrape_wuxia(page)
+        for source, collect in [('NovelFull.com', lambda: scrape_novelfull(page, 'https://novelfull.com', 'NovelFull.com')),
+                                ('NovelFull.net', lambda: scrape_novelfull(page, 'https://novelfull.net', 'NovelFull.net')),
+                                ('Wuxiaworld', lambda: scrape_wuxia(page))]:
+            before = len(items)
+            try:
+                collect()
+                LOG.info('%s: %s registros coletados', source, len(items) - before)
+            except Exception as error:
+                LOG.warning('%s falhou; registros anteriores serão mantidos: %s', source, error)
         browser.close()
 
     # Kitsu enriquece os registros sem virar fonte de leitura.
     for item in items.values():
-        apply_kitsu(item)
         # Reforço do filtro: nenhum link externo entra no catálogo.
         item["sources"] = [
             s for s in item.get("sources", [])
@@ -335,11 +496,18 @@ def build_catalog():
     try:
         with open(OUT, encoding="utf-8") as old_file:
             previous = json.load(old_file).get("items", [])
-        collected = {link["site"] for entry in out for link in entry.get("sources", [])}
-        out.extend(entry for entry in previous if entry.get("source") not in collected)
+        out = merge_catalog(previous, [*out, *load_seeds()])
     except (FileNotFoundError, ValueError):
         pass
     out.sort(key=lambda x: x.get("title", "").lower())
+    # Metadados faltantes primeiro: distribui o orçamento entre obras menos completas.
+    for entry in sorted(out, key=lambda x: (bool(x.get('cover')), x.get('metadataCheckedAt', '')))[:METADATA_LIMIT]:
+        apply_kitsu(entry)
+        entry['metadataCheckedAt'] = datetime.now(timezone.utc).isoformat()
+    check_limit = int(os.getenv('CATALOG_CHECK_LINKS', '20'))
+    for entry in sorted(out, key=lambda x: x.get('linkCheck', {}).get('at', ''))[:check_limit]:
+        entry['linkCheck'] = check_link(entry['url'])
+    LOG.info('Catálogo mesclado: %s obras; nenhuma exclusão automática por falha de fonte', len(out))
     payload = {"updated_at": datetime.now(timezone.utc).isoformat(), "items": out}
     temporary = OUT + ".tmp"
     with open(temporary, "w", encoding="utf-8") as f:

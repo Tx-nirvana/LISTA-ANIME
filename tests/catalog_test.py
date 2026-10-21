@@ -16,6 +16,12 @@ spec.loader.exec_module(catalog)
 class CatalogTests(unittest.TestCase):
     def setUp(self):
         catalog.items.clear()
+        link_patch = patch.object(catalog, 'check_link', return_value={'status': 'unknown', 'at': '2026-10-20'})
+        link_patch.start()
+        self.addCleanup(link_patch.stop)
+        seed_patch = patch.object(catalog, 'load_seeds', return_value=[])
+        seed_patch.start()
+        self.addCleanup(seed_patch.stop)
 
     def test_urls_reject_other_schemes_and_embedded_credentials(self):
         for url in ("javascript:alert(1)", "ftp://novelfull.com/x", "https://name@novelfull.com/x", "https://novelfull.com.evil.org/x"):
@@ -54,6 +60,36 @@ class CatalogTests(unittest.TestCase):
     def test_workflows_request_a_rebuild(self):
         for name in (".github/workflows/update-novel-catalog.yml", "workflows/update-novel-catalog.yml"):
             self.assertIn("python scripts/build_catalog.py --build", (ROOT / name).read_text(encoding="utf-8"))
+
+    def test_partial_failure_keeps_existing_titles_and_primary_identity(self):
+        old = {'title':'Martial World','author':'Cocooned Cow','url':'https://novelfull.com/martial-world.html','source':'NovelFull.com','sources':[]}
+        new = {'title':'Martial World','author':'Cocooned Cow','url':'https://www.wuxiaworld.com/novel/martial-world','source':'Wuxiaworld','cover':'https://example.com/new.jpg'}
+        other = {'title':'Preserved','url':'https://novelfull.net/preserved.html','source':'NovelFull.net'}
+        result = catalog.merge_catalog([old,other],[new])
+        self.assertEqual(len(result),2)
+        merged = next(x for x in result if x['title']=='Martial World')
+        self.assertEqual(merged['url'],old['url'])
+        self.assertEqual(len(merged['sources']),2)
+
+    def test_chinese_titles_do_not_collapse_to_empty_identity(self):
+        self.assertNotEqual(catalog.norm('大道朝天'),catalog.norm('原始战记'))
+
+    def test_chapter_and_afterword_urls_are_not_novel_records(self):
+        self.assertFalse(catalog.novel_url('https://novelfull.net/martial-world/afterword.html'))
+        self.assertFalse(catalog.novel_url('https://www.wuxiaworld.com/novel/martial-world/mw-chapter-1'))
+        self.assertTrue(catalog.novel_url('https://novelfull.net/martial-world.html'))
+
+    def test_same_story_slug_merges_author_aliases_without_merging_different_books(self):
+        a={'title':'Example','author':'English Alias','url':'https://novelfull.com/example.html','source':'NovelFull.com'}
+        b={'title':'Example','author':'Chinese Alias','url':'https://novelfull.net/example.html','source':'NovelFull.net'}
+        self.assertEqual(len(catalog.merge_catalog([a],[b])),1)
+        b['url']='https://novelfull.net/another-story.html'
+        self.assertEqual(len(catalog.merge_catalog([a],[b])),2)
+
+    def test_listing_title_is_used_instead_of_a_genre_h1(self):
+        page=MagicMock()
+        page.locator.return_value.count.return_value=0
+        self.assertEqual(catalog.page_title(page,'Martial World'),'Martial World')
 
     def test_unavailable_source_preserves_its_previous_entries(self):
         with tempfile.TemporaryDirectory(dir=ROOT.parent) as folder:

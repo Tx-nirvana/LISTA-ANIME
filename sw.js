@@ -1,28 +1,32 @@
-const CACHE='biblioteca-otaku-v23-audit';
-const CORE=['./','./index.html','./css/style.css?v=23','./js/store.js?v=23','./js/api.js?v=23','./js/sync.js','./js/app.js?v=23','./js/ai.js?v=23','./js/ui.js?v=23','./icon.svg','./manifest.webmanifest'];
-self.addEventListener('install',e=>{
- e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
-});
-self.addEventListener('activate',e=>{
- e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('biblioteca-otaku-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+const CACHE='biblioteca-otaku-v27',COVERS='biblioteca-otaku-covers-v1';
+const CORE=['./','./index.html','./css/style.css?v=27','./css/features.css?v=27','./js/features-core.js?v=27','./js/store.js?v=27','./js/api.js?v=27','./js/sync.js','./js/app.js?v=27','./js/ai.js?v=27','./js/ui.js?v=27','./js/features.js?v=27','./js/sharing.js?v=27','./js/discovery.js?v=27','./js/public-model.js?v=27','./js/public-config.js?v=27','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./novels-catalog.json'];
+const KEEP=new Set([CACHE,COVERS,'biblioteca-otaku-api-v1']);
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('biblioteca-otaku-')&&!KEEP.has(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+async function save(cache,key,response,max){
+ try{await cache.put(key,response);if(max){const keys=await cache.keys();await Promise.all(keys.slice(0,Math.max(0,keys.length-max)).map(k=>cache.delete(k)))}}catch(e){/* Cache é descartável; nunca limpa a biblioteca. */}
+}
+self.addEventListener('message',e=>{
+ if(e.data?.type!=='cache-viewed-covers'||!Array.isArray(e.data.urls))return;
+ const urls=e.data.urls.slice(0,60);e.waitUntil((async()=>{const cache=await caches.open(COVERS);for(const raw of urls){try{const u=new URL(raw);if(!['http:','https:'].includes(u.protocol)||u.username||u.password||await cache.match(raw))continue;const response=await fetch(raw,{mode:'no-cors',credentials:'omit',referrerPolicy:'no-referrer'});if(response.ok||response.type==='opaque')await save(cache,raw,response,60)}catch(error){}}})());
 });
 self.addEventListener('fetch',e=>{
- if(e.request.method!=='GET')return;
- const u=new URL(e.request.url);
- if(u.origin!==location.origin||u.pathname.includes('/api/')||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
- const catalog=u.pathname.endsWith('/novels-catalog.json');
- const key=e.request.mode==='navigate'?new URL('./index.html',self.location.href).href:catalog?u.origin+u.pathname:e.request;
- const fresh=e.request.mode==='navigate'||catalog||/\.(?:js|css)$/i.test(u.pathname);
- const update=async()=>{
-  const response=await fetch(e.request);
-  if(response.ok&&e.request.cache!=='no-store'){
-   try{const cache=await caches.open(CACHE);await cache.put(key,response.clone())}catch(e){}
-  }
-  return response;
- };
+ const request=e.request;if(request.method!=='GET')return;const u=new URL(request.url);
+ if(request.destination==='image'&&['https:','http:'].includes(u.protocol)&&!u.searchParams.has('access_token')){
+  e.respondWith((async()=>{
+   const cache=await caches.open(COVERS),saved=await cache.match(request);if(saved)return saved;
+   try{const response=await fetch(request);if(response.ok||response.type==='opaque')await save(cache,request,response.clone(),60);return response}catch(error){return (await (await caches.open(CACHE)).match(new URL('./icon.svg',self.location.href).href))||new Response('',{status:503})}
+  })());return;
+ }
+ // Não guarda autenticação, documentos públicos revogáveis ou serviços externos.
+ if(u.origin!==location.origin||/\/(?:api|rest|auth)\//.test(u.pathname)||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
+ const catalog=u.pathname.endsWith('/novels-catalog.json'),profile=u.pathname.endsWith('/perfil.html');
+ if(profile)return;
+ const key=request.mode==='navigate'?new URL('./index.html',self.location.href).href:catalog?u.origin+u.pathname:request;
  e.respondWith((async()=>{
   const cache=await caches.open(CACHE),saved=await cache.match(key);
-  if(!fresh&&saved)return saved;
-  try{return await update()}catch(e){return saved||new Response('Sem conexão. Tente novamente quando estiver online.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})}
+  if(catalog){try{const r=await fetch(request);if(r.ok){if(request.cache!=='no-store')await save(cache,key,r.clone());return r}if(saved)return saved;return r}catch(error){if(saved)return saved}}
+  if(saved){if(request.mode==='navigate')e.waitUntil(fetch(request).then(async r=>{if(r.ok&&request.cache!=='no-store')await save(cache,key,r)}).catch(()=>{}));return saved}
+  try{const r=await fetch(request);if(r.ok&&request.cache!=='no-store')await save(cache,key,r.clone());return r}catch(error){return new Response('Sem conexão. Abra novamente depois de visitar o aplicativo online.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})}
  })());
 });

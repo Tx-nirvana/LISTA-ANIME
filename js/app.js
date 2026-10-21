@@ -154,7 +154,7 @@ async function search(reset){
       const q=$('#q').value.trim();
       const kinds=kSet.size?[...kSet]:['webnovel'];
       const onlyWeb=kinds.length===1&&kinds[0]==='webnovel';
-      if(page===1)novelUseCat=false;
+      if(page===1)novelUseCat=novelCatalogLoaded&&novelCatalog.some(n=>matchNovel(n,q));
       let slice=null,more=false;
       if(!novelUseCat){
         if(page===1)novelExtra=gSet.size?novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)):[];
@@ -198,16 +198,16 @@ async function search(reset){
 function novelId(n){
   let h=2166136261;for(const c of String(n.source+'|'+n.url)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return -Math.abs(h||1);
 }
-function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#373739"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:(n.authors&&n.authors.length?n.authors.map(a=>({id:Number(a.id)||0,name:String(a.name||'').replace(/[<>]/g,''),role:String(a.role||'')})):splitNames(n.author).map(x=>({id:0,name:x,role:'Autor'}))),links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog'} }
+function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#373739"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:(n.authors&&n.authors.length?n.authors.map(a=>({id:Number(a.id)||0,name:String(a.name||'').replace(/[<>]/g,''),role:String(a.role||'')})):splitNames(n.author).map(x=>({id:0,name:x,role:'Autor'}))),links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog',linkCheck:n.linkCheck||null,author:n.author||''} }
 function matchNovel(n,q){if(!q)return true;const z=norm(q);return norm(n.title).includes(z)||norm(n.author).includes(z)||(n.alternative&&norm(n.alternative).includes(z))}
 async function loadNovelCatalog(){
-  try{const r=await window.OtakuAPI.fetch('./novels-catalog.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
+  try{const r=await window.OtakuAPI.fetch('./novels-catalog.json',{cache:'no-cache'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
     const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent=novelCatalog.length+' WEB novels carregadas'+(novelCatalogUpdated?' · atualizado '+new Date(novelCatalogUpdated).toLocaleDateString('pt-BR'): '');
   }catch(e){novelCatalog=[];novelCatalogLoaded=false;const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent='Catálogo de WEB novels ainda não foi gerado. Publique também a pasta .github/workflows.'}
 }
 function importNovelCatalog(){
   if(!novelCatalog.length){alert('O catálogo de WEB novels ainda não foi carregado.');return}
-  let count=0;for(const n of novelCatalog){const s=novelSlim(n);if(!lib[s.id]){lib[s.id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:['WEB Novel',n.source],fav:false,added:Date.now(),upd:Date.now()};count++}else{lib[s.id]={...lib[s.id],...s,links:lib[s.id].links||s.links}}
+  const importedTitles=new Set(Object.values(lib).filter(x=>x.kind==='webnovel').map(x=>norm(x.title)));let count=0;for(const n of novelCatalog){const s=novelSlim(n);if(!lib[s.id]&&importedTitles.has(norm(s.title)))continue;if(!lib[s.id]){importedTitles.add(norm(s.title));lib[s.id]={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:['WEB Novel',n.source],fav:false,added:Date.now(),upd:Date.now()};count++}else{lib[s.id]={...lib[s.id],...s,links:lib[s.id].links||s.links}}
   }save();renderLib();alert(count+' WEB novels foram adicionadas à sua biblioteca.');
 }
 function card(s){
@@ -216,7 +216,7 @@ function card(s){
     <span class="tag">${KINDS[s.kind]}</span>
     ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?`<span class="badge g">✓</span>`:''}
     <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
-    <img loading="lazy" src="${esc(s.cover)}" alt="Capa de ${s.title.replace(/"/g,'')}">
+    <img decoding="async" loading="lazy" src="${esc(s.cover)}" alt="Capa de ${s.title.replace(/"/g,'')}">
     <div class="i"><div class="t">${esc(s.title)}</div>
     <div class="m">${esc(s.year||'')} ${s.avg?'· '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
 }
@@ -339,7 +339,7 @@ function openModal(id){
     <div style="flex:1;min-width:0"><h2>${esc(s.title)}</h2>
     <div class="sub">${esc([KINDS[s.kind],s.year,...size,s.avg&&'Nota '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10,s.native].filter(Boolean).join(' · '))}</div>
     <div class="gen">${s.genres.map(g=>`<span>${esc(g)}</span>`).join('')}</div>
-    <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
+    <div class="syn" id="syn">${(s.pt||(navigator.onLine===false?s.syn||'Sinopse indisponível offline.':'Traduzindo sinopse para português...')).replace(/</g,'&lt;')}</div>
     <button class="chip" id="tg" style="display:none">Ver original (inglês)</button>
     ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option ${x===l.status?'selected':''}>${x}</option>`).join('')}</select>
       <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
@@ -398,6 +398,7 @@ async function showSyn(id){
   const s=lib[id]||current[id];
   const el=$('#syn'),tg=$('#tg');
   if(!s||!el)return;
+  if(navigator.onLine===false){el.textContent=s.pt||s.syn||'Sinopse indisponível offline.';tg.style.display='none';return}
   if(s.kind==='webnovel'&&(noSyn(s.syn)||noCover(s.cover))){
     const r=await kitsuGet(s.title,s.native,noSyn(s.syn));
     if(r&&kitsuApply(s.id,r)){if(lib[s.id])save(lib[s.id]);const im=document.querySelector('#box img');if($('#syn')===el&&im&&r.cover)im.src=r.cover}
@@ -988,7 +989,7 @@ function renderLibraryDashboard(){
   resetLibFilters();
   lkSet.add(el.dataset.kind);
   renderLib();
-  document.querySelector('#libgrid')?.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelector('#libgrid')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 });
  box.querySelectorAll('[data-ld]').forEach(el=>el.onclick=()=>dashboardFilter(el.dataset.ld));
 }
@@ -1011,7 +1012,7 @@ function dashboardFilter(t){
  if(t==='watch'){status.value='Quero ver/ler';['anime','donghua','aeni'].forEach(k=>lkSet.add(k))}
  if(t==='ongoing')status.value='Em andamento';
  renderLib();
- document.querySelector('#libgrid')?.scrollIntoView({behavior:'smooth',block:'start'});
+ document.querySelector('#libgrid')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 }
 function renderLib(){
   renderLibraryDashboard();
@@ -1026,7 +1027,7 @@ function renderLib(){
   const rated=items.filter(s=>s.rating);
   const avg=rated.length?(rated.reduce((a,s)=>a+s.rating,0)/rated.length).toFixed(1):'–';
   $('#stats').textContent=`${items.length} título(s) · ${items.filter(s=>s.status==='Completo').length} completos · sua média: ${avg}`;
-  $('#libgrid').innerHTML=items.length?items.map(card).join(''):'';
+  if(window.OtakuPages)window.OtakuPages.render($('#libgrid'),items,card);else $('#libgrid').innerHTML=items.length?items.map(card).join(''):'';
   kitsuBatch(items.filter(x=>x.kind==='webnovel').slice(0,30));
   if(!items.length) $('#libgrid').innerHTML='<div class="msg" style="grid-column:1/-1">Nada aqui ainda. Vá em Descobrir, abra um título e toque em “Adicionar à biblioteca”.</div>';
 }
@@ -1276,6 +1277,7 @@ async function load(s){
 }
 async function paintSyn(s){
   const el=$('#syn'),tg=$('#tg');if(!el)return;
+  if(navigator.onLine===false){el.textContent=s.pt||s.syn||'Sinopse indisponível offline.';tg.style.display='none';return}
   const need=s.syn&&((s.kind==='game'&&/^\d/.test(s.ref))||s.en||(s.kind==='book'&&s.lang!=='pt'));
   el.textContent=need?(s.pt||'Traduzindo sinopse para português...'):(s.syn||'Sem sinopse disponível.');
   if(!need)return;
@@ -1345,7 +1347,7 @@ function openX(id,re){
   document.querySelectorAll('#box [data-au]').forEach(b=>b.onclick=()=>openAuthorX(b.dataset.au));
   const modalBox=$('#box').firstElementChild;
   const go=()=>{const c=lib[id]||curX[id];paintSyn(c);paintWhere(c)};
-  if(re||done.has(id))go();
+  if(re||done.has(id)||navigator.onLine===false)go();
   else{done.add(id);load(s).catch(()=>done.delete(id)).then(()=>{if(curM===id&&$('#box').firstElementChild===modalBox&&$('#modal').classList.contains('on'))openX(id,1)})}
 }
 
@@ -1395,7 +1397,8 @@ function lrender(h){
   it.sort((a,b)=>so==='rating'?(b.rating||0)-(a.rating||0):so==='title'?a.title.localeCompare(b.title):b.added-a.added);
   const r=it.filter(x=>x.rating);
   h.lst.textContent=`${it.length} título(s) · ${it.filter(x=>x.status===STATUS[2]).length} concluídos · sua média: ${r.length?(r.reduce((a,x)=>a+x.rating,0)/r.length).toFixed(1):'–'}`;
-  h.lg.innerHTML=it.length?it.map(cardX).join(''):'<div class="msg" style="grid-column:1/-1">Nada aqui ainda. Vá em Descobrir, abra um título e toque em “Adicionar à biblioteca”.</div>';
+  if(!it.length&&h.lg.nextElementSibling?.matches('[data-library-more]'))h.lg.nextElementSibling.remove();
+  if(window.OtakuPages&&it.length)window.OtakuPages.render(h.lg,it,cardX);else h.lg.innerHTML=it.length?it.map(cardX).join(''):'<div class="msg" style="grid-column:1/-1">Nada aqui ainda. Vá em Descobrir, abra um título e toque em “Adicionar à biblioteca”.</div>';
 }
 const cnt=h=>{h.cnt.textContent=Object.values(lib).filter(x=>h.kinds.includes(x.kind)).length};
 const redraw=h=>{if(h.sec.style.display!=='none'){h.res.innerHTML=h.ord.map(i=>cardX(curX[i])).join('');if(h.sec.querySelector('[data-p="l"]').style.display!=='none')lrender(h)}cnt(h)};
@@ -1472,7 +1475,7 @@ const _tab=tab;tab=function(t){
   if(!hx.started){hx.started=1;run(hx,true)}else redraw(hx);
 };
 mount('lf');mount('jg');
-window.OtakuExtras={bookItem:gbItem,movieItem:mvItem,books:fBook,movies:fMovie,bookGenres:BG,movieGenres:MG,placeholder:PH};
+window.OtakuExtras={games:fGame,card:cardX,bookItem:gbItem,movieItem:mvItem,books:fBook,movies:fMovie,bookGenres:BG,movieGenres:MG,placeholder:PH};
 })();
 
 
@@ -1825,7 +1828,7 @@ watchLfMount();
       '<div class="bo5-card" style="margin-top:12px"><h3>🏷 Suas tags</h3><div class="chips">'+(Object.entries(tags).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<button class="chip" data-bo5-tag="${esc5(t)}">${esc5(t)} · ${n}</button>`).join('')||'<span class="bo5-muted">Você ainda não criou tags.</span>')+'</div></div>';
     el.querySelectorAll('[data-bo5-tag]').forEach(b=>b.onclick=()=>{
       const tag=b.dataset.bo5Tag;
-      const old=q5('#ltags'); if(old){ old.scrollIntoView({behavior:'smooth',block:'center'}); }
+      const old=q5('#ltags'); if(old){ old.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'}); }
     });
   }
 
@@ -2185,7 +2188,7 @@ function enhanceModal3(){
    a.innerHTML='<button class="bo5-chip" id="d3-prog">📈 Registrar progresso</button><button class="bo5-chip" id="d3-src">🌐 Ver fontes</button>';
    document.querySelector('#box>div:last-child').appendChild(a);
    a.querySelector('#d3-prog').onclick=()=>{progressForm3(x)};
-   a.querySelector('#d3-src').onclick=()=>{addSources3();renderSources3(x);q5('#d3-sources')?.scrollIntoView({behavior:'smooth'})};
+   a.querySelector('#d3-src').onclick=()=>{addSources3();renderSources3(x);q5('#d3-sources')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
   },80);
   addHistory(x);
   return r;
@@ -2714,7 +2717,7 @@ function show8(){
   const st=document.querySelector('#v-stats');if(!st)return;
   document.querySelectorAll('#v-search,#v-lib').forEach(x=>x.style.display='none');
   st.style.display='';document.querySelectorAll('#t-search,#t-lib,#t-stats').forEach(x=>x.classList.remove('on'));
-  document.querySelector('#t-stats')?.classList.add('on');draw8();st.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelector('#t-stats')?.classList.add('on');draw8();st.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 }
 window.OtakuLevel={calc:()=>LV8.calc(),redraw:draw8};
 const oldSave8=window.save;
@@ -2724,3 +2727,10 @@ if(typeof oldRefresh8==='function')window.refresh=function(){const r=oldRefresh8
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(draw8,250));else setTimeout(draw8,250);
 setTimeout(draw8,1500);
 })();
+
+/* Interfaces restritas para aparência, descoberta local e compartilhamento. */
+window.OtakuBridge={
+ library:()=>Object.values(lib),item:id=>lib[id]||current[id],tab,card:x=>["book","movie","game"].includes(x.kind)?window.OtakuExtras.card(x):card(x),
+ remember:x=>{current[x.id]=x},fromAniList:slim,candidatesSeen:()=>Object.values(current),novels:()=>novelCatalog.map(novelSlim),
+ candidates:async kind=>{if(kind==="webnovel"){if(!novelCatalogLoaded)await loadNovelCatalog();return novelCatalog.map(novelSlim)}if(["book","movie","game"].includes(kind)){const f=kind==="book"?window.OtakuExtras.books:kind==="movie"?window.OtakuExtras.movies:window.OtakuExtras.games;return (await f({q:"",sort:"pop",genres:[],plat:[]},1)).items}const d=await fetchPage("",kind,1,"POPULARITY_DESC",[]);return d.media.filter(m=>!m.isAdult).map(slim)}
+};

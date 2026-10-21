@@ -8,10 +8,20 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: novel-catalog
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      PYTHONUNBUFFERED: '1'
+      CATALOG_MAX_PAGES: '4'
+      CATALOG_MAX_DETAILS: '90'
+      CATALOG_METADATA_LIMIT: '80'
+      CATALOG_CHECK_LINKS: '20'
     steps:
       - name: Baixar repositorio
         uses: actions/checkout@v4
@@ -29,6 +39,9 @@ jobs:
 
       - name: Coletar catalogos
         run: python scripts/build_catalog.py --build
+
+      - name: Validar JSON antes de publicar
+        run: python -c "import json; d=json.load(open('novels-catalog.json')); assert isinstance(d.get('items'), list) and len(d['items']) > 0"
 
       - name: Salvar catalogo atualizado
         run: |

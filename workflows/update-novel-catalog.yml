@@ -1,4 +1,8 @@
 name: Atualizar catalogo de WEB Novels
+
+concurrency:
+  group: novel-catalog
+  cancel-in-progress: false
 on:
   schedule:
     - cron: '17 */6 * * *'
