@@ -28,7 +28,7 @@ jobs:
           playwright install --with-deps chromium
 
       - name: Coletar catalogos
-        run: python scripts/build_catalog.py
+        run: python scripts/build_catalog.py --build
 
       - name: Salvar catalogo atualizado
         run: |

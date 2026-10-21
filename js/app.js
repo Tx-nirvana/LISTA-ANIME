@@ -4,25 +4,76 @@ const SPEC={anime:['ANIME','JP'],donghua:['ANIME','CN'],aeni:['ANIME','KR'],mang
 let novelCatalog=[];let novelCatalogLoaded=false;let novelCatalogUpdated='';
 const STATUS=['Quero ver/ler','Em andamento','Completo','Abandonado'];
 const $=s=>document.querySelector(s);
+const q5=$;
 const KX={book:'Livro',movie:'Filme',game:'Jogo'},isOtaku=x=>!KX[x.kind];
 let src=null,favOnly=false,recOnly=false,curOrder=[],lib={},kSet=new Set(),lkSet=new Set(),gSet=new Set(),lgSet=new Set(),gMode={all:false},lgMode={all:false},pgs={},mores={},F={fmt:'',st:'',from:'',to:'',min:0},lgTags=new Set(),page=1,loading=false,current={};
-Object.defineProperty(window,'lib',{configurable:true,get:()=>lib,set:v=>{lib=v}});Object.defineProperty(window,'current',{configurable:true,get:()=>current,set:v=>{current=v}});
+let libraryRevision=0;
+Object.defineProperty(window,'lib',{configurable:true,get:()=>lib,set:v=>{lib=v;libraryRevision++}});Object.defineProperty(window,'current',{configurable:true,get:()=>current,set:v=>{current=v}});
 
 function safe(v){
-  const t=x=>String(x??'').replace(/[<>]/g,''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number(x)||0;
-  const o={id:n(v.id),type:v.type==='MANGA'?'MANGA':'ANIME',kind:KINDS[v.kind]?v.kind:'anime',title:t(v.title),native:t(v.native),cover:u(v.cover),
-   genres:(v.genres||[]).slice(0,20).map(t),year:t(v.year),eps:n(v.eps)||null,ch:n(v.ch)||null,vol:n(v.vol)||null,avg:n(v.avg)||null,st:t(v.st),
-   status:STATUS.includes(v.status)?v.status:STATUS[0],rating:Math.min(5,Math.max(0,Math.round(n(v.rating)))),prog:t(v.prog),note:t(v.note),
-   tags:(Array.isArray(v.tags)?v.tags:[]).slice(0,20).map(x=>t(x).trim().slice(0,30)).filter(Boolean),tr:/^((youtube|dailymotion):[\w-]{5,20}|-)$/.test(v.tr||'')?v.tr:undefined,fav:!!v.fav,rec:!!v.rec,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
-   links:Array.isArray(v.links)?v.links.slice(0,40).map(x=>({site:t(x.site),url:u(x.url),lang:t(x.lang)})).filter(x=>x.url):undefined,
-   authors:Array.isArray(v.authors)?v.authors.slice(0,8).map(x=>({id:n(x.id),name:t(x.name),role:t(x.role)})):undefined,
-   studios:Array.isArray(v.studios)?v.studios.slice(0,8).map(x=>({id:n(x.id),name:t(x.name)})):undefined};
+  const t=x=>String(x??''),u=x=>/^https?:\/\/[^\s"'<>]+$/i.test(x||'')?x:'',n=x=>Number.isFinite(Number(x))?Number(x):0;
+  const o={id:n(v.id),type:v.type==='MANGA'?'MANGA':'ANIME',kind:KINDS[v.kind]||KX[v.kind]?v.kind:'anime',title:t(v.title),native:t(v.native),cover:u(v.cover),
+   genres:(Array.isArray(v.genres)?v.genres:[]).slice(0,20).map(t),year:t(v.year),eps:n(v.eps)||null,ch:n(v.ch)||null,vol:n(v.vol)||null,avg:n(v.avg)||null,st:t(v.st),
+   status:STATUS.includes(v.status)?v.status:({Lendo:'Em andamento',Assistindo:'Em andamento',Jogando:'Em andamento',Lido:'Completo',Assistido:'Completo',Zerado:'Completo'}[v.status]||STATUS[0]),rating:Math.min(5,Math.max(0,Math.round(n(v.rating)))),prog:t(v.prog),note:t(v.note),
+   tags:(Array.isArray(v.tags)?v.tags:[]).map(x=>t(x)).filter(Boolean),tr:/^((youtube|dailymotion):[\w-]{5,20}|-)$/.test(v.tr||'')?v.tr:undefined,fav:!!v.fav,rec:!!v.rec,added:n(v.added),upd:n(v.upd),syn:t(v.syn),pt:t(v.pt),page:u(v.page),
+   links:Array.isArray(v.links)?v.links.filter(x=>x&&typeof x==='object').slice(0,40).map(x=>({site:t(x.site),url:u(x.url),lang:t(x.lang)})).filter(x=>x.url):undefined,
+   authors:Array.isArray(v.authors)?v.authors.filter(Boolean).slice(0,8).map(x=>typeof x==='string'?({id:0,name:x,role:''}):({id:n(x.id),name:t(x.name),role:t(x.role)})):undefined,
+   studios:Array.isArray(v.studios)?v.studios.filter(Boolean).slice(0,8).map(x=>({id:n(x.id),name:t(x.name)})):undefined};
   Object.keys(o).forEach(k=>{if(o[k]===undefined||((k==='syn'||k==='pt'||k==='page')&&!o[k]))delete o[k]});
-  return o;
+  return {...v,...o,updatedAt:Math.max(n(v.updatedAt),n(v._updatedAt),n(v.upd))};
 }
 function to5(o){Object.values(o).forEach(l=>{if(l&&l.rating)l.rating=Math.max(1,Math.ceil(l.rating/2))})}
-try{lib=JSON.parse(localStorage.getItem('otaku-lib')||'{}');if(localStorage.getItem('otaku-scale')!=='5'){to5(lib);localStorage.setItem('otaku-scale','5')}Object.values(lib).forEach(x=>{if(x&&!x.updatedAt)x.updatedAt=Number(x.upd||Date.now())})}catch(e){lib={}}
-function save(l){if(l){const now=Date.now();l.upd=now;l.updatedAt=now;}try{localStorage.setItem('otaku-lib',JSON.stringify(lib));localStorage.setItem('otaku-del',JSON.stringify(dels))}catch(e){}$('#cnt').textContent=Object.values(lib).filter(isOtaku).length;schedulePush()}
+let libraryReadFailed=false,storageWarning=false;
+function notifyStorageFailure(){
+ if(storageWarning)return;storageWarning=true;
+ alert('Não foi possível salvar neste navegador. Sua lista continua aberta: exporte uma cópia antes de fechar a página.');
+}
+function normalizeLibraryItems(raw){
+ if(!raw||typeof raw!=='object')throw new Error('Formato de biblioteca inválido.');
+ const out={};
+ Object.values(raw).forEach(v=>{
+  if(!v||typeof v!=='object'||Array.isArray(v)||!Number.isSafeInteger(Number(v.id))||!Number(v.id)||typeof v.title!=='string')throw new Error('Há uma obra inválida no arquivo. Nada foi importado.');
+  const x=safe(v);out[x.id]=x;
+ });
+ return out;
+}
+function importLibraryDocument(data){
+ if(!data||typeof data!=='object')throw new Error('Arquivo inválido.');
+ const incoming=normalizeLibraryItems(data.library??data.items??data.lib??data);
+ if(data.ratingScale===10||data.scale===10||(!data.ratingScale&&!data.scale&&Object.values(data.library??data.items??data.lib??data).some(x=>Number(x?.rating)>5))){
+  const originals=new Map(Object.values(data.library??data.items??data.lib??data).map(x=>[String(x.id),x]));
+  Object.values(incoming).forEach(x=>{const source=originals.get(String(x.id));x.rating=Math.ceil(Math.min(10,Math.max(0,Number(source.rating)||0))/2)});
+ }
+ const merged={...lib,...incoming},now=Date.now(),nextDeleted={...dels};
+ const deleted=data.deleted??data.del??{};
+ if(!deleted||typeof deleted!=='object'||Array.isArray(deleted))throw new Error('Formato de exclusões inválido.');
+ Object.entries(deleted).forEach(([id,time])=>{if(Number.isFinite(Number(time)))nextDeleted[id]=Math.max(Number(nextDeleted[id])||0,Number(time))});
+ Object.values(incoming).forEach(x=>{x.upd=now;x.updatedAt=now});
+ // Só aplica depois de validar todas as obras e conseguir persistir a lista.
+ Object.keys(incoming).forEach(id=>delete nextDeleted[id]);
+ Object.entries(nextDeleted).forEach(([id,t])=>{const item=merged[id];if(item&&t>=Math.max(Number(item.updatedAt)||0,Number(item.upd)||0,Number(item.added)||0))delete merged[id]});
+ window.OtakuStore.write({'otaku-lib':JSON.stringify(merged),'otaku-del':JSON.stringify(nextDeleted),'otaku-scale':'5'});
+ lib=merged;dels=nextDeleted;libraryReadFailed=false;
+ save();refresh();
+ return Object.keys(incoming).length;
+}
+try{
+ const raw=JSON.parse(localStorage.getItem('otaku-lib')||'{}');
+ lib=normalizeLibraryItems(raw);
+ if(localStorage.getItem('otaku-scale')!=='5'){
+  const originals=new Map(Object.values(raw).map(x=>[String(x.id),x]));
+  Object.values(lib).forEach(x=>{const original=originals.get(String(x.id));x.rating=Math.ceil(Math.min(10,Math.max(0,Number(original.rating)||0))/2)});
+ }
+}catch(e){libraryReadFailed=true;lib={}}
+function save(l){
+ libraryRevision++;
+ if(l){const now=Date.now();l.upd=now;l.updatedAt=now}
+ if(libraryReadFailed){if(!storageWarning){storageWarning=true;alert('Os dados salvos não puderam ser lidos. O original foi preservado neste navegador. Restaure uma cópia válida antes de continuar salvando.')}return false}
+ try{window.OtakuStore.write({'otaku-lib':JSON.stringify(lib),'otaku-del':JSON.stringify(dels),'otaku-scale':'5'})}
+ catch(e){notifyStorageFailure();return false}
+ $('#cnt').textContent=Object.values(lib).filter(isOtaku).length;schedulePush();return true;
+}
+
 
 function kindOf(m){
   const c=m.countryOfOrigin;
@@ -64,7 +115,7 @@ const GQL=`query($s:String,$t:MediaType,$c:CountryCode,$p:Int,$o:[MediaSort],$g:
 async function fetchPage(q,k,p,sort,g){
   const [t,c]=k==='all'?[undefined,undefined]:SPEC[k];
   const v={s:q||undefined,t,c,p,o:q?['SEARCH_MATCH']:[sort],g:(g||[]).filter(x=>GEN[x]).length?(g||[]).filter(x=>GEN[x]):undefined,f:k==='novel'?['NOVEL']:(F.fmt?F.fmt.split(','):undefined),fn:(k==='manga'||k==='manhwa'||k==='manhua')&&!F.fmt?['NOVEL']:undefined,stt:F.st||undefined,gt:F.from?(+F.from)*10000-1:undefined,lt:F.to?(+F.to+1)*10000:undefined,ms:F.min||undefined};
-  const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
+  const r=await window.OtakuAPI.fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({query:GQL,variables:v})});
   const j=await r.json().catch(()=>null);
   if(!r.ok||!j||j.errors) throw new Error('API '+r.status+' '+((j&&j.errors&&j.errors[0].message)||''));
   return j.data.Page;
@@ -85,13 +136,14 @@ async function authorsFor(q){
     box.onclick=e=>{const b=e.target.closest('button');if(b)openWorks('staff',b.dataset.id,b.dataset.n)};
   }catch(e){box.style.display='none'}
 }
+let searchPending=false,searchTicket=0;
 async function search(reset){
-  if(loading) return; loading=true;
+  if(loading){if(reset)searchPending=true;return} loading=true;const ticket=++searchTicket;
   if(reset){$('#recs').style.display='none';page=1;pgs={};mores={};$('#results').innerHTML='';current={};curOrder=[];authorsFor(src?'':$('#q').value.trim())}
   $('#smsg').textContent='Carregando...';$('#more').style.display='none';
   try{
-    const addCard=m=>{const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
-    const addNovel=n=>{const s=novelSlim(n);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
+    const addCard=m=>{if(searchPending||ticket!==searchTicket)return 0;const s=slim(m);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
+    const addNovel=n=>{if(searchPending||ticket!==searchTicket)return 0;const s=novelSlim(n);if(current[s.id])return 0;current[s.id]=s;curOrder.push(s.id);$('#results').insertAdjacentHTML('beforeend',card(s));return 1};
     let hasNext=false;
     if(src&&src.type==='author'){
       const w=await authorWorks(page===1);
@@ -110,33 +162,37 @@ async function search(reset){
         catch(e){novelUseCat=true}
       }
       if(novelUseCat){ /* plano B: catálogo sincronizado (novels-catalog.json) */
-            const list=novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)&&(!F.st||norm(n.status)===norm(F.st))&&(!F.from||Number(n.year)>=Number(F.from))&&(!F.to||Number(n.year)<=Number(F.to)));
+            const list=novelCatalog.filter(n=>matchNovel(n,q)&&genOk(n.genres||[],gSet,gMode.all)&&(!F.st||({Completed:'FINISHED',Ongoing:'RELEASING'}[n.status]||n.stcode)===F.st)&&(!F.from||Number(n.year)>=Number(F.from))&&(!F.to||Number(n.year)<=Number(F.to))&&(!F.min||Number(n.rating)>=F.min));
       list.sort((a,b)=>{if($('#sort').value==='SCORE_DESC')return (b.rating||0)-(a.rating||0);if($('#sort').value==='START_DATE_DESC')return (b.year||0)-(a.year||0);return (b.popularity||0)-(a.popularity||0)});
       slice=list.slice((page-1)*24,page*24); more=page*24<list.length;
       }
       slice.forEach(addNovel); kitsuBatch(slice.map(n=>current[novelId(n)])); hasNext=more;
-      if(!slice.length && !onlyWeb){
-        // Se o filtro misturar tipos, deixa o AniList continuar abaixo.
-        kSet.delete('webnovel');
-        await search(reset);
-        kSet.add('webnovel');
-        loading=false;return;
+      if(!onlyWeb){
+        const other=kinds.filter(k=>k!=='webnovel'&&mores[k]!==false);
+        const results=await Promise.all(other.map(async k=>{
+          const pg=(pgs[k]||0)+1,d=await fetchPage(q,k,pg,$('#sort').value,[...gSet]);pgs[k]=pg;mores[k]=d.pageInfo.hasNextPage;return d.media;
+        }));
+        results.flat().filter(m=>!m.isAdult&&genOk(m.genres,gSet,gMode.all)).forEach(addCard);
+        hasNext=hasNext||other.some(k=>mores[k]!==false);
+
       }
     }else{
       const keys=kSet.size?[...kSet]:['all'],q=$('#q').value.trim(),gs=[...gSet],all=gMode.all&&gs.length>1;
       let tries=0,added=0;
       do{
         const act=keys.filter(k=>k!=='webnovel'&&mores[k]!==false);
-        const res=await Promise.all(act.map(async k=>{const pg=(pgs[k]||0)+1;pgs[k]=pg;const d=await fetchPage(q,k,pg,$('#sort').value,gs);mores[k]=d.pageInfo.hasNextPage;return d.media}));
+        const batches=await Promise.all(act.map(async k=>{const pg=(pgs[k]||0)+1;return {k,pg,d:await fetchPage(q,k,pg,$('#sort').value,gs)}}));
+        batches.forEach(({k,pg,d})=>{pgs[k]=pg;mores[k]=d.pageInfo.hasNextPage});const res=batches.map(x=>x.d.media);
         const mx=Math.max(0,...res.map(r=>r.length));
         for(let i=0;i<mx;i++)res.forEach(r=>{const m=r[i];if(!m||m.isAdult)return;if(all&&!genOk(m.genres,gSet,true))return;added+=addCard(m)});
         hasNext=keys.filter(k=>k!=='webnovel').some(k=>mores[k]!==false);tries++;
       }while(all&&added<8&&hasNext&&tries<5);
     }
-    $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';
+    $('#smsg').textContent=curOrder.length?'':'Nada encontrado. Tente outro título, tipo ou gênero.';$('#more').textContent='Carregar mais';delete $('#more').dataset.retry;
     $('#more').style.display=hasNext?'block':'none';
-  }catch(e){$('#smsg').textContent='Não consegui carregar o catálogo. '+e.message}
+  }catch(e){if(!reset)page=Math.max(1,page-1);$('#smsg').textContent='Não consegui carregar o catálogo. '+e.message;$('#more').dataset.retry=reset?'reset':'next';$('#more').textContent='Tentar novamente';$('#more').style.display='block'}
   loading=false;
+  if(searchPending){searchPending=false;return search(true)}
 }
 
 function novelId(n){
@@ -145,7 +201,7 @@ function novelId(n){
 function novelSlim(n){return{id:novelId(n),type:'MANGA',kind:'webnovel',title:String(n.title||'').replace(/[<>]/g,''),native:String(n.alternative||'').replace(/[<>]/g,''),cover:n.cover||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="#373739"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle">📖</text></svg>'),syn:n.synopsis||'Sem sinopse disponível.',genres:n.genres||[],year:n.year||'',eps:null,ch:n.chapters||null,vol:null,avg:n.rating||null,st:n.status||'',authors:(n.authors&&n.authors.length?n.authors.map(a=>({id:Number(a.id)||0,name:String(a.name||'').replace(/[<>]/g,''),role:String(a.role||'')})):splitNames(n.author).map(x=>({id:0,name:x,role:'Autor'}))),links:(n.sources||[{site:n.source,url:n.url,lang:n.language||'EN'}]).map(x=>({site:x.site,url:x.url,lang:x.lang||'EN'})),page:n.url,source:n.source,sourceKind:'catalog'} }
 function matchNovel(n,q){if(!q)return true;const z=norm(q);return norm(n.title).includes(z)||norm(n.author).includes(z)||(n.alternative&&norm(n.alternative).includes(z))}
 async function loadNovelCatalog(){
-  try{const r=await fetch('./novels-catalog.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
+  try{const r=await window.OtakuAPI.fetch('./novels-catalog.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('catálogo HTTP '+r.status);const j=await r.json();novelCatalog=Array.isArray(j.items)?j.items:[];novelCatalogLoaded=true;novelCatalogUpdated=j.updated_at||'';
     const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent=novelCatalog.length+' WEB novels carregadas'+(novelCatalogUpdated?' · atualizado '+new Date(novelCatalogUpdated).toLocaleDateString('pt-BR'): '');
   }catch(e){novelCatalog=[];novelCatalogLoaded=false;const b=document.querySelector('#novelCatalogStatus');if(b)b.textContent='Catálogo de WEB novels ainda não foi gerado. Publique também a pasta .github/workflows.'}
 }
@@ -160,9 +216,9 @@ function card(s){
     <span class="tag">${KINDS[s.kind]}</span>
     ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?`<span class="badge g">✓</span>`:''}
     <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
-    <img loading="lazy" src="${s.cover}" alt="Capa de ${s.title.replace(/"/g,'')}">
-    <div class="i"><div class="t">${s.title}</div>
-    <div class="m">${s.year||''} ${s.avg?'· '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
+    <img loading="lazy" src="${esc(s.cover)}" alt="Capa de ${s.title.replace(/"/g,'')}">
+    <div class="i"><div class="t">${esc(s.title)}</div>
+    <div class="m">${esc(s.year||'')} ${s.avg?'· '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10:''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${l.status}</div>`:''}</div></div>`;
 }
 
 const MF='id type format countryOfOrigin isAdult title{romaji english native}coverImage{large}description(asHtml:false)genres seasonYear startDate{year}episodes chapters volumes averageScore status';
@@ -242,7 +298,7 @@ function drawTags(l){$('#mtags').innerHTML=(l.tags||[]).map(t=>`<button class="c
 
 /* ---------- estatísticas ---------- */
 function renderStats(){
-  const v=$('#v-stats'),items=Object.values(lib).filter(isOtaku);
+  const statsHost=$('#v-stats');let v=$('#stats-core');if(!v){v=document.createElement('div');v.id='stats-core';statsHost.prepend(v)}const items=Object.values(lib).filter(isOtaku);
   if(!items.length){v.innerHTML='<div class="msg">Adicione títulos à biblioteca para ver suas estatísticas.</div>';return}
   const cnt=(arr,f)=>{const o={};arr.forEach(x=>{const k=f(x);if(k!=null&&k!=='')o[k]=(o[k]||0)+1});return o};
   const bars=(o,label,max)=>{const e=Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,max||10),m=Math.max(1,...e.map(x=>x[1]));return e.map(([k,n])=>`<div class="bar2"><span class="n">${esc(label?label(k):k)}</span><span class="b" style="width:${Math.max(2,n/m*55)}%"></span><span>${n}</span></div>`).join('')||'<small>Sem dados.</small>'};
@@ -279,15 +335,15 @@ function openModal(id){
   const l=lib[id]; const stars=l?l.rating||0:0;
   const size=s.type==='MANGA'?[s.ch&&s.ch+' capítulos',s.vol&&s.vol+' volumes']:[s.eps&&s.eps+' episódios'];
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button>
-    <div class="bo-cover-wrap"><img src="${s.cover}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div><button class="bo-action bo-avoid" id="avoidbtn">🚫 Não recomendar</button></div>
-    <div style="flex:1;min-width:0"><h2>${s.title}</h2>
-    <div class="sub">${[KINDS[s.kind],s.year,...size,s.avg&&'Nota '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10,s.native].filter(Boolean).join(' · ')}</div>
-    <div class="gen">${s.genres.map(g=>`<span>${g}</span>`).join('')}</div>
+    <div class="bo-cover-wrap"><img src="${esc(s.cover)}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div><button class="bo-action bo-avoid" id="avoidbtn">🚫 Não recomendar</button></div>
+    <div style="flex:1;min-width:0"><h2>${esc(s.title)}</h2>
+    <div class="sub">${esc([KINDS[s.kind],s.year,...size,s.avg&&'Nota '+(s.kind==='webnovel'?'Kitsu':'AniList')+' '+s.avg/10,s.native].filter(Boolean).join(' · '))}</div>
+    <div class="gen">${s.genres.map(g=>`<span>${esc(g)}</span>`).join('')}</div>
     <div class="syn" id="syn">${(s.pt||'Traduzindo sinopse para português...').replace(/</g,'&lt;')}</div>
     <button class="chip" id="tg" style="display:none">Ver original (inglês)</button>
     ${l?`<div class="row"><select id="mst">${STATUS.map(x=>`<option ${x===l.status?'selected':''}>${x}</option>`).join('')}</select>
       <input id="mprog" type="number" min="0" style="width:110px" placeholder="${s.type==='MANGA'?'Cap. lido':'Ep. visto'}" value="${l.prog||''}"></div>
-      <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<span data-n="${n}" class="${n<=stars?'on':''}">★</span>`).join('')}</div><span id="rv">${stars?stars+'/5':'sem nota'}</span></div>
+      <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<button type="button" data-n="${n}" aria-label="${n} de 5 estrelas" aria-pressed="${n<=stars}" class="${n<=stars?'on':''}">★</button>`).join('')}</div><span id="rv">${stars?stars+'/5':'sem nota'}</span></div>
       <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${(l.note||'').replace(/</g,'&lt;')}</textarea>
       <div class="row" style="align-items:flex-start"><b>Listas:</b><div id="mtags" class="gen"></div></div>
       <div class="row"><input id="mtin" list="taglist" maxlength="30" placeholder="Nova lista ou etiqueta (Enter para adicionar)" style="flex:1"><datalist id="taglist">${allTags().map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>
@@ -307,7 +363,7 @@ function openModal(id){
     drawTags(l);
     $('#mtags').onclick=e=>{const b=e.target.closest('button');if(!b)return;l.tags=(l.tags||[]).filter(t=>t!==b.dataset.x);save(l);drawTags(l);renderLib()};
     $('#mtin').onkeydown=e=>{if(e.key!=='Enter')return;const t=e.target.value.replace(/[<>]/g,'').trim().slice(0,30);if(!t)return;l.tags=l.tags||[];if(!l.tags.some(x=>x.toLowerCase()===t.toLowerCase()))l.tags.push(t);e.target.value='';save(l);drawTags(l);renderLib()};
-    $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;if(l.rating&&l.status==='Quero ver/ler'){l.status='Completo'}save(l);openModal(id);refresh()};
+    $('#stars').onclick=e=>{const n=+e.target.dataset.n;if(!n)return;l.rating=l.rating===n?0:n;save(l);openModal(id);refresh()};
     $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
   }else{
     $('#add').onclick=()=>{delete dels[id];const item={...s,status:'Quero ver/ler',rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};attachNovelSources(item);lib[id]=item;save(lib[id]);openModal(id);refresh()};
@@ -328,14 +384,15 @@ function splitText(t,max){
   return out;
 }
 async function gtr(c){
-  const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q='+encodeURIComponent(c));
+  const r=await window.OtakuAPI.fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q='+encodeURIComponent(c));
   if(!r.ok)throw new Error('g'+r.status);
   const j=await r.json();return j[0].map(x=>x[0]).join('');
 }
-async function translate(text){
-  const chunks=splitText(text,1500);
-  const parts=await Promise.all(chunks.map(c=>c.trim()?gtr(c):c));
-  return parts.join('').replace(/\n{3,}/g,'\n\n').trim();
+const translationsInFlight=new Map();
+function translate(text){
+ if(translationsInFlight.has(text))return translationsInFlight.get(text);
+ const task=(async()=>{const parts=[];for(const chunk of splitText(text,1500))parts.push(chunk.trim()?await gtr(chunk):chunk);return parts.join('').replace(/\n{3,}/g,'\n\n').trim()})();
+ translationsInFlight.set(text,task);task.finally(()=>translationsInFlight.delete(text)).catch(()=>{});return task;
 }
 async function showSyn(id){
   const s=lib[id]||current[id];
@@ -343,7 +400,7 @@ async function showSyn(id){
   if(!s||!el)return;
   if(s.kind==='webnovel'&&(noSyn(s.syn)||noCover(s.cover))){
     const r=await kitsuGet(s.title,s.native,noSyn(s.syn));
-    if(r&&kitsuApply(s.id,r)){if(lib[s.id])save(lib[s.id]);const im=document.querySelector('#box img');if(im&&r.cover)im.src=r.cover}
+    if(r&&kitsuApply(s.id,r)){if(lib[s.id])save(lib[s.id]);const im=document.querySelector('#box img');if($('#syn')===el&&im&&r.cover)im.src=r.cover}
   }
   if(!s.syn){
     try{const d=await gql('query($id:Int){Media(id:$id){description(asHtml:false)}}',{id:+id});s.syn=clean(d.Media.description);[lib[id],current[id]].forEach(o=>{if(o)o.syn=s.syn})}
@@ -351,17 +408,17 @@ async function showSyn(id){
   }
   let pt=s.pt, showPT=true;
   const paint=()=>{
-    const el2=$('#syn'); if(!el2||$('#syn').dataset.id!==String(id)&&false)return;
+    const el2=$('#syn'); if(el2!==el||el.dataset.id!==String(id))return;
     el2.textContent=showPT?pt:s.syn;
     tg.textContent=showPT?'Ver original (inglês)':'Ver tradução (português)';
   };
-  el.dataset.id=id;
+  if($('#syn')!==el)return;el.dataset.id=id;
   tg.onclick=()=>{showPT=!showPT;paint()};
   if(!pt){
     if(s.syn==='Sem sinopse disponível.'){pt=s.syn}
     else{
       try{pt=await translate(s.syn)}
-      catch(e){ if($('#syn')) $('#syn').textContent=s.syn+'\n\n(Não foi possível traduzir agora. Mostrando o texto original.)'; return }
+      catch(e){ if($('#syn')===el) el.textContent=s.syn+'\n\n(Não foi possível traduzir agora. Mostrando o texto original.)'; return }
       s.pt=pt; if(lib[id]){lib[id].pt=pt;save()} if(current[id])current[id].pt=pt;
     }
   }
@@ -391,7 +448,7 @@ function kitsuGet(title,alt,needSyn){
   if(c&&c[1]&&!needSyn)return Promise.resolve({cover:c[1],syn:''});
   const p=kQ.then(async()=>{
     try{
-      const r=await fetch(KITSU+'?filter[text]='+encodeURIComponent(String(title).replace(/[’‘]/g,"'"))+'&page[limit]=10',{headers:{Accept:'application/vnd.api+json'}});
+      const r=await window.OtakuAPI.fetch(KITSU+'?filter[text]='+encodeURIComponent(String(title).replace(/[’‘]/g,"'"))+'&page[limit]=10',{headers:{Accept:'application/vnd.api+json'}});
       if(!r.ok)return undefined;
       const j=await r.json(),hit=kPick(j.data||[],title,alt);
       if(!hit){kMem.set(key,null);kLS[key]=[Date.now(),0];kSaveLS();return null}
@@ -481,8 +538,8 @@ async function kitsuNovels(q,reset){
   const so=$('#sort').value,sort=so==='SCORE_DESC'?'ratingRank':so==='START_DATE_DESC'?'-startDate':'popularityRank';
   while(!kCur.done&&tries<(filt?5:1)&&out.length<(filt?8:1)){
     const url=()=>KITSU+'?filter[subtype]=novel&include='+(kStaffOK?'categories,staff.person':'categories')+'&fields[categories]=title&page[limit]=20&page[offset]='+kCur.off+(q?'&filter[text]='+encodeURIComponent(q):'&sort='+sort);
-    let r=await fetch(url(),kH);
-    if(!r.ok&&kStaffOK){kStaffOK=false;r=await fetch(url(),kH)}
+    let r=await window.OtakuAPI.fetch(url(),kH);
+    if(!r.ok&&kStaffOK){kStaffOK=false;r=await window.OtakuAPI.fetch(url(),kH)}
     if(!r.ok)throw new Error('Kitsu '+r.status);
     const j=await r.json(),inc=kInc(j);
     const data=j.data||[];
@@ -502,7 +559,7 @@ function catalogWorksBy(name){const k=kn(name);if(!k)return [];return novelCatal
 async function kitsuWorks(pid,st){
   const out=[];let tries=0;
   while(!st.done&&tries<5&&!out.length){
-    const r=await fetch('https://kitsu.io/api/edge/people/'+pid+'/staff?include=media&page[limit]=20&page[offset]='+st.off,kH);
+    const r=await window.OtakuAPI.fetch('https://kitsu.io/api/edge/people/'+pid+'/staff?include=media&page[limit]=20&page[offset]='+st.off,kH);
     if(!r.ok)throw new Error('Kitsu '+r.status);
     const j=await r.json(),data=j.data||[],empty={cat:{},ppl:{},stf:{}};
     (j.included||[]).forEach(m=>{if(m.type==='manga'&&/^(novel|oel)$/.test((m.attributes||{}).subtype||'')){const n=kitsuNovel(m,empty);if(n.title)out.push(n)}});
@@ -524,7 +581,7 @@ async function anilistWorks(id,st){
 async function resolveKitsuPerson(name){
   for(const f of ['name','query']){
     try{
-      const r=await fetch('https://kitsu.io/api/edge/people?filter['+f+']='+encodeURIComponent(name)+'&page[limit]=5',kH);
+      const r=await window.OtakuAPI.fetch('https://kitsu.io/api/edge/people?filter['+f+']='+encodeURIComponent(name)+'&page[limit]=5',kH);
       if(!r.ok)continue;
       const j=await r.json(),p=(j.data||[]).find(x=>ws((x.attributes||{}).name)===ws(name));
       if(p)return +p.id;
@@ -561,7 +618,7 @@ async function authorWorks(reset){
 
 async function kitsuAuthorsFor(s){
   try{
-    const r=await fetch(KITSU+'?filter[text]='+encodeURIComponent(String(s.title).replace(/[’‘]/g,"'"))+'&page[limit]=10&include=staff.person',kH);
+    const r=await window.OtakuAPI.fetch(KITSU+'?filter[text]='+encodeURIComponent(String(s.title).replace(/[’‘]/g,"'"))+'&page[limit]=10&include=staff.person',kH);
     if(!r.ok)return [];
     const j=await r.json(),m=kPick(j.data||[],s.title,s.native);
     return m?kAuthors(m,kInc(j)):[];
@@ -651,9 +708,9 @@ function toggleRec(id){
 /* ---------- onde assistir / ler ---------- */
 const TIERS=[['free',/youtube|tubi|pluto|retrocrush|ani-?one|muse/i],['part',/manga ?plus|webtoon|tapas|comikey|shonen jump|viz|bilibili|viki|iqiyi|wetv|tappytoon|lezhin|pocket comics|mangamo|azuki|inkr|k manga|kakao|naver|manta|toomics/i],['paid',/netflix|amazon|prime|disney|hulu|hbo|\bmax\b|hidive|funimation|crunchyroll|apple|kindle|bookwalker|comixology|google play|paramount/i]];
 const TNAME={free:'Grátis',part:'Grátis com limites (anúncios ou só alguns capítulos/episódios)',paid:'Pago (assinatura ou compra)',other:'Outros (veja o preço no site)'};
-async function gql(q,v){const r=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
+async function gql(q,v){const r=await window.OtakuAPI.fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:v})});return (await r.json()).data}
 async function showWhere(id){
-  const s=lib[id]||current[id];if(!s||!$('#where'))return;
+  const s=lib[id]||current[id],whereHost=$('#where');if(!s||!whereHost)return;
   if(s.kind==='webnovel'){attachNovelSources(s);novelCredits(s);ensureAuthors(s).then(ch=>{const cr=$('#credits');if(ch&&cr&&cr.dataset.id===String(s.id))novelCredits(s)});const el=$('#where');el.innerHTML='<b>Fontes da WEB Novel</b><div class="row" style="margin:8px 0">'+(s.links||[]).map(x=>'<a class="btn" target="_blank" rel="noopener noreferrer" href="'+x.url+'">📖 '+esc(x.site)+'</a>').join('')+'</div><small>A biblioteca guarda os metadados e abre a leitura na fonte de origem.</small>';return;}
   if(s.kind==='novel')attachNovelSources(s);
   if(!s.links||!s.authors||s.tr===undefined){
@@ -669,10 +726,11 @@ async function showWhere(id){
       if(lib[id])save();
     }catch(e){s.links=s.links||[];s.authors=s.authors||[];s.studios=s.studios||[];s.tr=s.tr||'-'}
   }
+  if($('#where')!==whereHost)return;
   const cr=$('#credits');
   if(cr){
     const RL={'Original Creator':'Criador original','Original Story':'História original','Story & Art':'História e arte','Story':'História','Art':'Arte','Creator':'Criador'};
-    const btn=(t,x,extra)=>`<button class="lk" style="border:0;cursor:pointer" data-t="${t}" data-id="${x.id}" data-n="${x.name.replace(/"/g,'&quot;')}">${x.name}${extra||''}</button>`;
+    const btn=(t,x,extra)=>`<button class="lk" style="border:0;cursor:pointer" data-t="${t}" data-id="${x.id}" data-n="${x.name.replace(/"/g,'&quot;')}">${esc(x.name)}${extra||''}</button>`;
     let h='';
     if(s.authors.length)h+=`<div class="wh"><b>${s.type==='MANGA'?'Autor e criador':'Criador e autor original'}</b><div class="gen">${s.authors.map(a=>btn('staff',a,' ('+(RL[a.role]||a.role)+')')).join('')}</div></div>`;
     if(s.type!=='MANGA'&&s.studios.length)h+=`<div class="wh"><b>Estúdio</b><div class="gen">${s.studios.map(x=>btn('studio',x)).join('')}</div></div>`;
@@ -696,7 +754,7 @@ async function showWhere(id){
   }else{
     h+=`<div class="row" style="margin:8px 0">${best?`<a class="btn" target="_blank" rel="noopener noreferrer" href="${best.url}">▶ ${isM?'Ler':'Assistir'} agora (${best.site})</a>`:''}${trm?'<button class="btn" id="trbtn">🎬 Ver trailer aqui</button>':''}<a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=${encodeURIComponent(s.title+(isM?' mangá prévia':' trailer')+' português')}">🇧🇷 Prévia em português</a></div><div id="trbox"></div>`;
   }
-  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener noreferrer" href="${x.url}">${x.site}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
+  h+=s.links.length?Object.keys(g).filter(k=>g[k].length).map(k=>`<div class="wh"><small style="margin:0">${TNAME[k]}</small><div class="gen">${g[k].map(x=>`<a class="lk" target="_blank" rel="noopener noreferrer" href="${x.url}">${esc(x.site)}${/portug/i.test(x.lang||'')?' 🇧🇷':''}</a>`).join('')}</div></div>`).join(''):'<div class="wh">O AniList não lista serviços oficiais para este título.</div>';
   const q=encodeURIComponent(s.title);
   h+=`<div class="wh"><small style="margin:0">Mais opções</small><div class="gen">${s.type==='MANGA'?'':`<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.justwatch.com/br/busca?q=${q}">JustWatch Brasil</a>`}<a class="lk" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=${encodeURIComponent(s.title+(s.type==='MANGA'?' ler oficial':' assistir oficial'))}">Buscar no Google</a>${s.page?`<a class="lk" target="_blank" rel="noopener noreferrer" href="${s.page}">Página no AniList</a>`:''}</div></div>`;
   const fr=s.type==='MANGA'
@@ -718,17 +776,18 @@ const GSC='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.
 const GH='https://api.github.com',GF='biblioteca-otaku.json',DR='https://www.googleapis.com/drive/v3',UP='https://www.googleapis.com/upload/drive/v3';
 let tk='',gid='',ghu=null,prov='',ready=false,pushT,dels={};
 try{tk=localStorage.getItem('otaku-tk')||'';gid=localStorage.getItem('otaku-gid')||'';ghu=JSON.parse(localStorage.getItem('otaku-ghu')||'null');prov=localStorage.getItem('otaku-prov')||(tk?'github':'');dels=JSON.parse(localStorage.getItem('otaku-del')||'{}')}catch(e){}
+if(!dels||typeof dels!=='object'||Array.isArray(dels)){libraryReadFailed=true;dels={}}
 if(prov==='google')tk=''; /* token do Google dura 1h e não é guardado */
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const payload=()=>JSON.stringify({scale:5,items:Object.fromEntries(Object.entries(lib).map(([k,v])=>{const {syn,pt,links,page,authors,studios,...r}=v;return[k,r]})),del:dels});
 function setStatus(t){const e=$('#sync');if(e)e.textContent=t}
-function renderUser(){const on=prov&&ghu;$('#user').innerHTML=on?`<img src="${esc(ghu.avatar)}" alt="" referrerpolicy="no-referrer"><span>${esc(ghu.login)}</span><span id="sync">${ready?'Sincronizado ✓':(prov==='google'&&!tk?'Reconectar':'')}</span><button class="chip" id="sbtn">Conta</button>`:'<button class="btn" id="sbtn">Entrar</button>'}
+function renderUser(){const su=window.OtakuSupabase?.session?.();const on=prov&&ghu;$('#user').innerHTML=on?`<img src="${esc(ghu.avatar)}" alt="" referrerpolicy="no-referrer"><span>${esc(ghu.login)}</span><span id="sync">${ready?'Sincronizado ✓':(prov==='google'&&!tk?'Reconectar':'')}</span><button class="chip" id="sbtn">Conta</button>`:su?.user?'<span>'+esc(su.user.email||'Conta')+'</span><button class="chip" id="sbtn">Conta</button>':'<button class="btn" id="sbtn">Entrar</button>'}
 $('#user').onclick=e=>{if(e.target.id==='sbtn')showSync()};
 function persist(){try{localStorage.setItem('otaku-prov',prov);localStorage.setItem('otaku-gid',gid);localStorage.setItem('otaku-ghu',JSON.stringify(ghu));if(prov==='github')localStorage.setItem('otaku-tk',tk)}catch(e){}}
 
 /* --- GitHub --- */
 async function gh(path,o={}){
-  const r=await fetch(GH+path,{...o,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk,...(o.body?{'Content-Type':'application/json'}:{})}});
+  const r=await window.OtakuAPI.fetch(GH+path,{...o,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+tk,...(o.body?{'Content-Type':'application/json'}:{})}});
   if(r.status===401)throw new Error('Token inválido ou expirado');
   if(!r.ok)throw new Error('O GitHub respondeu com erro '+r.status);
   return r;
@@ -758,7 +817,7 @@ function gAuth(prompt){return new Promise((res,rej)=>{
     error_callback:e=>rej(new Error(e&&e.type||'erro'))}).requestAccessToken();
 })}
 async function gd(url,o={}){
-  const r=await fetch(url,{...o,headers:{Authorization:'Bearer '+tk,...(o.headers||{})}});
+  const r=await window.OtakuAPI.fetch(url,{...o,headers:{Authorization:'Bearer '+tk,...(o.headers||{})}});
   if(r.status===401){tk='';renderUser();throw new Error('Sessão do Google expirou')}
   if(!r.ok)throw new Error('O Google respondeu com erro '+r.status);
   return r;
@@ -782,18 +841,26 @@ async function connectGoogle(){
 
 /* --- comum --- */
 function mergeData(c){
-  if(c.scale!==5)to5(c.items||{});
-  Object.entries(c.del||{}).forEach(([k,t])=>{dels[k]=Math.max(dels[k]||0,t);if(lib[k]&&(lib[k].upd||0)<t)delete lib[k]});
-  Object.values(c.items||{}).forEach(raw=>{const v=safe(raw),k=v.id;if(!k)return;if(dels[k]&&dels[k]>(v.upd||0))return;if(!lib[k]||(v.upd||0)>(lib[k].upd||0))lib[k]={...lib[k],...v}});
+ if(!c||typeof c!=='object'||!c.items||typeof c.items!=='object')throw new Error('Dados da nuvem inválidos.');
+ const raw=JSON.parse(JSON.stringify(c.items));if(c.scale!==5)to5(raw);
+ const incoming=normalizeLibraryItems(raw);
+ const merged=window.OtakuStore.merge({library:Object.values(lib),deleted:dels},{library:Object.values(incoming),deleted:c.del||{}});
+ lib=Object.fromEntries(merged.library.map(x=>[x.id,x]));dels=merged.deleted;
 }
-function schedulePush(){if(!prov||!tk||!gid||!ready)return;clearTimeout(pushT);pushT=setTimeout(push,2000)}
+let legacyMerging=false,legacyBusy=false,legacyQueued=false;
+function schedulePush(){if(legacyMerging||!prov||!tk||!gid||!ready)return;clearTimeout(pushT);pushT=setTimeout(push,2000)}
 async function push(){
+  if(!prov||!tk||!gid)return;
+  if(legacyBusy){legacyQueued=true;return}legacyBusy=true;const connection=prov+'|'+gid+'|'+tk;
   try{
+    legacyMerging=true;try{await pullSync()}finally{legacyMerging=false}
+    if(connection!==prov+'|'+gid+'|'+tk)return;
     setStatus('Salvando...');
     if(prov==='google')await gd(UP+'/files/'+gid+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:payload()});
     else await gh('/gists/'+gid,{method:'PATCH',body:JSON.stringify({files:{[GF]:{content:payload()}}})});
     setStatus('Sincronizado ✓');
   }catch(e){setStatus(prov==='google'&&!tk?'Reconectar':'Erro ao salvar: '+e.message)}
+  finally{legacyBusy=false;if(legacyQueued){legacyQueued=false;schedulePush()}}
 }
 async function pullSync(){
   setStatus('Sincronizando...');
@@ -802,7 +869,7 @@ async function pullSync(){
   else{
     const g=await (await gh('/gists/'+gid)).json();
     const f=g.files[GF];txt=f.content;
-    if(f.truncated)txt=await (await fetch(f.raw_url)).text();
+    if(f.truncated)txt=await (await window.OtakuAPI.fetch(f.raw_url)).text();
   }
   mergeData(JSON.parse(txt||'{}'));
   ready=true;save();refresh();setStatus('Sincronizado ✓');
@@ -815,7 +882,7 @@ function startSync(){
     if(window.google&&google.accounts)go();else window.addEventListener('load',go);
   }else pullSync().catch(e=>setStatus(String(e.message).startsWith('Token')?'Token expirou. Entre de novo.':'Sem conexão com o GitHub'));
 }
-function logout(){tk='';gid='';ghu=null;prov='';ready=false;['otaku-tk','otaku-gid','otaku-ghu','otaku-prov'].forEach(k=>localStorage.removeItem(k));renderUser()}
+function logout(){clearTimeout(pushT);tk='';gid='';ghu=null;prov='';ready=false;['otaku-tk','otaku-gid','otaku-ghu','otaku-prov'].forEach(k=>localStorage.removeItem(k));renderUser()}
 async function pack(){
   const str=payload();let bytes;
   if(window.CompressionStream){bytes=new Uint8Array(await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer())}
@@ -831,11 +898,11 @@ async function unpack(t){
   return JSON.parse(txt);
 }
 function showSync(){
-  const on=prov&&ghu,goo=prov==='google';
+  const legacy=prov&&ghu,su=!legacy&&window.OtakuSupabase?.session?.(),on=legacy||su?.user,goo=prov==='google';
   $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div style="flex:1;min-width:0">
-  ${on?`<h2>Conta conectada</h2><p>Você está logado como <b>${esc(ghu.login)}</b> (${goo?'Google':'GitHub'}). ${goo?'Sua lista fica numa pasta escondida do seu Google Drive':'Sua lista fica num Gist privado da sua conta'} e sincroniza sozinha a cada mudança.</p>
+  ${on?`<h2>Conta conectada</h2><p>Você está logado como <b>${esc(su?.user?.email||ghu?.login||'Conta')}</b> (${su?'Supabase':goo?'Google':'GitHub'}). ${su?'Sua lista fica na sua conta Supabase':goo?'Sua lista fica numa pasta escondida do seu Google Drive':'Sua lista fica num Gist privado da sua conta'} e sincroniza sozinha a cada mudança.</p>
     ${goo&&!tk?'<p class="sub">Por segurança, o Google pede para reconectar de tempos em tempos. Toque em Sincronizar agora.</p>':''}
-    <div class="row"><button class="btn" id="now">${goo&&!tk?'Reconectar e sincronizar':'Sincronizar agora'}</button>${goo?'':`<a class="lk" target="_blank" rel="noopener" href="https://gist.github.com/${esc(ghu.login)}/${esc(gid)}">Ver meu Gist</a>`}<button class="btn d" id="off">Sair</button></div>`
+    <div class="row"><button class="btn" id="now">${goo&&!tk?'Reconectar e sincronizar':'Sincronizar agora'}</button>${goo||su?'':`<a class="lk" target="_blank" rel="noopener" href="https://gist.github.com/${esc(ghu.login)}/${esc(gid)}">Ver meu Gist</a>`}<button class="btn d" id="off">Sair</button></div>`
   :`<h2>Entrar</h2>
     <p class="sub">Guarde sua lista na nuvem e sincronize entre aparelhos. Escolha uma opção:</p>
     <p><b>Google</b> (mais fácil)</p>
@@ -855,8 +922,8 @@ function showSync(){
   $('#modal').classList.add('on');
   const say=t=>{$('#ss').textContent=t};
   if(on){
-    $('#now').onclick=()=>{say('Sincronizando...');resync().then(()=>{renderUser();say('Pronto.')},e=>say('Não foi possível sincronizar: '+e.message))};
-    $('#off').onclick=()=>{logout();showSync()};
+    $('#now').onclick=()=>{say('Sincronizando...');(su?window.OtakuSupabase.sync('sync'):resync()).then(()=>{renderUser();say('Pronto.')},e=>say('Não foi possível sincronizar: '+e.message))};
+    $('#off').onclick=()=>{if(su)window.OtakuSupabase.logout();else logout();showSync()};
   }else{
     $('#gg').onclick=async()=>{
       say('Abrindo o Google...');
@@ -883,14 +950,14 @@ function showSync(){
     catch(e){say('Não consegui ler esse texto. Copie de novo, inteiro.')}
   };
 }
-/* links externos: abre em nova aba; se o navegador bloquear, abre na mesma aba */
+/* Preserva a navegação nativa, inclusive Ctrl/Cmd+clique e o bloqueio de pop-ups. */
 document.addEventListener('click',e=>{
-  const a=e.target.closest&&e.target.closest('a[href]');
-  if(!a||!/^https?:\/\//i.test(a.href)||a.origin===location.origin)return;
-  e.preventDefault();
-  const w=window.open(a.href,'_blank');
-  if(w){try{w.opener=null}catch(x){}}else location.href=a.href;
-});
+ const a=e.target.closest?.('a[href]');
+ if(!a||!/^https?:\/\//i.test(a.href)||a.origin===location.origin)return;
+ a.target='_blank';a.rel=[...new Set((a.rel+' noopener noreferrer').trim().split(/\s+/))].join(' ');
+},true);
+
+
 function closeModal(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 document.onkeydown=e=>{if(e.key==='Escape')closeModal()};
@@ -899,12 +966,13 @@ function clickCard(e){const h=e.target.closest('.heart');if(h){toggleFav(+h.data
 $('#results').onclick=clickCard;$('#libgrid').onclick=clickCard;
 
 function refresh(){
-  $('#results').innerHTML=curOrder.map(i=>card(current[i])).join('');
-  renderLib();
+  if($('#v-search').style.display!=='none')$('#results').innerHTML=curOrder.map(i=>card(current[i])).join('');
+  if($('#v-lib').style.display!=='none')renderLib();
+  if($('#v-stats').style.display!=='none')renderStats();
 }
 
 function renderLibraryDashboard(){
- const box=document.querySelector('#bo-lib-dashboard');if(!box)return;
+ const box=document.querySelector('#bo-lib-dashboard');if(!box||box.dataset.revision===String(libraryRevision))return;box.dataset.revision=String(libraryRevision);
  const all=Object.values(lib).filter(isOtaku),countKind=k=>all.filter(x=>x.kind===k).length;
  const fav=all.filter(x=>x.fav),recommend=all.filter(x=>x.rec),abandon=all.filter(x=>x.status==='Abandonado'),ten=all.filter(x=>x.rating===5),ongoing=all.filter(x=>x.status==='Em andamento');
  const read=all.filter(x=>x.status==='Quero ver/ler'&&['manga','manhwa','manhua','novel','webnovel'].includes(x.kind));
@@ -947,6 +1015,8 @@ function dashboardFilter(t){
 }
 function renderLib(){
   renderLibraryDashboard();
+  $('#lfav').classList.toggle('on',favOnly);
+  multiKinds($('#lkinds'),lkSet,renderLib);
   const q=$('#lq').value.toLowerCase(),st=$('#lstatus').value,so=$('#lsort').value;
   const tc={};Object.values(lib).filter(isOtaku).forEach(x=>(x.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));
   [...lgTags].forEach(t=>{if(!tc[t])lgTags.delete(t)});
@@ -964,7 +1034,7 @@ function renderLib(){
 function tab(t){
   $('#v-search').style.display=t==='s'?'':'none';$('#v-lib').style.display=t==='l'?'':'none';$('#v-stats').style.display=t==='x'?'':'none';
   $('#t-search').classList.toggle('on',t==='s');$('#t-lib').classList.toggle('on',t==='l');$('#t-stats').classList.toggle('on',t==='x');
-  if(t==='l')renderLib();if(t==='x')renderStats();
+  if(t==='s')$('#results').innerHTML=curOrder.map(i=>card(current[i])).join('');if(t==='l')renderLib();if(t==='x')renderStats();
 }
 $('#t-search').onclick=()=>tab('s');$('#t-lib').onclick=()=>tab('l');$('#t-stats').onclick=()=>tab('x');$('#rnd').onclick=surprise;$('#rec').onclick=showRecs;$('#novelCatalogBtn').onclick=()=>{kSet.clear();kSet.add('webnovel');multiKinds($('#kinds'),kSet,()=>{drawSearchGenres();search(true)});drawSearchGenres();$('#novelCatalogStatus').style.display='';search(true)};$('#importNovelsBtn').onclick=importNovelCatalog;
 $('#ltags').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.t;lgTags.has(t)?lgTags.delete(t):lgTags.add(t);renderLib()};
@@ -972,11 +1042,10 @@ $('#ltags').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=
 let tm;
 $('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>search(true),450)};
 $('#sort').onchange=()=>search(true);
-$('#more').onclick=()=>{page++;search(false)};
+$('#more').onclick=()=>{if(loading)return;if($('#more').dataset.retry==='reset')return search(true);page++;search(false)};
+let libraryFilterTimer;
 ['#lq','#lstatus','#lmin'].forEach(s=>$(s).oninput=()=>{
-  favOnly=false;recOnly=false;
-  $('#lfav').classList.remove('on');
-  renderLib();
+ if(s==='#lq'){clearTimeout(libraryFilterTimer);libraryFilterTimer=setTimeout(renderLib,180)}else renderLib();
 });
 $('#lsort').oninput=renderLib;
 $('#lfav').onclick=e=>{
@@ -986,9 +1055,10 @@ $('#lfav').onclick=e=>{
   renderLib();
 };
 
-$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click()};
+$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(lib)],{type:'application/json'}));a.download='minha-biblioteca.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('#imp').onclick=()=>$('#file').click();
-$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{{const o=JSON.parse(r.result);if(Object.values(o).some(l=>l.rating>5))to5(o);Object.values(o).forEach(x=>{const v=safe(x);if(v.id)lib[v.id]=v})}save();renderLib()}catch(x){alert('Arquivo inválido.')}};r.readAsText(f)};
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{importLibraryDocument(JSON.parse(await f.text()))}catch(x){alert('Não foi possível importar: '+x.message)}finally{e.target.value=''}};
+
 
 function seedNovelSourceCatalog(){
   try{
@@ -1028,7 +1098,15 @@ const PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org
 const API_CACHE_TTL=24*60*60*1000;
 const API_CACHE_PREFIX='otaku-api-cache-v1:';
 const API_INFLIGHT=new Map();
-const cacheKey=u=>API_CACHE_PREFIX+btoa(unescape(encodeURIComponent(String(u)))).replace(/[^a-zA-Z0-9]/g,'').slice(0,180);
+const cacheKey=u=>API_CACHE_PREFIX+encodeURIComponent(String(u));
+function saveApiCache(key,data){
+ try{
+  const records=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith(API_CACHE_PREFIX)){let time=0;try{time=Number(JSON.parse(localStorage.getItem(k)).time)||0}catch(e){}records.push({key:k,time})}}
+  records.sort((a,b)=>a.time-b.time);
+  while(records.length>=60){localStorage.removeItem(records.shift().key)}
+  localStorage.setItem(key,JSON.stringify({time:Date.now(),data}));
+ }catch(e){}
+}
 const cachedGet=async(u,h)=>{
   const key=cacheKey(u);
   const now=Date.now();
@@ -1037,7 +1115,6 @@ const cachedGet=async(u,h)=>{
     if(raw){
       const c=JSON.parse(raw);
       if(c&&c.time&&now-c.time<API_CACHE_TTL&&c.data!==undefined){
-        console.log('⚡ Cache:',u);
         return c.data;
       }
     }
@@ -1045,16 +1122,15 @@ const cachedGet=async(u,h)=>{
   if(API_INFLIGHT.has(key))return API_INFLIGHT.get(key);
   const p=(async()=>{
     try{
-      const r=await fetch(u,h?{headers:h}:undefined);
+      const r=await window.OtakuAPI.fetch(u,h?{headers:h}:undefined);
       if(!r.ok)throw new Error('HTTP '+r.status);
       const data=await r.json();
-      try{localStorage.setItem(key,JSON.stringify({time:Date.now(),data}))}catch(e){}
+      saveApiCache(key,data)
       return data;
     }catch(e){
       try{
         const raw=localStorage.getItem(key),c=raw&&JSON.parse(raw);
         if(c&&c.data!==undefined){
-          console.warn('⚠ API indisponível; usando cache antigo:',u);
           return c.data;
         }
       }catch(x){}
@@ -1226,7 +1302,7 @@ function whereHTML(s,x){
   return '<b>Onde comprar e jogar</b>'+G('Lojas onde está à venda',(x.stores||[]).map(z=>A(z.site,z.url)).join(''))+G('Mais opções',A('Steam','https://store.steampowered.com/search/?term='+q)+A('Epic Games','https://store.epicgames.com/pt-BR/browse?q='+q)+A('HowLongToBeat','https://howlongtobeat.com/?q='+q)+A('Trailer no YouTube','https://www.youtube.com/results?search_query='+e(s.title+' trailer'))+A('RAWG',s.url))+(inf?'<small>'+inf+'</small>':'');
 }
 function paintWhere(s){
-  const el=$('#where');if(!el)return;
+  const el=$('#where');if(!el||curM!==s.id)return;
   el.innerHTML=whereHTML(s,ext.get(s.id)||{});
   const tb=$('#trbtn');
   if(tb)tb.onclick=()=>{const b=$('#trbox');if(b.innerHTML){b.innerHTML='';tb.textContent='🎬 Ver trailer aqui';return}
@@ -1238,22 +1314,22 @@ function cardX(s){
   const l=lib[s.id];
   return `<div class="card cx${s.kind==='game'?' land':''}" data-id="${s.id}" tabindex="0"><span class="tag">${KX[s.kind]}</span>${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:l?'<span class="badge g">✓</span>':''}
   <button class="heart ${l&&l.fav?'on':''}" data-h="${s.id}" aria-label="Favoritar">${l&&l.fav?'♥':'♡'}</button>
-  <img loading="lazy" src="${s.cover||PH}" alt=""><div class="i"><div class="t">${s.title}</div>
-  <div class="m">${[s.year,s.kind==='game'?s.pl:s.by].filter(Boolean).join(' · ')}${s.avg?' · ★ '+(s.avg/20).toFixed(1):''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${stl(s.kind,l.status)}</div>`:''}</div></div>`;
+  <img loading="lazy" src="${esc(s.cover||PH)}" alt=""><div class="i"><div class="t">${esc(s.title)}</div>
+  <div class="m">${esc([s.year,s.kind==='game'?s.pl:s.by].filter(Boolean).join(' · '))}${s.avg?' · ★ '+(s.avg/20).toFixed(1):''}</div>${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'} · ${stl(s.kind,l.status)}</div>`:''}</div></div>`;
 }
 function openX(id,re){
-  const s=lib[id]||curX[id];if(!s)return;
-  curM=id;
+  const s=lib[id]||curX[id]||current[id];if(!s)return;curX[id]=s;
+  curM=id;window.__openOtakuId=String(id);
   const l=lib[id],k=s.kind,n=l&&l.rating||0,pr=k==='book'?'Página atual':k==='game'?'Horas jogadas':'';
-  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div class="bo-cover-wrap"><img src="${s.cover||PH}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
-  <div style="flex:1;min-width:0"><h2>${s.title}</h2>
-  <div class="sub">${[KX[k],s.year,s.by,s.rt&&s.rt+' min',k==='book'&&s.pg&&s.pg+' págs',s.avg&&'Nota '+(s.avg/20).toFixed(1)+'/5',s.native].filter(Boolean).join(' · ')}</div>
-  ${k==='game'&&s.pl?`<div class="sub">${s.pl}</div>`:''}${s.cast?`<div class="sub">Elenco: ${s.cast}</div>`:''}
-  <div class="gen">${(s.genres||[]).map(g=>`<span>${g}</span>`).join('')}</div>
+  $('#box').innerHTML=`<button class="x" aria-label="Fechar" onclick="closeModal()">×</button><div class="bo-cover-wrap"><img src="${esc(s.cover||PH)}" alt=""><div class="bo-cover-actions"><button class="bo-action ${l&&l.rec?'on':''}" id="recbtn">👍 Recomendo</button><button class="bo-action fav ${l&&l.fav?'on':''}" id="fav">♥ Favorito</button></div></div>
+  <div style="flex:1;min-width:0"><h2>${esc(s.title)}</h2>
+  <div class="sub">${esc([KX[k],s.year,s.by,s.rt&&s.rt+' min',k==='book'&&s.pg&&s.pg+' págs',s.avg&&'Nota '+(s.avg/20).toFixed(1)+'/5',s.native].filter(Boolean).join(' · '))}</div>
+  ${k==='game'&&s.pl?`<div class="sub">${esc(s.pl)}</div>`:''}${s.cast?`<div class="sub">Elenco: ${esc(s.cast)}</div>`:''}
+  <div class="gen">${(s.genres||[]).map(g=>`<span>${esc(g)}</span>`).join('')}</div>
   ${k==='book'&&s.by?`<div class="sub" style="margin:8px 0 2px">Autor · toque para ver todas as obras</div><div class="gen">${s.by.split(', ').map(a=>`<button class="lk" style="border:0;cursor:pointer" data-au="${esc(a)}">${esc(a)}</button>`).join('')}</div>`:''}
   <div class="syn" id="syn">Carregando sinopse...</div><button class="chip" id="tg" style="display:none">Ver original</button>
   ${l?`<div class="row"><select id="mst">${STATUS.map((x,i)=>`<option value="${x}" ${x===l.status?'selected':''}>${SL[k][i]}</option>`).join('')}</select>${pr?`<input id="mprog" type="number" min="0" style="width:130px" placeholder="${pr}" value="${esc(l.prog)}">`:''}</div>
-  <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(i=>`<span data-n="${i}" class="${i<=n?'on':''}">★</span>`).join('')}</div><span>${n?n+'/5':'sem nota'}</span></div>
+  <div class="row"><b>Sua nota:</b><div class="stars" id="stars">${[1,2,3,4,5].map(i=>`<button type="button" data-n="${i}" aria-label="${i} de 5 estrelas" aria-pressed="${i<=n}" class="${i<=n?'on':''}">★</button>`).join('')}</div><span>${n?n+'/5':'sem nota'}</span></div>
   <textarea id="mnote" rows="2" placeholder="Anotações pessoais" style="width:100%;margin-top:10px;background:var(--panel2);color:var(--tx);border:0;border-radius:8px;padding:8px;font:inherit">${esc(l.note)}</textarea>
   <div class="row"><button class="btn d" id="rm">Remover da biblioteca</button></div>`:'<div class="row"><button class="btn" id="add">Adicionar à biblioteca</button></div>'}
   <div class="where" id="where"><b>Buscando detalhes...</b></div></div>`;
@@ -1262,14 +1338,15 @@ function openX(id,re){
   if(l){
     $('#mst').onchange=e=>{l.status=e.target.value;save(l);refresh()};
     if(pr)$('#mprog').onchange=e=>{l.prog=e.target.value;save(l)};
-    $('#mnote').onchange=e=>{l.note=T(e.target.value);save(l)};
-    $('#stars').onclick=e=>{const v=+e.target.dataset.n;if(!v)return;l.rating=l.rating===v?0:v;if(l.rating&&l.status===STATUS[0])l.status=STATUS[2];save(l);openX(id,1);refresh()};
+    $('#mnote').onchange=e=>{l.note=e.target.value;save(l)};
+    $('#stars').onclick=e=>{const v=+e.target.dataset.n;if(!v)return;l.rating=l.rating===v?0:v;save(l);openX(id,1);refresh()};
     $('#rm').onclick=()=>{delete lib[id];dels[id]=Date.now();save();closeModal();refresh()};
   }else $('#add').onclick=()=>{delete dels[id];lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()};save(lib[id]);openX(id,1);refresh()};
   document.querySelectorAll('#box [data-au]').forEach(b=>b.onclick=()=>openAuthorX(b.dataset.au));
+  const modalBox=$('#box').firstElementChild;
   const go=()=>{const c=lib[id]||curX[id];paintSyn(c);paintWhere(c)};
   if(re||done.has(id))go();
-  else{done.add(id);load(s).catch(()=>done.delete(id)).then(()=>{if(curM===id&&$('#modal').classList.contains('on'))openX(id,1)})}
+  else{done.add(id);load(s).catch(()=>done.delete(id)).then(()=>{if(curM===id&&$('#box').firstElementChild===modalBox&&$('#modal').classList.contains('on'))openX(id,1)})}
 }
 
 /* ---------- abas ---------- */
@@ -1321,7 +1398,7 @@ function lrender(h){
   h.lg.innerHTML=it.length?it.map(cardX).join(''):'<div class="msg" style="grid-column:1/-1">Nada aqui ainda. Vá em Descobrir, abra um título e toque em “Adicionar à biblioteca”.</div>';
 }
 const cnt=h=>{h.cnt.textContent=Object.values(lib).filter(x=>h.kinds.includes(x.kind)).length};
-const redraw=h=>{h.res.innerHTML=h.ord.map(i=>cardX(curX[i])).join('');if(h.sec.querySelector('[data-p="l"]').style.display!=='none')lrender(h);cnt(h)};
+const redraw=h=>{if(h.sec.style.display!=='none'){h.res.innerHTML=h.ord.map(i=>cardX(curX[i])).join('');if(h.sec.querySelector('[data-p="l"]').style.display!=='none')lrender(h)}cnt(h)};
 function updSrc(h){h.srcb.style.display=h.src?'':'none';h.srcb.innerHTML=h.src?`<button class="chip" data-back="1">← Voltar</button> <b>Obras de ${esc(h.src)}</b>`:''}
 function openAuthorX(name){
   const h=HUBS.lf,was=h.started;closeModal();
@@ -1369,16 +1446,16 @@ const _safe=safe;safe=function(v){
   if(v&&KX[v.kind]){o.kind=v.kind;['ref','by','pl','lang','cast'].forEach(f=>{if(v[f])o[f]=T(v[f]).slice(0,300)});if(U(v.url))o.url=v.url;if(+v.pg)o.pg=+v.pg;if(+v.rt)o.rt=+v.rt}
   return o;
 };
-const _om=openModal;openModal=function(id){const s=lib[id]||curX[id];return s&&KX[s.kind]?openX(id):_om(id)};
+const _om=openModal;openModal=function(id){window.__openOtakuId=String(id);const s=lib[id]||curX[id]||current[id];return s&&KX[s.kind]?openX(id):_om(id)};
 const _tf=toggleFav;toggleFav=function(id){
-  const s=lib[id]||curX[id];if(!s||!KX[s.kind])return _tf(id);
+  const s=lib[id]||curX[id]||current[id];if(!s||!KX[s.kind])return _tf(id);
   let l=lib[id];
   if(!l){delete dels[id];l=lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,added:Date.now()}}
   l.fav=!l.fav;save(l);refresh();
   if($('#modal').classList.contains('on'))openX(id,1);
 };
 const _tr=toggleRec;toggleRec=function(id){
-  const s=lib[id]||curX[id];if(!s||!KX[s.kind])return _tr(id);
+  const s=lib[id]||curX[id]||current[id];if(!s||!KX[s.kind])return _tr(id);
   let l=lib[id];
   if(!l){delete dels[id];l=lib[id]={...s,status:STATUS[0],rating:0,prog:'',note:'',tags:[],fav:false,rec:false,added:Date.now()}}
   l.rec=!l.rec;save(l);refresh();
@@ -1392,9 +1469,10 @@ const _tab=tab;tab=function(t){
   if(!hx)return _tab(t);
   ['#v-search','#v-lib','#v-stats'].forEach(s=>$(s).style.display='none');
   ['#t-search','#t-lib','#t-stats'].forEach(s=>$(s).classList.remove('on'));
-  if(!hx.started){hx.started=1;run(hx,true)}
+  if(!hx.started){hx.started=1;run(hx,true)}else redraw(hx);
 };
 mount('lf');mount('jg');
+window.OtakuExtras={bookItem:gbItem,movieItem:mvItem,books:fBook,movies:fMovie,bookGenres:BG,movieGenres:MG,placeholder:PH};
 })();
 
 
@@ -1451,7 +1529,7 @@ function paintMainRec(){
 }
 async function collectMainCandidates(mode){
   const ks=wantedKinds(),out=new Map(),rated=Object.values(lib).filter(isOtaku).filter(x=>x.rating||x.fav);
-  const ai=(()=>{try{return JSON.parse(localStorage.getItem('otaku-ai-v2')||'{}')}catch(e){return{}}})();
+  const ai=window.OtakuStore?.get?.().ai||{};
   const ratedGenres={};rated.forEach(r=>(r.genres||[]).forEach(g=>ratedGenres[g]=(ratedGenres[g]||0)+Number(r.rating||1)));
   const seeds=rated.sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
   const add=x=>{
@@ -1485,7 +1563,7 @@ async function collectMainCandidates(mode){
     if(k==='webnovel'){
       if(!novelCatalogLoaded){try{await loadNovelCatalog()}catch(e){}}
       (novelCatalog||[]).forEach(n=>{
-        const id=novelId(n),x={id,kind:'webnovel',type:'MANGA',title:n.title||n.name||'',native:n.alternative||'',cover:n.cover||n.image||'',syn:n.synopsis||n.syn||'',genres:n.genres||[],year:n.year||'',avg:n.rating||n.averageRating||0,st:n.status||''};
+        const x=novelSlim(n);
         add(x);
       });
     }else{
@@ -1526,7 +1604,7 @@ function recLfCard(x){
     <span class="tag">${x.kind==='movie'?'Filme':'Livro'}</span>
     ${l&&l.rating?`<span class="badge">★ ${l.rating}</span>`:''}
     <button class="heart ${l&&l.fav?'on':''}" data-h="${x.id}">${l&&l.fav?'♥':'♡'}</button>
-    <img loading="lazy" src="${escR(x.cover||PH)}" alt="">
+    <img loading="lazy" src="${escR(x.cover||window.OtakuExtras.placeholder)}" alt="">
     <div class="i"><div class="t">${escR(x.title)}</div>
     <div class="m">${escR([x.year,x.by].filter(Boolean).join(' · '))}${x.avg?' · ★ '+(Number(x.avg)/20).toFixed(1):''}</div>
     ${l?`<div class="mine">${l.rating?'★'.repeat(l.rating)+'☆'.repeat(5-l.rating):'Sem nota'}</div>`:''}</div>
@@ -1534,7 +1612,7 @@ function recLfCard(x){
 }
 let lfRecItems=[],lfRecPage=0,lfRecType='all',lfRecGenre='';
 function lfGenreOptions(){
-  const base=typeof BG!=='undefined'?BG.map(x=>x[0]):['Ficção','Suspense','Mistério','Romance','Fantasia','Terror','Aventura'];
+  const base=lfRecType==='movie'?window.OtakuExtras.movieGenres.map(x=>x[1]):lfRecType==='book'?window.OtakuExtras.bookGenres.map(x=>x[0]):window.OtakuExtras.bookGenres.map(x=>x[0]).concat(window.OtakuExtras.movieGenres.map(x=>x[1]));
   return [...new Set(base)].map(g=>'<button class="chip '+(lfRecGenre===g?'on':'')+'" data-rg="'+escR(g)+'">'+escR(g)+'</button>').join('');
 }
 function mountLfRec(){
@@ -1548,7 +1626,7 @@ function mountLfRec(){
   sec.insertBefore(box,anchor);
   box.onclick=e=>{
     const b=e.target.closest('button');if(!b)return;
-    if(b.dataset.rt){lfRecType=b.dataset.rt;box.querySelectorAll('[data-rt]').forEach(x=>x.classList.toggle('on',x===b));}
+    if(b.dataset.rt){lfRecType=b.dataset.rt;lfRecGenre='';box.querySelector('#lf-rec-gen').innerHTML=lfGenreOptions();box.querySelectorAll('[data-rt]').forEach(x=>x.classList.toggle('on',x===b));}
     if(b.dataset.rg!==undefined){lfRecGenre=b.dataset.rg;box.querySelector('#lf-rec-gen').innerHTML=lfGenreOptions();}
     if(b.id==='lf-rec-go')runLfRec();
     const c=b.closest('.card');if(c&&c.dataset.id)openModal(c.dataset.id);
@@ -1563,30 +1641,15 @@ function lfSeeds(kind){
   return Object.values(lib).filter(x=>x.kind===kind&&(x.rating||x.fav)).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8);
 }
 async function bookRecs(){
-  const seeds=lfSeeds('book'),terms=[];
-  seeds.forEach(s=>{if(s.title)terms.push(s.title);if(s.by)terms.push(String(s.by).split(',')[0])});
-  const q=terms[0]||'fiction';
-  let data=[];
-  try{
-    const r=await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=40&q='+encodeURIComponent(q));
-    const j=await r.json();data=(j.items||[]).map(v=>{const a=v.volumeInfo||{};return{id:7e9+Number(String(v.id).replace(/\D/g,'').slice(-8)||Math.floor(Math.random()*1e8)),kind:'book',type:'BOOK',ref:'g'+v.id,title:a.title||'',native:a.subtitle||'',cover:(a.imageLinks&&a.imageLinks.thumbnail||'').replace('http:','https:'),syn:a.description||'',genres:a.categories||[],year:(a.publishedDate||'').slice(0,4),avg:a.averageRating?Number(a.averageRating)*20:0,by:(a.authors||[]).join(', '),url:a.infoLink||''}}).filter(lfMatches);
-  }catch(e){}
-  return data;
+ const seeds=lfSeeds('book'),q=seeds[0]?.by?.split(',')[0]||seeds[0]?.title||'fiction';
+ const genre=window.OtakuExtras.bookGenres.findIndex(g=>g[0]===lfRecGenre);
+ try{return (await window.OtakuExtras.books({q,sort:'pop',genres:genre<0?[]:[genre]},1)).items.filter(lfMatches)}catch(e){return []}
 }
 async function movieRecs(){
-  const key=localStorage.getItem('otaku-key-tmdb')||'';
-  if(!key)return [];
-  const seeds=lfSeeds('movie'),terms=seeds.map(x=>x.title).filter(Boolean);
-  const base=terms[0]||'';
-  let url='https://api.themoviedb.org/3/discover/movie?language=pt-BR&include_adult=false&page=1&sort_by=popularity.desc';
-  if(lfRecGenre&&typeof MG!=='undefined'){const hit=MG.find(x=>normR(x[1])===normR(lfRecGenre));if(hit)url+='&with_genres='+hit[0]}
-  if(base)url='https://api.themoviedb.org/3/search/movie?language=pt-BR&include_adult=false&page=1&query='+encodeURIComponent(base);
-  try{
-    const r=await fetch(url,{headers:{Authorization:'Bearer '+key,Accept:'application/json'}});
-    if(!r.ok)return [];
-    const j=await r.json();return (j.results||[]).map(m=>({id:3e9+m.id,kind:'movie',type:'MOVIE',ref:String(m.id),title:m.title||'',native:m.original_title||'',cover:m.poster_path?'https://image.tmdb.org/t/p/w342'+m.poster_path:'',syn:m.overview||'',genres:(m.genre_ids||[]).map(i=>(typeof MGN!=='undefined'?MGN[i]:'' )).filter(Boolean),year:(m.release_date||'').slice(0,4),avg:m.vote_average?m.vote_average*20:0,by:''})).filter(lfMatches);
-  }catch(e){return []}
+ const q=lfSeeds('movie')[0]?.title||'',genre=window.OtakuExtras.movieGenres.find(g=>normR(g[1])===normR(lfRecGenre));
+ try{return (await window.OtakuExtras.movies({q,sort:'pop',genres:genre?[genre[0]]:[]},1)).items.filter(lfMatches)}catch(e){return []}
 }
+
 async function runLfRec(){
   mountLfRec();
   const out=document.querySelector('#lf-rec-out');if(!out)return;
@@ -1635,7 +1698,7 @@ watchLfMount();
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
   const arr5 = () => Object.values(lib || {});
-  const ot5 = x => typeof typeof isOtaku === 'function' ? isOtaku(x) : !['book','movie','game'].includes(x.kind);
+  const ot5 = x => typeof isOtaku === 'function' ? isOtaku(x) : !['book','movie','game'].includes(x.kind);
   const rated5 = () => arr5().filter(x => x.rating >= 1 && x.rating <= 5);
   const stars5 = n => '★'.repeat(Math.max(0,Math.min(5,Number(n)||0))) + '☆'.repeat(Math.max(0,5-Math.max(0,Math.min(5,Number(n)||0))));
   const avg5 = xs => {
@@ -1674,7 +1737,7 @@ watchLfMount();
   function ensureDashboard(){
     const stats = q5('#v-stats');
     if(!stats || q5('#bo5-dash')) return;
-    stats.innerHTML = `
+    stats.insertAdjacentHTML('beforeend', `
       <div id="bo5-dash">
         <div class="bo5-actions">
           <button class="bo5-chip on" data-bo5-view="profile">🧠 Meu perfil</button>
@@ -1686,7 +1749,7 @@ watchLfMount();
         <section id="bo5-continue" style="display:none"></section>
         <section id="bo5-collections" style="display:none"></section>
         <section id="bo5-backup" style="display:none"></section>
-      </div>`;
+      </div>`);
     stats.addEventListener('click', e => {
       const b=e.target.closest('[data-bo5-view]');
       if(b){
@@ -1789,13 +1852,8 @@ watchLfMount();
       const f=e.target.files?.[0];if(!f)return;
       try{
         const d=JSON.parse(await f.text());
-        const incoming=d.library||d.lib||d;
-        if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw new Error('Formato inválido');
-        lib={...lib,...incoming};
-        if(d.deleted)dels=d.deleted;
-        Object.values(lib).forEach(x=>{if(x.rating)x.rating=Math.max(1,Math.min(5,Math.round(Number(x.rating))))});
-        if(typeof window.save==='function')window.save();
-        else localStorage.setItem('otaku-lib',JSON.stringify(lib));
+        importLibraryDocument(d);
+
         q5('#bo5-backup-msg').textContent='Backup importado. Sua biblioteca foi atualizada.';
         render5('profile');
       }catch(err){q5('#bo5-backup-msg').textContent='Não foi possível importar: '+err.message}
@@ -1842,10 +1900,10 @@ watchLfMount();
   /* Uma área "Continuar" também fica acessível na biblioteca principal. */
   function addContinueStrip(){
     const libSec=q5('#v-lib');
-    if(!libSec||q5('#bo5-strip'))return;
-    const s=document.createElement('div');s.id='bo5-strip';s.className='sec';
+    if(!libSec)return;
+    let s=q5('#bo5-strip');if(!s){s=document.createElement('div');s.id='bo5-strip';s.className='sec';
     s.innerHTML='<h3>▶ Continuar</h3><div class="stats">Obras em andamento ou com progresso salvo.</div><div class="grid" id="bo5-strip-grid"></div>';
-    libSec.insertBefore(s,libSec.children[1]||null);
+    libSec.insertBefore(s,libSec.children[1]||null);}
     const items=arr5().filter(x=>x.status==='Em andamento'||(x.prog&&String(x.prog).trim())).slice(0,6);
     q5('#bo5-strip-grid').innerHTML=items.length?items.map(x=>`<div class="card" data-bo5-id="${esc5(x.id)}"><img loading="lazy" src="${esc5(x.cover||'')}" alt=""><div class="i"><div class="t">${esc5(x.title)}</div><div class="m">${esc5(x.prog||x.status)}</div></div></div>`).join(''):'<div class="msg" style="grid-column:1/-1;padding:18px">Nenhuma obra em andamento.</div>';
     q5('#bo5-strip-grid').querySelectorAll('[data-bo5-id]').forEach(c=>c.onclick=()=>{if(typeof window.openModal==='function')window.openModal(c.dataset.bo5Id)});
@@ -1869,8 +1927,8 @@ watchLfMount();
   if(typeof oldTab5==='function'){
     window.tab=function(t){
       const r=oldTab5(t);
-      if(t==='stats')setTimeout(()=>render5('profile'),0);
-      if(t==='lib')setTimeout(addContinueStrip,0);
+      if(t==='x')setTimeout(()=>render5('profile'),0);
+      if(t==='l')setTimeout(addContinueStrip,0);
       return r;
     };
   }
@@ -1943,15 +2001,15 @@ async function build2(mode){
   if(!out.has(id)||out.get(id).score<score)out.set(id,{x,score});
  };
  const seeds=all2().filter(x=>Number(x.rating)>=4||x.fav||['love','like'].includes(ai.feedback?.[String(x.id)])).sort((a,b)=>score2(b,p)-score2(a,p)).slice(0,8);
- for(const s of seeds)if(isOtaku(s)){try{const d=await gql('query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:50){nodes{rating mediaRecommendation{'+MF+'}}}}}',{id:+s.id});(d.Media?.recommendations?.nodes||[]).forEach(z=>{if(z.mediaRecommendation){const x=slim(z.mediaRecommendation);x.avg=(z.rating||0)*10;add(x)}})}catch(e){}}
+ for(const s of seeds)if(isOtaku(s)){try{const d=await gql('query($id:Int){Media(id:$id){recommendations(sort:RATING_DESC,perPage:50){nodes{rating mediaRecommendation{'+MF+'}}}}}',{id:+s.id});(d.Media?.recommendations?.nodes||[]).forEach(z=>{if(z.mediaRecommendation){const x=slim(z.mediaRecommendation);add(x)}})}catch(e){}}
  const ks=R2.kind==='all'?['anime','manga','manhwa','manhua','donghua','aeni','novel','webnovel']:[R2.kind];
- for(const k of ks){try{if(k==='webnovel'){if(!novelCatalogLoaded)await loadNovelCatalog();(novelCatalog||[]).forEach(v=>add({id:novelId(v),kind:'webnovel',type:'MANGA',title:v.title||v.name||'',cover:v.cover||v.image||'',synopsis:v.synopsis||v.syn||'',genres:v.genres||[],avg:Number(v.rating||v.averageRating||0)}));}else{const d=await fetchPage('',k,1,'POPULARITY_DESC',R2.genre?[R2.genre]:[]);(d.media||[]).forEach(m=>{if(!m.isAdult)add(slim(m))})}}catch(e){}}
+ for(const k of ks){try{if(k==='webnovel'){if(!novelCatalogLoaded)await loadNovelCatalog();(novelCatalog||[]).forEach(v=>add(novelSlim(v)));}else{const d=await fetchPage('',k,1,'POPULARITY_DESC',R2.genre?[R2.genre]:[]);(d.media||[]).forEach(m=>{if(!m.isAdult)add(slim(m))})}}catch(e){}}
  return [...out.values()].sort((a,b)=>b.score-a.score).map(z=>z.x).slice(0,50);
 }
 function paint2(){
  const box=q5('#bo5-recs2');if(!box)return;
  const total=Math.max(1,Math.ceil(R2.items.length/5)),p=Math.min(R2.page,total-1);
- const items=R2.items.slice(p*5,p*5+5);
+ const items=R2.items.slice(p*5,p*5+5);items.forEach(x=>current[x.id]=x);
  box.innerHTML='<div class="bo5-card"><div class="rec-head"><div><b>'+(R2.mode==='surprise'?'🎲 Me surpreenda':'✨ Recomendados')+'</b><div class="bo5-muted">Baseado nas suas notas, favoritos, gêneros e obras semelhantes.</div></div></div><div class="rec-track">'+(items.length?items.map(x=>card(x)).join(''):'<div class="msg" style="grid-column:1/-1;padding:18px">Não encontrei novas obras com esses filtros.</div>')+'</div><div class="rec-nav"><button id="r2p">←</button><span>'+(p+1)+' / '+total+'</span><button id="r2n">→</button></div></div>';
  box.querySelectorAll('.card').forEach(c=>c.onclick=clickCard);
  box.querySelector('#r2p').onclick=()=>{if(R2.page>0){R2.page--;paint2()}};
@@ -1966,7 +2024,7 @@ async function run2(mode){
 }
 function mountRec2(){
  const sec=q5('#v-search');if(!sec||q5('#bo5-recs2'))return;
- const b=document.createElement('div');b.id='bo5-recs2';b.style.marginBottom='14px';
+ const b=document.createElement('div');b.id='bo5-recs2-panel';b.style.marginBottom='14px';
  const k=document.createElement('div');k.className='chips';
  k.innerHTML='<span class="bo5-muted" style="align-self:center">Recomendação por perfil:</span>';
  Object.entries(KINDS).forEach(([v,l])=>{const z=document.createElement('button');z.className='chip'+(v==='all'?' on':'');z.dataset.r2k=v;z.textContent=l;k.appendChild(z)});
@@ -2012,9 +2070,7 @@ async function author2(name){
   box.onclick=clickCard;msg.textContent=arr.length?arr.length+' obra(s) encontrada(s).':'';
  }catch(e){msg.textContent='Não foi possível pesquisar este autor agora.'}
 }
-function bootR2(){mountRec2();mountGlobalAuthor()}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootR2,900));else setTimeout(bootR2,900);
-setTimeout(bootR2,1800);
+// A interface principal já possui recomendações e busca de autores; não monta a cópia antiga.
 })();
 
 
@@ -2069,7 +2125,7 @@ function renderProgress3(){
  }).join(''):'<div class="bo5-muted">Seu progresso aparecerá aqui quando você registrar capítulos, episódios ou páginas.</div>';
 }
 function progressForm3(x){
- const p=D3.progress[x.id]||{id:x.id,title:x.title,kind:x.kind,current:0,total:x.episodes||x.chapters||x.volumes||0,updated:Date.now()};
+ const p=D3.progress[x.id]||{id:x.id,title:x.title,kind:x.kind,current:0,total:x.eps||x.ch||x.pg||0,updated:Date.now()};
  const cur=prompt('Progresso de '+x.title+'\nDigite episódio, capítulo, volume ou página atual:',p.current||0);
  if(cur===null)return;
  const total=prompt('Total conhecido (opcional):',p.total||'');
@@ -2123,11 +2179,11 @@ function enhanceModal3(){
   const r=old.apply(this,arguments);
   setTimeout(()=>{
    const modal=document.querySelector('.modal.show,.modal[style*="display"],#modal');
-   if(!modal||!x)return;
-   if(modal.querySelector('#d3-modal-actions'))return;
+   if(!modal||!modal.classList.contains('on')||!x||String(window.__openOtakuId)!==String(id))return;
+   modal.querySelector('#d3-modal-actions')?.remove();
    const a=document.createElement('div');a.id='d3-modal-actions';a.className='bo5-actions';
    a.innerHTML='<button class="bo5-chip" id="d3-prog">📈 Registrar progresso</button><button class="bo5-chip" id="d3-src">🌐 Ver fontes</button>';
-   modal.appendChild(a);
+   document.querySelector('#box>div:last-child').appendChild(a);
    a.querySelector('#d3-prog').onclick=()=>{progressForm3(x)};
    a.querySelector('#d3-src').onclick=()=>{addSources3();renderSources3(x);q5('#d3-sources')?.scrollIntoView({behavior:'smooth'})};
   },80);
@@ -2141,7 +2197,8 @@ function improveRecommend3(){
  if(old==='1')return;
  box.dataset.d3='1';
 }
-function boot3(){load3();addProgressUI();addSources3();addDiscovery3();modalHook3();enhanceModal3();improveRecommend3()}
+let booted3=false;
+function boot3(){if(booted3)return;booted3=true;load3()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot3,1400));else setTimeout(boot3,1400);
 setTimeout(boot3,2600);
 })();
@@ -2177,21 +2234,7 @@ function saveCloudLocal4(){
   localStorage.setItem(C4.key+'-last',String(C4.last));
  }catch(e){}
 }
-function restoreCloudLocal4(d){
- if(!d||typeof d!=='object')throw new Error('Backup inválido');
- if(Array.isArray(d.library)){
-  const target=window.lib||{};
-  d.library.forEach(x=>{if(x&&x.id)target[x.id]=x});
-  try{localStorage.setItem('otaku-lib',JSON.stringify(target))}catch(e){}
- }
- if(d.progress)localStorage.setItem('otaku-progress-v1',JSON.stringify(d.progress));
- if(d.history)localStorage.setItem('otaku-discovery-history',JSON.stringify(d.history));
- if(d.settings){
-  Object.entries(d.settings).forEach(([k,v])=>{if(v!==undefined)localStorage.setItem(k,v)});
- }
- saveCloudLocal4();
- return d.library?.length||0;
-}
+function restoreCloudLocal4(d){return window.OtakuStore.import(d)}
 function download4(){
  const data=snapshot4();
  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -2256,7 +2299,7 @@ function addCloudAdapter4(){
   }
  };
 }
-function boot4(){panel4();hook4();addCloudAdapter4();saveCloudLocal4()}
+function boot4(){addCloudAdapter4()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot4,1700));else setTimeout(boot4,1700);
 setTimeout(boot4,3000);
 })();
@@ -2272,14 +2315,21 @@ const DEFAULT_SUPABASE={url:'https://sxmnfwxwmooxyuzmjzbg.supabase.co',key:['sb_
 const cfg=()=>{try{const saved=JSON.parse(localStorage.getItem(C5.cfg)||'{}');return {url:saved.url||DEFAULT_SUPABASE.url,key:saved.key||DEFAULT_SUPABASE.key}}catch(e){return DEFAULT_SUPABASE}};
 const setCfg=x=>localStorage.setItem(C5.cfg,JSON.stringify(x));
 const sess=()=>{try{return JSON.parse(localStorage.getItem(C5.session)||'null')}catch(e){return null}};
-const setSess=x=>x?localStorage.setItem(C5.session,JSON.stringify(x)):localStorage.removeItem(C5.session);
+const setSess=x=>{
+ const previous=sess();
+ if(x){if(x.expires_in&&!x.expires_at)x={...x,expires_at:Math.floor(Date.now()/1000)+Number(x.expires_in)};localStorage.setItem(C5.session,JSON.stringify(x))}
+ else{localStorage.removeItem(C5.session);window.OtakuRealtime?.disconnect?.()}
+ if(typeof renderUser==='function')renderUser();
+ if(x?.user?.id&&x.user.id!==previous?.user?.id){window.OtakuRealtime?.disconnect?.();setTimeout(()=>window.OtakuRealtime?.connect?.(),0)}
+ else if(x?.access_token)window.OtakuRealtime?.updateToken?.(x.access_token)?.catch?.(()=>{});
+};
 function headers(c,auth=true){const h={'apikey':c.key,'Content-Type':'application/json'};if(auth&&sess()?.access_token)h.Authorization='Bearer '+sess().access_token;return h}
 function base(c){return String(c.url||'').replace(/\/$/,'')}
 async function api5(path,opt={}){
  const c=cfg();if(!c.url||!c.key)throw new Error('Configure a URL e a chave anon do Supabase.');
- const r=await fetch(base(c)+path,{...opt,headers:{...headers(c,opt.auth!==false),...(opt.headers||{})}});
+ const r=await window.OtakuAPI.fetch(base(c)+path,{...opt,headers:{...headers(c,opt.auth!==false),...(opt.headers||{})}});
  const txt=await r.text();let d=null;try{d=txt?JSON.parse(txt):null}catch(e){}
- if(!r.ok)throw new Error(d?.msg||d?.message||d?.error_description||('HTTP '+r.status));
+ if(!r.ok)throw Object.assign(new Error(d?.msg||d?.message||d?.error_description||('HTTP '+r.status)),{status:r.status});
  return d;
 }
 function snap5(){
@@ -2300,28 +2350,45 @@ async function sign5(mode,emailArg,passwordArg){
  const d=await api5('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:JSON.stringify({email,password})});
  setSess(d);return d;
 }
-async function refresh5(){
- const s=sess();if(!s?.refresh_token)return;
- try{
-  const d=await api5('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:JSON.stringify({refresh_token:s.refresh_token})});
-  setSess(d);
- }catch(e){setSess(null)}
+let tokenRefresh=null,syncQueue=Promise.resolve();
+async function refresh5(force=false){
+ const old=sess();if(!old?.refresh_token)return false;
+ if(!force&&Number(old.expires_at)>Date.now()/1000+60)return true;
+ if(tokenRefresh)return tokenRefresh;
+ tokenRefresh=(async()=>{
+  try{
+   const d=await api5('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:JSON.stringify({refresh_token:old.refresh_token})});
+   setSess({...old,...d,user:d.user||old.user});return true;
+  }catch(e){if(e.status===400||e.status===401)setSess(null);return false}
+  finally{tokenRefresh=null}
+ })();return tokenRefresh;
 }
-async function sync5(mode){
- const s=sess();if(!s?.user?.id&&!s?.user?.sub)throw new Error('Faça login no Supabase primeiro.');
- const uid=s.user.id||s.user.sub,d=snap5();
- if(mode==='push'){
-  await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
-  return 'Biblioteca enviada para a nuvem.';
- }
- const rows=await api5('/rest/v1/'+C5.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1');
- if(!rows?.length)return 'Nenhum backup na nuvem para esta conta.';
- const remote=rows[0].data;
- const localTime=Number(d.updatedAt||0),remoteTime=Date.parse(rows[0].updated_at||'')||0;
- if(remoteTime>=localTime){restore5(remote);return 'Biblioteca sincronizada a partir da nuvem.'}
- await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
- return 'A versão local era mais recente e foi enviada para a nuvem.';
+function sync5(mode){
+ const run=async()=>{
+  if(libraryReadFailed)throw new Error('Recupere os dados locais antes de sincronizar.');
+  await refresh5();const s=sess(),uid=s?.user?.id||s?.user?.sub;if(!uid)throw new Error('Faça login no Supabase primeiro.');
+  for(let attempt=0;attempt<3;attempt++){
+   const query='/rest/v1/'+C5.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1';
+   const rows=await api5(query),row=rows?.[0],local=snap5();
+   const merged=row?window.OtakuStore.merge(local,row.data):local;
+   if(row)restore5(merged);
+   if(mode==='pull')return row?'Biblioteca recebida sem apagar suas obras locais.':'Nenhum backup na nuvem para esta conta.';
+   if(row&&JSON.stringify(row.data)===JSON.stringify(merged))return 'Biblioteca sincronizada.';
+   const previousTime=Date.parse(row?.updated_at||'')||0;
+   const data={user_id:uid,data:merged,updated_at:new Date(Math.max(Date.now(),previousTime+1)).toISOString()};
+   if(row){
+    const result=await api5('/rest/v1/'+C5.table+'?user_id=eq.'+encodeURIComponent(uid)+'&updated_at=eq.'+encodeURIComponent(row.updated_at),{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(data)});
+    if(result?.length)return 'Biblioteca sincronizada.';
+   }else{
+    const result=await api5('/rest/v1/'+C5.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify(data)});
+    if(result?.length)return 'Biblioteca enviada para a nuvem.';
+   }
+  }
+  throw new Error('A biblioteca mudou em outro aparelho. Tente sincronizar novamente; seus dados locais foram preservados.');
+ };
+ const next=syncQueue.then(run,run);syncQueue=next.catch(()=>{});return next;
 }
+
 function panel5(){
  if(q5('#c5-panel'))return;
  const stats=q5('#v-stats');if(!stats)return;
@@ -2352,10 +2419,11 @@ function status5(msg){
  const x=q5('#c5-status');if(!x)return;
  const s=sess();x.textContent=msg+(s?.user?.email?' · '+s.user.email:'');
 }
-function boot5(){panel5();refresh5().then(()=>status5(sess()?'Sessão atualizada.':'Não conectado.')).catch(()=>{})}
+let started5=false;
+function boot5(){if(started5)return;started5=true;refresh5().then(()=>{renderUser();status5(sess()?'Sessão atualizada.':'Não conectado.')}).catch(()=>{})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot5,2000));else setTimeout(boot5,2000);
 setTimeout(boot5,3500);
-window.OtakuSupabase={config:cfg,setConfig:setCfg,login:(email,password)=>sign5('login',email,password),signup:(email,password)=>sign5('signup',email,password),sync:sync5,logout:()=>setSess(null),session:sess};
+window.OtakuSupabase={config:cfg,setConfig:setCfg,login:(email,password)=>sign5('login',email,password),signup:(email,password)=>sign5('signup',email,password),sync:sync5,refresh:refresh5,logout:()=>setSess(null),session:sess};
 })();
 
 
@@ -2371,41 +2439,24 @@ const snapshot=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{version
 async function api6(path,opt={}){
  const c=cfg(),s=sess();if(!c.url||!c.key||!s?.access_token)throw new Error('Supabase não configurado ou usuário não conectado.');
  const h={apikey:c.key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',...(opt.headers||{})};
- const r=await fetch(base()+path,{...opt,headers:h});const t=await r.text();let d=null;try{d=t?JSON.parse(t):null}catch(e){}
+ const r=await window.OtakuAPI.fetch(base()+path,{...opt,headers:h});const t=await r.text();let d=null;try{d=t?JSON.parse(t):null}catch(e){}
  if(!r.ok)throw new Error(d?.message||d?.msg||d?.hint||('HTTP '+r.status));return d;
 }
 async function push6(silent=true){
- const s=sess();if(!s?.user)return false;
- const uid=s.user.id||s.user.sub,d=snapshot();
- await api6('/rest/v1/'+C6.table+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:d,updated_at:new Date().toISOString()})});
- localStorage.setItem('otaku-cloud-last-push',String(Date.now()));
- if(!silent)alert('☁️ Biblioteca sincronizada com a nuvem.');
- return true;
+ if(!sess()?.user)return false;
+ await window.OtakuSupabase.sync('sync');
+ if(!silent)alert('☁️ Biblioteca sincronizada com a nuvem.');return true;
 }
 async function pull6(silent=true){
- const s=sess();if(!s?.user)return false;
- const uid=s.user.id||s.user.sub;
- const rows=await api6('/rest/v1/'+C6.table+'?select=data,updated_at&user_id=eq.'+encodeURIComponent(uid)+'&limit=1');
- if(!rows?.length)return false;
- const remote=rows[0].data,remoteTime=Date.parse(rows[0].updated_at||'')||0,localTime=Number(snapshot().updatedAt||0);
- if(remoteTime>localTime){
-   if(window.OtakuCloud?.import)window.OtakuCloud.import(remote);
-   localStorage.setItem('otaku-cloud-last-pull',String(Date.now()));
-   if(!silent)setTimeout(()=>location.reload(),100);
-   return true;
- }
- return false;
+ if(!sess()?.user)return false;
+ await window.OtakuSupabase.sync('pull');return true;
 }
 async function auto6(){
- if(!sess()?.access_token||!cfg().url||!cfg().key)return;
- try{
-   const changed=await pull6(true);
-   if(!changed)await push6(true);
-   const s=q6('#c6-auto-status');if(s)s.textContent='☁️ Sincronizado automaticamente · '+new Date().toLocaleTimeString('pt-BR');
- }catch(e){
-   const s=q6('#c6-auto-status');if(s)s.textContent='⚠️ Nuvem indisponível · dados locais preservados';
- }
+ if(!sess()?.access_token)return;
+ try{await window.OtakuSupabase.sync('sync');const el=q6('#c6-auto-status');if(el)el.textContent='☁️ Sincronizado automaticamente · '+new Date().toLocaleTimeString('pt-BR')}
+ catch(e){const el=q6('#c6-auto-status');if(el)el.textContent='⚠️ Nuvem indisponível · dados locais preservados'}
 }
+
 function q6(s){return document.querySelector(s)}
 function sql6(){
  return `create table if not exists public.biblioteca_otaku_sync (
@@ -2437,11 +2488,12 @@ function panel6(){
 function hookSave6(){
  if(typeof window.save!=='function'||window.save.__c6)return;
  const old=window.save;
- const fn=function(){const r=old.apply(this,arguments);setTimeout(()=>push6(true).catch(()=>{}),350);return r};
+ let pending;const fn=function(){const r=old.apply(this,arguments);clearTimeout(pending);pending=setTimeout(()=>push6(true).catch(()=>{}),2000);return r};
  fn.__c6=true;window.save=fn;
 }
+let started6=false;
 function boot6(){
- panel6();hookSave6();
+ if(started6)return;started6=true;panel6();hookSave6();
  if(C6.timer)clearInterval(C6.timer);
  setTimeout(()=>auto6(),1200);
  C6.timer=setInterval(auto6,60000);
@@ -2473,29 +2525,17 @@ const snap7=()=>window.OtakuCloud?.export?window.OtakuCloud.export():{
 };
 function status7(t){const x=q7('#r7-status');if(x)x.textContent=t}
 function sleep7(ms){return new Promise(r=>setTimeout(r,ms))}
-async function refreshToken7(){
- const c=cfg7(),s=sess7(),rt=s?.refresh_token;
- if(!c.url||!c.key||!rt)return false;
- try{
-  const r=await fetch(base7()+'/auth/v1/token?grant_type=refresh_token',{
-   method:'POST',headers:{apikey:c.key,'Content-Type':'application/json'},
-   body:JSON.stringify({refresh_token:rt})
-  });
-  const d=await r.json().catch(()=>null);
-  if(!r.ok||!d?.access_token)return false;
-  saveSess7({...s,...d,user:d.user||s.user});
-  return true;
- }catch(e){return false}
-}
+async function refreshToken7(){return window.OtakuSupabase.refresh()}
+
 async function auth7(){
  const c=cfg7(),s=sess7();
  if(!c.url||!c.key||!s?.access_token)return false;
  try{
-  let r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+s.access_token}});
+  let r=await window.OtakuAPI.fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+s.access_token}});
   if(r.ok)return true;
   if(await refreshToken7()){
    const n=sess7();
-   r=await fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+n.access_token}});
+   r=await window.OtakuAPI.fetch(base7()+'/auth/v1/user',{headers:{apikey:c.key,Authorization:'Bearer '+n.access_token}});
    return r.ok;
   }
  }catch(e){}
@@ -2511,25 +2551,8 @@ function restore7(d){
   localStorage.setItem('otaku-realtime-last',String(Date.now()));
  }catch(e){console.warn('Realtime restore:',e)}
 }
-function merge7(local,remote){
- const lm=new Map((local.library||[]).map(x=>[String(x.id),x]));
- const rm=new Map((remote.library||[]).map(x=>[String(x.id),x]));
- const merged=new Map(lm);
- rm.forEach((x,id)=>{
-  const l=lm.get(id);
-  if(!l)merged.set(id,x);
-  else{
-   const lt=Number(l.updatedAt||l._updatedAt||0),rt=Number(x.updatedAt||x._updatedAt||0);
-   if(rt>lt)merged.set(id,x);
-   else if(rt===lt&&Number(x.rating||0)>Number(l.rating||0))merged.set(id,{...l,rating:x.rating});
-  }
- });
- return {
-  ...remote,...local,
-  library:[...merged.values()],
-  updatedAt:Math.max(Number(local.updatedAt||0),Number(remote.updatedAt||0))
- };
-}
+function merge7(local,remote){return window.OtakuStore.merge(local,remote)}
+
 function schedule7(delay){
  clearTimeout(R7.timer);
  R7.timer=setTimeout(()=>realtime7(true),Math.max(1000,delay||0));
@@ -2540,7 +2563,7 @@ function close7(){
  R7.client=null;
 }
 async function realtime7(isRetry=false){
- if(R7.connecting)return;
+ if(R7.connecting||!sess7()?.access_token)return;
  if(R7.channel)return;
  R7.connecting=true;
  try{
@@ -2555,6 +2578,7 @@ async function realtime7(isRetry=false){
    global:{headers:{Authorization:'Bearer '+s.access_token}},
    auth:{persistSession:false,autoRefreshToken:false}
   });
+  await client.realtime.setAuth(s.access_token);
   R7.client=client;
   const name='otaku-library-'+String(uid).replace(/[^a-zA-Z0-9_-]/g,'');
   const ch=client.channel(name)
@@ -2592,7 +2616,7 @@ function remote7(remote){
   R7.lastRemote=Date.now();
   status7('🟢 Alteração recebida · '+new Date().toLocaleTimeString('pt-BR'));
   setTimeout(()=>{try{
-   if(typeof window.render==='function')window.render();
+   if(typeof window.refresh==='function')window.refresh();
    document.dispatchEvent(new CustomEvent('otaku-realtime-update',{detail:merged}));
   }catch(e){}},80);
  }finally{setTimeout(()=>R7.busy=false,500)}
@@ -2627,6 +2651,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 setTimeout(boot7,4500);
 window.OtakuRealtime={
  connect:()=>{R7.retry=0;close7();return realtime7()},
+ disconnect:()=>{clearTimeout(R7.timer);close7()},
+ updateToken:token=>R7.client?.realtime.setAuth(token),
  merge:merge7,sql:sql7,
  status:()=>({connected:!!R7.channel,retry:R7.retry,lastRemote:R7.lastRemote})
 };
@@ -2650,7 +2676,7 @@ const LV8={
     return 0;
   },
   titleBonus(l){return ['Completo','Lido','Assistido','Zerado'].includes(l.status)?100:0},
-  xp(l){return Math.floor(this.mins(l))+this.titleBonus(l)+(Number(l.rating)>0?20:0)+(l.note&&String(l.note).trim()?10:0)+(l.added?5:0)},
+  xp(l){if(l.kind==='movie'&&!['Completo','Assistido'].includes(l.status))return 0;return Math.floor(this.mins(l))+this.titleBonus(l)+(Number(l.rating)>0?20:0)+(l.note&&String(l.note).trim()?10:0)+(l.added?5:0)},
   needed(n){return Math.floor(100*Math.pow(Math.max(1,n),1.5))},
   totalTo(n){let t=0;for(let i=1;i<=n;i++)t+=this.needed(i);return t},
   calc(){
@@ -2684,6 +2710,7 @@ function draw8(){
   }
 }
 function show8(){
+  tab('x');
   const st=document.querySelector('#v-stats');if(!st)return;
   document.querySelectorAll('#v-search,#v-lib').forEach(x=>x.style.display='none');
   st.style.display='';document.querySelectorAll('#t-search,#t-lib,#t-stats').forEach(x=>x.classList.remove('on'));

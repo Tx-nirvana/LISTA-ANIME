@@ -1,40 +1,28 @@
-const CACHE='biblioteca-otaku-v22-library-only-assets';
-const CORE=['./','./index.html','./css/style.css?v=22','./js/store.js?v=22','./js/api.js','./js/sync.js','./js/app.js?v=22','./js/ai.js','./manifest.webmanifest'];
-
+const CACHE='biblioteca-otaku-v23-audit';
+const CORE=['./','./index.html','./css/style.css?v=23','./js/store.js?v=23','./js/api.js?v=23','./js/sync.js','./js/app.js?v=23','./js/ai.js?v=23','./js/ui.js?v=23','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',e=>{
  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
 });
-
 self.addEventListener('activate',e=>{
- e.waitUntil(caches.keys()
-  .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-  .then(()=>self.clients.claim()));
+ e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('biblioteca-otaku-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
-
 self.addEventListener('fetch',e=>{
  if(e.request.method!=='GET')return;
  const u=new URL(e.request.url);
- if(u.origin!==location.origin)return;
- // Live catalogs, images and authentication must never enter the offline cache.
- if(u.pathname.includes('/api/')||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
-
- // HTML, JS e CSS: tenta sempre a versão mais nova primeiro.
- const freshAsset=e.request.mode==='navigate'||/\.(?:js|css|json\.gz)$/i.test(u.pathname);
- if(freshAsset){
-  e.respondWith(
-   fetch(e.request).then(r=>{
-    if(r&&r.ok){
-     const cp=r.clone();
-     caches.open(CACHE).then(c=>c.put(e.request.mode==='navigate'?'./index.html':e.request,cp));
-    }
-    return r;
-   }).catch(()=>e.request.mode==='navigate'?caches.match('./index.html'):caches.match(e.request))
-  );
-  return;
- }
-
- e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{
-  if(r&&r.ok){const cp=r.clone();caches.open(CACHE).then(x=>x.put(e.request,cp));}
-  return r;
- })));
+ if(u.origin!==location.origin||u.pathname.includes('/api/')||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
+ const catalog=u.pathname.endsWith('/novels-catalog.json');
+ const key=e.request.mode==='navigate'?new URL('./index.html',self.location.href).href:catalog?u.origin+u.pathname:e.request;
+ const fresh=e.request.mode==='navigate'||catalog||/\.(?:js|css)$/i.test(u.pathname);
+ const update=async()=>{
+  const response=await fetch(e.request);
+  if(response.ok&&e.request.cache!=='no-store'){
+   try{const cache=await caches.open(CACHE);await cache.put(key,response.clone())}catch(e){}
+  }
+  return response;
+ };
+ e.respondWith((async()=>{
+  const cache=await caches.open(CACHE),saved=await cache.match(key);
+  if(!fresh&&saved)return saved;
+  try{return await update()}catch(e){return saved||new Response('Sem conexão. Tente novamente quando estiver online.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})}
+ })());
 });
