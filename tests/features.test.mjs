@@ -57,7 +57,7 @@ test('cloud sharing sends only the reviewed document and can revoke the same ID'
   if(url.includes('/rpc/publish_otaku_profile')){sent=JSON.parse(init.body);return Response.json(sent.profile_id)}
   if(url.includes('/rpc/revoke_otaku_profile')){revoked=JSON.parse(init.body);return Response.json(null)}
  }});await h.flush();h.window.qrcode=()=>({addData(){},make(){},createSvgTag(){return '<svg></svg>'}});
- h.window.OtakuSupabase.session=()=>({access_token:'SECRET',user:{id:'ACCOUNT'}});h.window.OtakuSupabase.refresh=async()=>{};
+ h.window.OtakuProfileAuth.session=()=>({access_token:'SECRET',user:{id:'ACCOUNT'}});h.window.OtakuProfileAuth.refresh=async()=>h.window.OtakuProfileAuth.session();
  h.run('importLibraryDocument({library:[{id:1,title:"Public",note:"PRIVATE",status:"Completo"}]})');h.click('#share-library');h.click('#share-preview-button');h.click('#share-publish');await h.flush(30);
  assert.ok(sent);assert.equal(JSON.stringify(sent).includes('PRIVATE'),false);assert.equal(JSON.stringify(sent).includes('SECRET'),false);assert.equal(sent.document.items.length,1);
  const link=h.document.querySelector('#share-link').value;assert.ok(link.endsWith(sent.profile_id));h.click('#share-revoke');await h.flush(30);assert.equal(revoked.profile_id,sent.profile_id);
@@ -67,7 +67,7 @@ test('an authenticated owner can recover and revoke a published link on another 
  const h=browser({features:true,fetch:async(url,init)=>{
   if(url.includes('/rpc/list_my_otaku_profiles'))return Response.json([{id,name:'Remote profile'}]);
   if(url.includes('/rpc/revoke_otaku_profile')){revoked=JSON.parse(init.body).profile_id;return Response.json(null)}
- }});await h.flush();h.window.OtakuSupabase.session=()=>({access_token:'SECRET',user:{id:'owner'}});h.window.OtakuSupabase.refresh=async()=>{};
+ }});await h.flush();h.window.OtakuProfileAuth.session=()=>({access_token:'SECRET',user:{id:'owner'}});h.window.OtakuProfileAuth.refresh=async()=>h.window.OtakuProfileAuth.session();
  h.click('#share-library');h.click('#share-my-links');await h.flush(5);h.click('#share-cloud-links button');assert.ok(h.document.querySelector('#share-link').value.endsWith(id));h.click('#share-revoke');await h.flush(5);assert.equal(revoked,id);
 });
 test('local recommendation ranking excludes owned/blocked works and explains rating matches',async()=>{

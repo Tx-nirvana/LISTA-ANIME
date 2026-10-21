@@ -26,6 +26,7 @@ test('viewed cover survives offline and public profiles/auth are never intercept
  const h=worker();h.saved.set('https://covers.example/seen.jpg',new Response('cover'));
  const r=await h.get({url:'https://covers.example/seen.jpg',method:'GET',destination:'image'});assert.equal(await r.text(),'cover');
  assert.equal(await h.get({url:'https://example.com/LISTA-ANIME/perfil.html',method:'GET',mode:'navigate'}),undefined);
+ assert.equal(await h.get({url:'https://example.com/LISTA-ANIME/conta-perfil.html',method:'GET',mode:'navigate'}),undefined);
  assert.equal(await h.get({url:'https://project.supabase.co/rest/v1/rpc/read_otaku_profile',method:'POST'}),undefined);
 });
 test('cover cache evicts old covers at its bound and never deletes a library',async()=>{

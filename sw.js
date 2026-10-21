@@ -1,5 +1,5 @@
-const CACHE='biblioteca-otaku-v27',COVERS='biblioteca-otaku-covers-v1';
-const CORE=['./','./index.html','./css/style.css?v=27','./css/features.css?v=27','./js/features-core.js?v=27','./js/store.js?v=27','./js/api.js?v=27','./js/sync.js','./js/app.js?v=27','./js/ai.js?v=27','./js/ui.js?v=27','./js/features.js?v=27','./js/sharing.js?v=27','./js/discovery.js?v=27','./js/public-model.js?v=27','./js/public-config.js?v=27','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./novels-catalog.json'];
+const CACHE='biblioteca-otaku-v29',COVERS='biblioteca-otaku-covers-v1';
+const CORE=['./','./index.html','./css/style.css?v=29','./css/features.css?v=29','./js/features-core.js?v=29','./js/store.js?v=29','./js/api.js?v=29','./js/sync.js','./js/app.js?v=29','./js/ai.js?v=29','./js/ui.js?v=29','./js/features.js?v=29','./js/profile-auth.js?v=29','./js/sharing.js?v=29','./js/discovery.js?v=29','./js/public-model.js?v=29','./js/public-config.js?v=29','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./novels-catalog.json'];
 const KEEP=new Set([CACHE,COVERS,'biblioteca-otaku-api-v1']);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('biblioteca-otaku-')&&!KEEP.has(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
@@ -21,7 +21,7 @@ self.addEventListener('fetch',e=>{
  // Não guarda autenticação, documentos públicos revogáveis ou serviços externos.
  if(u.origin!==location.origin||/\/(?:api|rest|auth)\//.test(u.pathname)||/\/(?:signin-with-chatgpt|signout-with-chatgpt|callback)/.test(u.pathname))return;
  const catalog=u.pathname.endsWith('/novels-catalog.json'),profile=u.pathname.endsWith('/perfil.html');
- if(profile)return;
+ if(profile||u.pathname.endsWith('/conta-perfil.html'))return;
  const key=request.mode==='navigate'?new URL('./index.html',self.location.href).href:catalog?u.origin+u.pathname:request;
  e.respondWith((async()=>{
   const cache=await caches.open(CACHE),saved=await cache.match(key);
