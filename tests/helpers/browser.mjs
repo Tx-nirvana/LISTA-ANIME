@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
+import {webcrypto} from 'node:crypto';
 const root=new URL('../../',import.meta.url);
 export function browser(options={}){
  const {window:dom}=parseHTML(fs.readFileSync(new URL('index.html',root),'utf8'));
@@ -16,7 +17,7 @@ export function browser(options={}){
  ctx.fetch=async(input,init={})=>{
   const url=String(input);calls.push({url,init});
   const custom=await options.fetch?.(url,init);if(custom)return custom;
-  if(url.includes('novels-catalog.json'))return Response.json(JSON.parse(fs.readFileSync(new URL('novels-catalog.json',root),'utf8')));
+  if(url.includes('novels-catalog.json'))return Response.json(JSON.parse(fs.readFileSync(new URL('tests/fixtures/novels.json',root),'utf8')));
   if(url==='https://graphql.anilist.co'){
    const q=JSON.parse(init.body).query;
    if(q.includes('staff(search:'))return Response.json({data:{Page:{staff:[]}}});
@@ -32,9 +33,10 @@ export function browser(options={}){
   if(url.includes('query.wikidata'))return Response.json({results:{bindings:[]}});
   throw Error('Unexpected fetch: '+url);
  };
+ ctx.crypto=webcrypto;ctx.matchMedia=()=>({matches:false});
  const context=vm.createContext(ctx);
  const run=code=>vm.runInContext(code,context);
- for(const file of ['store','api','sync','app','ai','ui'])run(fs.readFileSync(new URL('js/'+file+'.js',root),'utf8'));
+ for(const file of ['features-core','store','api','sync','app','ai','ui',...(options.features?['public-model','features','sharing','discovery']:[])])run(fs.readFileSync(new URL('js/'+file+'.js',root),'utf8'));
  document.dispatchEvent(new dom.Event('DOMContentLoaded'));
  async function flush(ms=5000){
   const until=now+ms;let count=0;
