@@ -62,6 +62,14 @@ test('cloud sharing sends only the reviewed document and can revoke the same ID'
  assert.ok(sent);assert.equal(JSON.stringify(sent).includes('PRIVATE'),false);assert.equal(JSON.stringify(sent).includes('SECRET'),false);assert.equal(sent.document.items.length,1);
  const link=h.document.querySelector('#share-link').value;assert.ok(link.endsWith(sent.profile_id));h.click('#share-revoke');await h.flush(30);assert.equal(revoked.profile_id,sent.profile_id);
 });
+test('an authenticated owner can recover and revoke a published link on another device',async()=>{
+ const id='d683d335-5ea2-4d2a-b87b-46ea1a544cd7';let revoked;
+ const h=browser({features:true,fetch:async(url,init)=>{
+  if(url.includes('/rpc/list_my_otaku_profiles'))return Response.json([{id,name:'Remote profile'}]);
+  if(url.includes('/rpc/revoke_otaku_profile')){revoked=JSON.parse(init.body).profile_id;return Response.json(null)}
+ }});await h.flush();h.window.OtakuSupabase.session=()=>({access_token:'SECRET',user:{id:'owner'}});h.window.OtakuSupabase.refresh=async()=>{};
+ h.click('#share-library');h.click('#share-my-links');await h.flush(5);h.click('#share-cloud-links button');assert.ok(h.document.querySelector('#share-link').value.endsWith(id));h.click('#share-revoke');await h.flush(5);assert.equal(revoked,id);
+});
 test('local recommendation ranking excludes owned/blocked works and explains rating matches',async()=>{
  const h=browser({features:true});await h.flush();const ranked=h.window.OtakuDiscovery.rank([{id:1,title:'Owned',kind:'anime',genres:['Action']},{id:2,title:'New',kind:'anime',genres:['Action'],eps:12},{id:3,title:'Blocked',kind:'anime',genres:[]}],[{id:1,title:'Owned',kind:'anime',genres:['Action'],rating:5}],{short:true},{3:true});
  assert.equal(ranked.length,1);assert.match(ranked[0].reason,/5★ para Owned/);

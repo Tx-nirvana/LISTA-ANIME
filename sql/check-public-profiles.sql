@@ -8,7 +8,8 @@ begin
   raise exception 'anon não deve listar documentos diretamente';
  end if;
  if has_function_privilege('anon','public.publish_otaku_profile(uuid,jsonb)','EXECUTE') or
-    has_function_privilege('anon','public.revoke_otaku_profile(uuid)','EXECUTE') then
+    has_function_privilege('anon','public.revoke_otaku_profile(uuid)','EXECUTE') or
+    has_function_privilege('anon','public.list_my_otaku_profiles()','EXECUTE') then
   raise exception 'anon não deve editar ou revogar documentos';
  end if;
  if not has_function_privilege('anon','public.read_otaku_profile(uuid)','EXECUTE') then

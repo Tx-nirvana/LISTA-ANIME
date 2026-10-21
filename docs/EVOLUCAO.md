@@ -30,6 +30,7 @@ Se você trocar de projeto, ajuste `js/public-config.js` com a URL e a chave **a
 - “Ocultar do perfil público” fica nos detalhes de cada item. As alterações de privacidade só chegam a um link já publicado depois de revisar a prévia e publicar novamente.
 - A prévia completa usa a mesma página pública dentro de um iframe de mesma origem e recebe apenas o documento validado por postMessage. Nenhuma publicação ocorre ao abrir a prévia.
 - Atualização mantém o endereço. Revogação apaga o documento público; uma nova publicação gera outro UUID. Não apaga capturas, arquivos ou cópias já feitas por terceiros. Uma página aberta reconsulta ao receber foco e a cada minuto enquanto visível; a revogação não é push em tempo real.
+- “Meus links publicados nesta conta” recupera os IDs pertencentes à sessão Supabase atual, inclusive em outro aparelho, para gerenciar e revogar. Essa listagem exige autenticação e RLS; visitantes não podem listar perfis. As escolhas de filtros ficam no navegador e devem ser revistas na prévia antes de atualizar um link recuperado.
 - O documento público não é guardado offline: sem rede, a página oculta o conteúdo para não fingir que confirmou uma revogação. Capas são imagens públicas e podem permanecer no cache do navegador.
 - Textos são escapados; campos e tipos são validados; URLs aceitam somente HTTP(S), sem credenciais ou parâmetros conhecidos de autenticação. O payload é limitado a 5.000 itens e cerca de 1,9 MB. O banco também impõe limite de 2 MB.
 - As metas sociais são genéricas. GitHub Pages e robôs de prévia não executam necessariamente JavaScript nem recebem o fragmento `#UUID`; não é possível garantir título/capa personalizados em WhatsApp ou redes sociais sem renderização no servidor.
@@ -84,7 +85,7 @@ GitHub Actions conserva as permissões existentes de contents:write, adiciona ex
 5. Teste perfil, conta anônima, revogação e propriedade seguindo os passos do Supabase acima. Nunca use a biblioteca pessoal como primeiro teste de privacidade.
 6. Testes de desenvolvimento: `npm ci`, `npm test`, `python -m unittest discover -s tests -p catalog_test.py`. Não são necessários para usar/hospedar o site.
 
-Validação desta entrega: 47 testes JavaScript e 12 Python; sintaxe e diff; navegador real em desktop e viewport de 390 px; a conferência final em 320 px ficou pendente por indisponibilidade da automação de navegador. Publicação e revogação foram simuladas com respostas controladas. Não houve teste de autenticação real nem execução do SQL no projeto indisponível; o scraping completo não foi executado, somente consultas limitadas de metadados ao Kitsu. Não houve alteração de contas ou bibliotecas pessoais.
+Validação desta entrega: 48 testes JavaScript e 12 Python; sintaxe e diff; navegador real em desktop e viewport de 390 px; a conferência final em 320 px ficou pendente por indisponibilidade da automação de navegador. Publicação e revogação foram simuladas com respostas controladas. Não houve teste de autenticação real nem execução do SQL no projeto indisponível; o scraping completo não foi executado, somente consultas limitadas de metadados ao Kitsu. Não houve alteração de contas ou bibliotecas pessoais.
 
 ## Arquivos e publicação
 

@@ -49,6 +49,11 @@ create or replace function public.revoke_otaku_profile(profile_id uuid) returns 
 language sql security invoker set search_path = '' as $$
  delete from otaku_private.public_profiles where id=profile_id and owner_id=(select auth.uid());
 $$;
+create or replace function public.list_my_otaku_profiles() returns jsonb
+language sql stable security invoker set search_path = '' as $$
+ select coalesce(jsonb_agg(jsonb_build_object('id',id,'name',document->>'name','updated_at',updated_at)),'[]'::jsonb)
+ from otaku_private.public_profiles where owner_id=(select auth.uid());
+$$;
 
 -- Única exceção de SECURITY DEFINER: leitura pública por UUID secreto.
 -- Fica em schema NÃO exposto. Não retorna owner_id, não lista registros,
@@ -66,6 +71,8 @@ $$;
 revoke all on function public.publish_otaku_profile(uuid,jsonb) from public,anon;
 revoke all on function public.revoke_otaku_profile(uuid) from public,anon;
 revoke all on function public.read_otaku_profile(uuid) from public;
+revoke all on function public.list_my_otaku_profiles() from public,anon;
+grant execute on function public.list_my_otaku_profiles() to authenticated;
 grant execute on function public.publish_otaku_profile(uuid,jsonb), public.revoke_otaku_profile(uuid) to authenticated;
 grant execute on function public.read_otaku_profile(uuid) to anon,authenticated;
 notify pgrst, 'reload schema';
