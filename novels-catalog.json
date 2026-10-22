@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-22T12:08:24.695543+00:00",
+  "updated_at": "2026-10-22T17:21:12.424629+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -2069,7 +2069,7 @@
       "title": "An Alchemist's Path to Eternity",
       "alternative": "",
       "author": "The Rain Keeps Falling, 雨去欲续",
-      "chapters": null,
+      "chapters": 3282,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -2079,7 +2079,7 @@
         "Xianxia",
         "Xuanhuan"
       ],
-      "cover": "",
+      "cover": "https://novelfull.net/uploads/thumbs/an-alchemists-path-to-eternity-f9289ae623d63e15b6b8a83220de17fe.jpg",
       "synopsis": "",
       "year": "",
       "rating": null,
@@ -2089,6 +2089,11 @@
         {
           "site": "NovelFull.com",
           "url": "https://novelfull.com/an-alchemists-path-to-eternity.html",
+          "lang": "EN"
+        },
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/an-alchemists-path-to-eternity.html",
           "lang": "EN"
         }
       ],
@@ -2340,7 +2345,11 @@
           "url": "https://novelfull.net/are-you-telling-an-eight-year-old-to-survive-in-the-wilderness.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:46.269996+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2369,7 +2378,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/arifureta-shokugyou-de-sekai-saikyou"
+      "metadata_url": "https://kitsu.io/manga/arifureta-shokugyou-de-sekai-saikyou",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:47.647098+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2398,7 +2411,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/ark-ix"
+      "metadata_url": "https://kitsu.io/manga/ark-ix",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:48.921627+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2420,7 +2437,11 @@
           "url": "https://novelfull.net/arranged-marriage-to-hear-your-voice.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:50.163275+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2447,7 +2468,11 @@
           "url": "https://novelfull.com/artifact-reading-inspector.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:51.461116+00:00"
+      }
     },
     {
       "source": "",
@@ -2469,7 +2494,11 @@
           "url": "https://novelfull.net/as-a-father-i-just-want-to-quietly-watch-you-live-a-long-life.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:52.777444+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2498,7 +2527,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/assassin’s-chronicle"
+      "metadata_url": "https://kitsu.io/manga/assassin’s-chronicle",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:54.062916+00:00"
+      }
     },
     {
       "title": "Astral Flower",
@@ -2520,7 +2553,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:50.430845+00:00"
+      "metadataCheckedAt": "2026-10-21T17:20:50.430845+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:55.375573+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2557,7 +2594,11 @@
           "url": "https://novelfull.com/astral-pet-store.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:56.641813+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2584,7 +2625,11 @@
           "url": "https://novelfull.com/attack-of-the-adorable-kid-president-daddys-infinite-pampering.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:57.990134+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2606,7 +2651,11 @@
           "url": "https://novelfull.net/atticuss-odyssey-reincarnated-into-a-playground.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:20:59.302431+00:00"
+      }
     },
     {
       "source": "",
@@ -2628,7 +2677,11 @@
           "url": "https://novelfull.net/aurora-scroll.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:00.676390+00:00"
+      }
     },
     {
       "title": "Awakened Multi Talented Goddess Is Doted",
@@ -2650,7 +2703,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:52.712543+00:00"
+      "metadataCheckedAt": "2026-10-21T17:20:52.712543+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:01.974413+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2672,7 +2729,11 @@
           "url": "https://novelfull.net/baby-with-daoist-monarch-system.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:03.537822+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2694,7 +2755,11 @@
           "url": "https://novelfull.net/back-in-time-i-choose-to-love-you.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:04.805134+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2716,7 +2781,11 @@
           "url": "https://novelfull.net/back-then-i-adored-you.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:06.168375+00:00"
+      }
     },
     {
       "title": "Back To The 80S Raising My Wolfy Boyfriend",
@@ -2738,7 +2807,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:54.752681+00:00"
+      "metadataCheckedAt": "2026-10-21T17:20:54.752681+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:07.507461+00:00"
+      }
     },
     {
       "title": "Back To The Apocalypse",
@@ -2765,7 +2838,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:56.162957+00:00"
+      "metadataCheckedAt": "2026-10-21T17:20:56.162957+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:08.743417+00:00"
+      }
     },
     {
       "title": "Back To The Sixties Farm Get Wealthy Raise The Cubs",
@@ -2787,7 +2864,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:58.226986+00:00"
+      "metadataCheckedAt": "2026-10-21T17:20:58.226986+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:09.949683+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -2814,7 +2895,11 @@
           "url": "https://novelfull.com/badge-in-azure.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-22T17:21:11.142534+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4540,6 +4625,28 @@
       ]
     },
     {
+      "source": "",
+      "title": "Crossing the Timeline: Is It Reasonable for Me, the God of Wealth, To Be Short on Money?",
+      "alternative": "",
+      "author": "",
+      "chapters": 603,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/crossing-the-timeline-is-it-reasonable-for-me-the-god-of-wealth-to-be-short-on-money-b096acf3b6f00f73cae559c678ebfe6e.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/crossing-the-timeline-is-it-reasonable-for-me-the-god-of-wealth-to-be-short-on-money.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/crossing-the-timeline-is-it-reasonable-for-me-the-god-of-wealth-to-be-short-on-money.html",
+          "lang": "EN"
+        }
+      ]
+    },
+    {
       "source": "NovelFull.net",
       "title": "CTHULHU GONFALON",
       "alternative": "",
@@ -4731,6 +4838,28 @@
       "title_origin": "url",
       "metadata_pending": true,
       "metadataCheckedAt": "2026-10-21T17:21:39.235412+00:00"
+    },
+    {
+      "source": "",
+      "title": "Cultivation: From Poor Peasant to Celestial Lord",
+      "alternative": "",
+      "author": "",
+      "chapters": 4876,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/cultivation-from-poor-peasant-to-celestial-lord-0ee802495de014b45b8d1f974ca4409d.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/cultivation-from-poor-peasant-to-celestial-lord.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/cultivation-from-poor-peasant-to-celestial-lord.html",
+          "lang": "EN"
+        }
+      ]
     },
     {
       "source": "NovelFull.net",
@@ -5208,7 +5337,7 @@
       "title": "Devouring Sword God",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/devouring-sword-god-ab7fb27414348d708993d59cfe54448a.jpg",
@@ -6647,7 +6776,7 @@
       "title": "Eternal Emperor's Path to Ascension",
       "alternative": "",
       "author": "",
-      "chapters": 114,
+      "chapters": 115,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/eternal-emperors-path-to-ascension-c12069b963ddf3b1e2a1d0067554ce85.jpg",
@@ -6691,7 +6820,7 @@
       "title": "Eternal Life by Daily Divination",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/eternal-life-by-daily-divination-b051be192b-bfffbd2e99452bdeb6aef8cde119e858.jpg",
@@ -6735,7 +6864,7 @@
       "title": "Eternal Life: I Can Sell Everything",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/eternal-life-i-can-sell-everything-538f40e8cc09afbe84267e7cfe68800c.jpg",
@@ -7324,7 +7453,7 @@
       "title": "Family Rise by Daily Intelligence",
       "alternative": "",
       "author": "I love eating chive omelets.",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "Ongoing",
       "genres": [
         "Eastern",
@@ -8871,7 +9000,7 @@
       "title": "God-Tier Comprehension System",
       "alternative": "",
       "author": "",
-      "chapters": 552,
+      "chapters": 555,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/god-tier-comprehension-system-d60cac7388-2a8b2ea1222941e0cba001911548c737.jpg",
@@ -10442,6 +10571,28 @@
       "metadataCheckedAt": "2026-10-21T21:52:23.023412+00:00"
     },
     {
+      "source": "",
+      "title": "I Am the True Lord of Running Away",
+      "alternative": "",
+      "author": "",
+      "chapters": 4876,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/i-am-the-true-lord-of-running-away-35eaa18a65aa5dba6164fea78c50e2cf.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/i-am-the-true-lord-of-running-away.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/i-am-the-true-lord-of-running-away.html",
+          "lang": "EN"
+        }
+      ]
+    },
+    {
       "source": "NovelFull.net",
       "title": "I AM USING HACKS IN CULTIVATION WORLD",
       "alternative": "",
@@ -11895,7 +12046,7 @@
       "title": "I Was Forced To Marry The Phoenix Empress",
       "alternative": "",
       "author": "John_Titor234432",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "Ongoing",
       "genres": [
         "Comedy",
@@ -12165,6 +12316,28 @@
         }
       ],
       "language": "EN"
+    },
+    {
+      "source": "",
+      "title": "Immortal Ascension Through Marriage: Investing in My Wife Get Returns",
+      "alternative": "",
+      "author": "",
+      "chapters": 117,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/immortal-ascension-through-marriage-investing-in-my-wife-get-returns-7e899715477b70cdb490f1da7ec169b0.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/immortal-ascension-through-marriage-investing-in-my-wife-get-returns.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/immortal-ascension-through-marriage-investing-in-my-wife-get-returns.html",
+          "lang": "EN"
+        }
+      ]
     },
     {
       "source": "",
@@ -13015,7 +13188,7 @@
       "title": "Invincible Soul Emperor",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/invincible-soul-emperor-351b67fa4f12a69953cd98b744c2c7b0.jpg",
@@ -13441,6 +13614,43 @@
       ]
     },
     {
+      "source": "",
+      "title": "Keyboard Immortal",
+      "alternative": "Land Key Fairy, Land of the Keyboard Immortal, Ludi Jianxian, Ludi Jian Xian, Lu Di Jian Xian, Lục Địa Kiện Tiên, 陆地键仙",
+      "author": "Monk Of The Six Illusions, 六如和尚",
+      "chapters": null,
+      "status": "Ongoing",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Ecchi",
+        "Fantasy",
+        "Harem",
+        "Isekai",
+        "Mature",
+        "Romance",
+        "School Life",
+        "Xuanhuan"
+      ],
+      "cover": "https://media.kitsu.app/manga/73034/poster_image/large-75e8309d2175ca4c75acf9719e15f054.jpeg",
+      "synopsis": "A lightning strike transmigrated Zu An into another world. In that world, he was known as the trash of Brightmoon City, but for some reason, he was married to the gorgeous and highly talented daughter of the Chu clan? What? I’m a transmigrator but I don’t have any talent for cultivation? Why are there so many people out for my life? And most importantly of all, how in the world did I get on the bed of my sister-in-law on my wedding night?! It was a nightmarish starting point for Zu An, but fortunately, as a famed keyboard warrior in his previous life, the world gave him a keyboard in this life too so that he could turn things around. Through his trolling and flaming, he shall stand atop the corpses of his burned enemies and rise to the top of the world! (Source: Wuxiaworld)",
+      "year": "2020",
+      "rating": null,
+      "url": "https://novelfull.com/keyboard-immortal.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.com",
+          "url": "https://novelfull.com/keyboard-immortal.html",
+          "lang": "EN"
+        }
+      ],
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/keyboard-immortal",
+      "metadataCheckedAt": "2026-10-22T17:18:45.128145+00:00"
+    },
+    {
       "source": "NovelFull.net",
       "title": "KILL THE HERO",
       "alternative": "",
@@ -13513,7 +13723,7 @@
       "title": "KING OF CREATION",
       "alternative": "",
       "author": "",
-      "chapters": 2069,
+      "chapters": 2070,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/king-of-creation-6bc759f014f659531ddb5c5016fff2b2.jpg",
@@ -13569,7 +13779,7 @@
       "title": "King of Ten Thousand Years",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/king-of-ten-thousand-years-d03805b5aa9e6527101ef6b2ce8d726b.jpg",
@@ -14411,7 +14621,7 @@
       "title": "Longevity with a Turtle",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/longevity-with-a-turtle-ec49d9df66a4326dd1ee1fe8e9610b17.jpg",
@@ -14918,6 +15128,28 @@
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/lucia-novel",
       "metadataCheckedAt": "2026-10-22T04:57:17.097212+00:00"
+    },
+    {
+      "source": "",
+      "title": "Lying Low While Cultivating Immortality in Two Worlds",
+      "alternative": "",
+      "author": "",
+      "chapters": 243,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/lying-low-while-cultivating-immortality-in-two-worlds-b785b9cf8fce9f69c6b493f6f6a8ec8e.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/lying-low-while-cultivating-immortality-in-two-worlds.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/lying-low-while-cultivating-immortality-in-two-worlds.html",
+          "lang": "EN"
+        }
+      ]
     },
     {
       "title": "Madam Has An Amazing Life After Her Divorce",
@@ -15627,6 +15859,28 @@
         {
           "site": "NovelFull.net",
           "url": "https://novelfull.net/master-of-erossu-book.html",
+          "lang": "EN"
+        }
+      ]
+    },
+    {
+      "source": "",
+      "title": "Master of Fangcun",
+      "alternative": "",
+      "author": "",
+      "chapters": 392,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/master-of-fangcun-7a63b4980d86a0f197405ba74e6718f7.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/master-of-fangcun.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/master-of-fangcun.html",
           "lang": "EN"
         }
       ]
@@ -16735,7 +16989,7 @@
       "title": "My Core is the Boss",
       "alternative": "",
       "author": "Free-Roaming Crane(走地鹤)",
-      "chapters": 782,
+      "chapters": 784,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/cib.webp?v=2b8665d6ceff96db9b89d44e42409fd1ed1ba895",
@@ -17255,7 +17509,7 @@
       "title": "My Longevity Simulation",
       "alternative": "",
       "author": "Angry Squid, 愤怒的乌贼",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -17907,6 +18161,28 @@
         {
           "site": "NovelFull.com",
           "url": "https://novelfull.com/my-youth-began-with-him.html",
+          "lang": "EN"
+        }
+      ]
+    },
+    {
+      "source": "",
+      "title": "Myriad Dragon Divine Sovereign",
+      "alternative": "",
+      "author": "",
+      "chapters": 4876,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/myriad-dragon-divine-sovereign-6cea394fbcb1369e4521ac3ef6c24b7d.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/myriad-dragon-divine-sovereign.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/myriad-dragon-divine-sovereign.html",
           "lang": "EN"
         }
       ]
@@ -20160,7 +20436,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:18:46.369120+00:00"
     },
     {
       "title": "Provocative Fiery Wife My Superior Is A Affectionate Spitfire",
@@ -20181,7 +20458,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:18:48.242042+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -20212,11 +20490,16 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 1484,
+      "status": "Ongoing",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/40768/large.jpg",
+      "synopsis": "Three thousand years of bowing down to the Demon Lord, I would rather be a mortal than a celestial being when looking back, but for her I will… become one who controls life and death! =========================================== Su Ming grew up dreaming about becoming a Berserker even though he knew that the chances of him becoming one were close to nil. One day, he found a strange piece of debris, and it allowed him to walk the path of becoming a Berserker. But would it be enough for Su Ming to become just another Berserker to protect those he cares about? Would he be satisfied with leaving everything in fate's hands? *This novel was originally named Beseech the Devil, but due to the author's wishes, it was changed to Pursuit of the Truth. (Source: MU)",
       "url": "https://novelfull.com/pursuit-of-the-truth.html",
       "source": "NovelFull.com",
       "sources": [
@@ -20231,7 +20514,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Beseech the Devil, PoT, BTD, Cầu Ma",
+      "year": "2012",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/pursuit-of-the-truth",
+      "metadataCheckedAt": "2026-10-22T17:18:49.477103+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -20274,7 +20562,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:18:51.147347+00:00"
     },
     {
       "source": "",
@@ -20305,7 +20594,8 @@
           "url": "https://novelfull.com/quick-transmigration-system-male-god-come-here.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-22T17:18:52.800543+00:00"
     },
     {
       "title": "Quickly Wear The Face Of The Devil",
@@ -20331,7 +20621,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:18:55.417854+00:00"
     },
     {
       "source": "NovelFull.com",
@@ -20500,7 +20791,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:18:57.090660+00:00"
     },
     {
       "source": "Wuxiaworld",
@@ -20589,7 +20881,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:18:58.308284+00:00"
     },
     {
       "title": "Rebirth How A Loser Became A Prince Charming",
@@ -20615,7 +20908,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:00.155544+00:00"
     },
     {
       "title": "Rebirth Into A Wolf I Can See My Evolution Paths",
@@ -20636,7 +20930,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:02.306568+00:00"
     },
     {
       "title": "Rebirth Leading Families To Survive In The Apocalypse",
@@ -20657,7 +20952,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:04.405709+00:00"
     },
     {
       "title": "Rebirth Of A Movie Star",
@@ -20683,7 +20979,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:05.756212+00:00"
     },
     {
       "title": "Rebirth Of A Supermodel",
@@ -20709,7 +21006,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:07.236992+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -20757,7 +21055,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:08.802382+00:00"
     },
     {
       "title": "Rebirth Of The Apocalypse Queen On Your Knees Young Emperor",
@@ -20778,7 +21077,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:11.075589+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -20920,7 +21220,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:12.790633+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -20967,7 +21268,8 @@
           "url": "https://novelfull.com/rebirth-of-the-supreme-celestial-being.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-22T17:19:14.205685+00:00"
     },
     {
       "title": "Rebirth of the Thief Who Roamed the World",
@@ -21007,10 +21309,17 @@
       "metadata_pending": true,
       "author": "",
       "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "status": "Ongoing",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Martial Arts",
+        "Seinen",
+        "Supernatural"
+      ],
+      "cover": "https://media.kitsu.app/manga/54551/poster_image/large-11c0b8c713c97fbd298e4a46d1609afa.jpeg",
+      "synopsis": "Great Cultivator Chen Fan had failed his Tribulation period, but after a dream, he had returned to Earth, when he was young, five hundred years ago. “In my past life, I reached the peak in the universe. I looked down upon the myriad of worlds, but with no one accompanying me. In this life, I wish for both.” (Source:NU)",
       "url": "https://novelfull.com/rebirth-of-the-urban-immortal-cultivator.html",
       "source": "NovelFull.com",
       "sources": [
@@ -21025,7 +21334,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Rebirth: City Cultivation, Rebirth of Urban Immortal Cultivator, Rebirth – City Cultivation",
+      "year": "2018",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/rebirth-of-the-urban-immortal-cultivator-novel",
+      "metadataCheckedAt": "2026-10-22T17:19:15.393773+00:00"
     },
     {
       "title": "Rebirth Pampered Wifes Counterattack",
@@ -21051,7 +21365,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:17.305722+00:00"
     },
     {
       "title": "Rebirth The Fake Heiress Stuns The World",
@@ -21072,7 +21387,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:18.946286+00:00"
     },
     {
       "title": "Rebirth to a Military Marriage: Good Morning Chief",
@@ -21094,7 +21410,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:20.744305+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21188,7 +21505,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:22.112763+00:00"
     },
     {
       "title": "Reborn Aristocrat Return Of The Vicious Heiress",
@@ -21209,7 +21527,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:23.917496+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21276,7 +21595,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:25.259264+00:00"
     },
     {
       "title": "Reborn As The Blissful Wife In The Countryside",
@@ -21297,7 +21617,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:27.061593+00:00"
     },
     {
       "title": "Reborn Femme Fatale First Daughter",
@@ -21318,7 +21639,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:28.517177+00:00"
     },
     {
       "title": "Reborn In The Eighties As A Housewife With A Space",
@@ -21339,7 +21661,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:30.517564+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21387,7 +21710,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:32.209187+00:00"
     },
     {
       "title": "Reborn Missy An Adorable Wife",
@@ -21408,7 +21732,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:33.774910+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21509,7 +21834,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:35.374268+00:00"
     },
     {
       "source": "",
@@ -21542,7 +21868,8 @@
           "url": "https://novelfull.com/red-packet-server.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-22T17:19:36.740935+00:00"
     },
     {
       "title": "Red Storm",
@@ -21550,10 +21877,18 @@
       "metadata_pending": true,
       "author": "",
       "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Fantasy World",
+        "Harem",
+        "Martial Arts"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/40647/large.jpg",
+      "synopsis": "In this world, strong warriors are needed in order to conquer the hot crimson desert. The Pareia Tribal-Chief’s first-born son, named Yulian Provoke, routinely gallops through the stormy deserts alone. Only to find someone of destiny – an otherworldly man that would change his fate forever. This same young child who struggles to find purpose while embodying both ambition and revenge into his very own hands as he awaits that faithful day of confronting a particular person that was, supposedly, the culprit of his blood-mother’s death. At first, he was alone; but then after, he forms the RED STORM division – a group of powerful warriors at his command – in hopes of Conquering the Desert, braving towards those who oppose him, and bringing great fortune to his tribe. (Source: Novel Updates)",
       "url": "https://novelfull.com/red-storm.html",
       "source": "NovelFull.com",
       "sources": [
@@ -21568,7 +21903,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "year": "2006",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/red-storm-novel",
+      "metadataCheckedAt": "2026-10-22T17:19:38.010388+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21726,7 +22065,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:39.362147+00:00"
     },
     {
       "title": "Reincarnation Multi Skilled Goddess Is So Beautiful",
@@ -21747,7 +22087,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:41.246935+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21851,7 +22192,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:42.500162+00:00"
     },
     {
       "title": "Release That Man",
@@ -21877,7 +22219,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:43.767246+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -21999,7 +22342,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:44.948382+00:00"
     },
     {
       "title": "Return Of The Female Knight",
@@ -22025,7 +22369,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:46.355383+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -22094,7 +22439,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:48.130351+00:00"
     },
     {
       "title": "Returning from the Immortal World",
@@ -22181,7 +22527,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:50.087778+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -22224,7 +22571,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:51.501746+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -22272,7 +22620,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:52.917645+00:00"
     },
     {
       "source": "",
@@ -22332,11 +22681,18 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 1600,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Martial Arts",
+        "Romance"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/54896/large.jpg",
+      "synopsis": "Yang Qi was the son of the patriarch of a wealthy family from a small town. Believing himself to be in love, he stole a pill for his lover, only to have the girl betray him, by taking the pill and leaving him behind. Caught, his dantian was crippled and left to die under the lightning. This lightning helped him to recover his lost martial arts and also helped him gain a new, divine-like cultivation technique. After this second chance, he gains more power as he sought revenge and also to find about his missing mother…. (Source: NU)",
       "url": "https://novelfull.com/sage-monarch.html",
       "source": "NovelFull.com",
       "sources": [
@@ -22351,7 +22707,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Holy Lord, Sage Emperor",
+      "year": "2011",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/sage-monarch",
+      "metadataCheckedAt": "2026-10-22T17:19:54.092362+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -22492,7 +22853,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:55.696507+00:00"
     },
     {
       "source": "",
@@ -22521,7 +22883,7 @@
       "title": "Sect: Starting with Comprehending Thunder Skill",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/sect-starting-with-comprehending-thunder-skill-128d8d17b5e2f1bec588b949e8ea0b10.jpg",
@@ -22586,7 +22948,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:56.889057+00:00"
     },
     {
       "title": "Seizing Dreams",
@@ -22612,18 +22975,27 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:19:58.133690+00:00"
     },
     {
       "title": "Seoul Stations Necromancer",
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 208,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Demon",
+        "Fantasy",
+        "Magic",
+        "Mystery"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/59475/large.jpg",
+      "synopsis": "[You have entered the dungeon at Gwachun Station’s 1st Exit.] When former high school student Kang Woojin finds himself returned back to Earth after being forcibly summoned to a foreign planet for 20 years, he soon finds that Earth is not the same, normal place as he once remembered it to be. With his former strength and age reset back to zero, watch Kang Woojin as he gets back on the path to becoming the Earth’s strongest Necromancer! (Source: Novel Updates)",
       "url": "https://novelfull.com/seoul-stations-necromancer.html",
       "source": "NovelFull.com",
       "sources": [
@@ -22638,7 +23010,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "SSN",
+      "year": "2016",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/seoul-station-s-necromancer",
+      "metadataCheckedAt": "2026-10-22T17:19:59.316238+00:00"
     },
     {
       "title": "Sevens",
@@ -22664,18 +23041,33 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:00.516295+00:00"
     },
     {
       "title": "Sha Po Lang",
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 143,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Buddhism",
+        "China",
+        "Drama",
+        "Historical",
+        "Mecha",
+        "Military",
+        "Past",
+        "Romance",
+        "Shounen Ai",
+        "Slow When It Comes To Love",
+        "Supernatural",
+        "War"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/58221/large.jpg",
+      "synopsis": "In the age of the Great Liang Dynasty, the lives of the people were made convenient with steam-powered machines that run on a fuel named Violetstream Gold. Chang Geng, who lived in a small countryside village, shared a distant relationship with his mother while his stepfather was away most of the year round, and the only people he was close to were two little kids, the village teacher, and his yi fu – adoptive father. But his life was flipped upside down one day following the barbaric Man tribes’ invasion, and it turned out that his entire identity had been an illusion – not only was Chang Geng himself not the country boy he thought he was, but also his mother, his teacher, and even his beloved yi fu… (Source: Novel Updates)",
       "url": "https://novelfull.com/sha-po-lang.html",
       "source": "NovelFull.com",
       "sources": [
@@ -22690,7 +23082,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "SPL",
+      "year": "2015",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/sha-po-lang",
+      "metadataCheckedAt": "2026-10-22T17:20:01.764966+00:00"
     },
     {
       "title": "She Becomes Glamorous After The Engagement Annulment",
@@ -22735,7 +23132,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:03.298801+00:00"
     },
     {
       "title": "She Is From The Countryside",
@@ -22756,7 +23154,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:04.591562+00:00"
     },
     {
       "title": "She Is The Side Character Watch Her Change Her Fate",
@@ -22777,7 +23176,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:07.442323+00:00"
     },
     {
       "title": "She Lives Without Regret In This Life",
@@ -22798,7 +23198,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:08.926570+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -22848,7 +23249,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:10.527644+00:00"
     },
     {
       "title": "Shinrei Tantei Yakumo",
@@ -22856,10 +23258,15 @@
       "metadata_pending": true,
       "author": "",
       "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "status": "Ongoing",
+      "genres": [
+        "Fantasy",
+        "Horror",
+        "Mystery",
+        "Super Power"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/7490/large.jpg",
+      "synopsis": "Shinrei Tantei Yakumo tells a story about a college student, Saitou Yakumo who is born with different eye colors. His red left eye gives him a special ability to see ghosts and spirits. He believes ghosts and spirits are bound to earth because of a certain \"cause,\" and simply eliminating that \"cause\" will let those spirits rest in peace. Being asked for help by Ozawa Haruka, they begin the investigation together. (Source: Fateful Encounters)",
       "url": "https://novelfull.com/shinrei-tantei-yakumo.html",
       "source": "NovelFull.com",
       "sources": [
@@ -22874,7 +23281,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Psychic Detective Yakumo, Secret Files - Kizuna",
+      "year": "2004",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/shinrei-tantei-yakumo-af51df43-b211-4e41-8208-b60bdaeded36",
+      "metadataCheckedAt": "2026-10-22T17:20:11.744582+00:00"
     },
     {
       "title": "Show Me The Money",
@@ -22900,18 +23312,27 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:12.911899+00:00"
     },
     {
       "title": "Shuras Wrath",
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 851,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Harem",
+        "Romance",
+        "Science Fiction"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/40628/large.jpg",
+      "synopsis": "The mysterious boy Ling Chen is saved by a little girl as he lay on the street dying. Years later, he strikes a deal to save this savior-turned sister and enters the virtual world. In a future Earth where advanced warfare has forced nations to settle issues virtually or else suffer the consequences, Ling Chen bursts into the scene and goes from unknown to legend. Yet all is not as it seems, for Ling Chen has a dark past, and there is a greater mystery at hand behind this virtual world. (Source: Novel Updates)",
       "url": "https://novelfull.com/shuras-wrath.html",
       "source": "NovelFull.com",
       "sources": [
@@ -22926,7 +23347,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "SW",
+      "year": "2014",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/shura-s-wrath",
+      "metadataCheckedAt": "2026-10-22T17:20:14.094734+00:00"
     },
     {
       "title": "Sign In Becoming A Great Spell Deity Starting From The Magic Academy",
@@ -22947,7 +23373,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:16.652694+00:00"
     },
     {
       "title": "Silent Crown",
@@ -22973,7 +23400,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:18.094614+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23016,7 +23444,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:19.414649+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23088,7 +23517,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:20.584182+00:00"
     },
     {
       "title": "So I Am A Demon Descendent",
@@ -23109,7 +23539,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:21.976216+00:00"
     },
     {
       "source": "",
@@ -23158,7 +23589,8 @@
         }
       ],
       "title_origin": "url",
-      "metadata_pending": true
+      "metadata_pending": true,
+      "metadataCheckedAt": "2026-10-22T17:20:23.693689+00:00"
     },
     {
       "title": "Sorry My Interstellar Fleet Only Recruits Women",
@@ -23179,7 +23611,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:25.293696+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23227,18 +23660,30 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:26.593739+00:00"
     },
     {
       "title": "Sovereign Of Judgment",
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 210,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "High School",
+        "Martial Arts",
+        "Mecha",
+        "Psychological",
+        "School Life",
+        "Science Fiction",
+        "Thriller"
+      ],
+      "cover": "https://media.kitsu.app/manga/61715/poster_image/large-d2056329268710c79a20c2bb2209c3b8.jpeg",
+      "synopsis": "A fighting genius. In grade 6, Choi Hyuk killed someone. He then promised his mother that he would never fight again. He spent his school days being bullied and blankly staring out the window. One day, a ring appeared in the middle of his classroom. Choi Hyuk, now a high schooler who had spent his whole life atoning for his sins, was now faced with a decision, to kill or to be killed.",
       "url": "https://novelfull.com/sovereign-of-judgment.html",
       "source": "NovelFull.com",
       "sources": [
@@ -23253,7 +23698,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Soj",
+      "year": "2017",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/sovereign-of-judgment",
+      "metadataCheckedAt": "2026-10-22T17:20:27.760924+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23284,11 +23734,19 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 1332,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Martial Arts",
+        "School Life",
+        "Supernatural"
+      ],
+      "cover": "https://media.kitsu.app/manga/71020/poster_image/large-c1f577835bd0c75f6b9c730bbb1e432c.jpeg",
+      "synopsis": "This is the story of an orphan, Lu Shu. He is not any regular orphan, but a metahuman experiencing the changes in himself, his country and the world during the dawn of the magical era. Watch as Lu Shu embarks on a journey to hone his peculiar abilities together with his sister, the adorable and charismatic Lu Xiaoyu. Along the way, they’ll encounter supernatural events, obstacles and even the most powerful people in their country. How will Lu Shu make the best of his abilities and oust his never-ending list of rivals and opponents? (Source: NU)",
       "url": "https://novelfull.com/spare-me-great-lord.html",
       "source": "NovelFull.com",
       "sources": [
@@ -23303,7 +23761,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "year": "2017",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/spare-me-great-lord-novel",
+      "metadataCheckedAt": "2026-10-22T17:20:28.916843+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23346,7 +23808,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:30.591476+00:00"
     },
     {
       "title": "Spirit Realm",
@@ -23406,9 +23869,9 @@
     {
       "source": "",
       "title": "Spirit Vessel",
-      "alternative": "",
+      "alternative": "Linh Chu",
       "author": "Jiu Dang Jia, 九当家",
-      "chapters": null,
+      "chapters": 1150,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -23421,9 +23884,9 @@
         "Romance",
         "Xianxia"
       ],
-      "cover": "",
-      "synopsis": "",
-      "year": "",
+      "cover": "https://media.kitsu.app/manga/poster_images/54760/large.jpg",
+      "synopsis": "A demon phoenix cultivator died in the hands of his beloved and was merged with a young master with the same name. Their souls were fused and now, the new Feng Fei Yun is struggling to become stronger and survive in the human world. Will he meet his lover once again? Will they reconcile even though she is now a Goddess and he a mortal human? And what is the Spirit Vessel that took his soul to this world? (Source: NU)",
+      "year": "2013",
       "rating": null,
       "url": "https://novelfull.com/spirit-vessel.html",
       "language": "EN",
@@ -23433,7 +23896,10 @@
           "url": "https://novelfull.com/spirit-vessel.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/spirit-vessel",
+      "metadataCheckedAt": "2026-10-22T17:20:31.746286+00:00"
     },
     {
       "title": "Split Zone No13",
@@ -23459,7 +23925,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:33.054230+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23510,7 +23977,8 @@
           "url": "https://novelfull.com/star-odyssey.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-22T17:20:34.484319+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23593,7 +24061,7 @@
       "title": "STARTING FROM A SON IN LAW TO BUILD AN LONG LASTING FAMILY",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/starting-from-a-son-in-law-to-build-an-long-lasting-family-eb89eb38ca21557cca7481c90197a425.jpg",
@@ -23695,7 +24163,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:35.707173+00:00"
     },
     {
       "title": "Starting With One Million Luck Points",
@@ -23716,7 +24185,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:37.318874+00:00"
     },
     {
       "source": "",
@@ -23744,14 +24214,15 @@
           "url": "https://novelfull.com/steadily-becoming-a-saint-the-immortal-officials-hired-me-to-tend-the-horses.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-22T17:20:39.532857+00:00"
     },
     {
       "source": "",
       "title": "Stealing Immortal",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/stealing-immortal-42871e50dfd1969d1cfdc6e2eae22625.jpg",
@@ -23882,7 +24353,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:41.011528+00:00"
     },
     {
       "title": "Stop Friendly Fire",
@@ -23890,10 +24362,16 @@
       "metadata_pending": true,
       "author": "",
       "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "status": "Ongoing",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Fantasy World",
+        "Isekai"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/54253/large.jpg",
+      "synopsis": "The empire has turned into the land of the undead due to a spell gone wrong. God summoned heroes from countless worlds to purify the empire and plant new hope. Lee Shin Woo, an ordinary earthling, was also summoned. As an undead, that is. (Source: Wuxia World)",
       "url": "https://novelfull.com/stop-friendly-fire.html",
       "source": "NovelFull.com",
       "sources": [
@@ -23908,7 +24386,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Don't Shoot, I'm an Ally",
+      "year": "2018",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/stop-friendly-fire",
+      "metadataCheckedAt": "2026-10-22T17:20:42.180150+00:00"
     },
     {
       "title": "Stop Messing Around Mr Bo",
@@ -23934,7 +24417,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:43.716236+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23982,7 +24466,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:45.021527+00:00"
     },
     {
       "title": "Strong Female Side Character Awakens",
@@ -24003,7 +24488,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-22T17:20:46.269687+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -26238,7 +26724,7 @@
       "title": "The Dao of Thread and Root",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-dao-of-thread-and-root-d8299e865a193db95ae65d2041c989d8.jpg",
@@ -28879,7 +29365,7 @@
       "title": "The Quest for Immortality",
       "alternative": "",
       "author": "",
-      "chapters": 2862,
+      "chapters": 2864,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-quest-for-immortality-6bf740451a592e8baaf7cd819af6d1e6.jpg",
@@ -30828,7 +31314,7 @@
       "title": "Top-Tier Perception Starts From Basic Fist Techniques",
       "alternative": "",
       "author": "",
-      "chapters": 1807,
+      "chapters": 242,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/top-tier-perception-starts-from-basic-fist-techniques-bd7dd7b2fbaaee092a5928fb9ba5b525.jpg",
@@ -32745,7 +33231,7 @@
       "title": "Xuanwu War Sovereign",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4876,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/xuanwu-war-sovereign-02e566fa3885a00c02e82a0a8f143d47.jpg",
