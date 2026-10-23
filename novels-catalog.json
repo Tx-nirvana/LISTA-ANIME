@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-23T05:00:27.640190+00:00",
+  "updated_at": "2026-10-23T11:49:44.700750+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -85,7 +85,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:17.280342+00:00",
+      "metadataCheckedAt": "2026-10-23T11:48:58.536639+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:34.764641+00:00"
@@ -111,7 +111,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:18.795996+00:00",
+      "metadataCheckedAt": "2026-10-23T11:48:59.964207+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:36.035595+00:00"
@@ -168,7 +168,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:20.445610+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:01.491303+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:38.575658+00:00"
@@ -279,7 +279,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:22.894930+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:03.775730+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:43.600694+00:00"
@@ -435,7 +435,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:24.833024+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:05.301789+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:48.743078+00:00"
@@ -832,7 +832,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:27.085888+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:07.528629+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:10.188894+00:00"
@@ -1162,6 +1162,32 @@
       }
     },
     {
+      "source": "",
+      "title": "Abyssal Night",
+      "alternative": "",
+      "author": "Chen Dong (辰东)",
+      "chapters": 20,
+      "status": "Ongoing",
+      "genres": [],
+      "cover": "https://cdn.wuxiaworld.com/images/covers/an.webp?v=78a51892668b343146ecedccaf5388117aa64acd",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://www.wuxiaworld.com/novel/abyssal-night",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "Wuxiaworld",
+          "url": "https://www.wuxiaworld.com/novel/abyssal-night",
+          "lang": "EN"
+        }
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:19.153025+00:00"
+      }
+    },
+    {
       "source": "NovelFull.net",
       "title": "ACCEPTING MY MASSIVE INHERITANCE AFTER DIVORCE",
       "alternative": "",
@@ -1385,7 +1411,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:29.107215+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:09.493968+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:32.143432+00:00"
@@ -1416,7 +1442,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:32.059668+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:11.482804+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:33.350048+00:00"
@@ -1496,7 +1522,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:33.813439+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:13.269375+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:46.294570+00:00"
@@ -1548,7 +1574,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:36.029274+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:15.371142+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:48.859910+00:00"
@@ -1600,7 +1626,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:38.362637+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:17.479926+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:51.436412+00:00"
@@ -1652,7 +1678,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:20:40.808662+00:00",
+      "metadataCheckedAt": "2026-10-23T11:49:19.152697+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:53.940658+00:00"
@@ -4133,7 +4159,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:21:14.181515+00:00"
+      "metadataCheckedAt": "2026-10-21T17:21:14.181515+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:20.378125+00:00"
+      }
     },
     {
       "source": "Wuxiaworld",
@@ -4160,7 +4190,11 @@
           "url": "https://novelfull.net/blade-unbound.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:21.820507+00:00"
+      }
     },
     {
       "title": "Blue Phoenix",
@@ -4196,7 +4230,11 @@
       "year": "2017",
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/blue-phoenix",
-      "metadataCheckedAt": "2026-10-21T17:21:15.703439+00:00"
+      "metadataCheckedAt": "2026-10-21T17:21:15.703439+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:23.070493+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4218,7 +4256,11 @@
           "url": "https://novelfull.net/bombarding-cultivators-with-cluster-artillery.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:24.472593+00:00"
+      }
     },
     {
       "title": "Boss Is Reborn After Everyones Betrayal",
@@ -4240,7 +4282,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:21:17.239177+00:00"
+      "metadataCheckedAt": "2026-10-21T17:21:17.239177+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:25.800777+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4269,7 +4315,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/breakers"
+      "metadata_url": "https://kitsu.io/manga/breakers",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:26.977452+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4303,7 +4353,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/guomin-laogong-touwen-55-ci-novel"
+      "metadata_url": "https://kitsu.io/manga/guomin-laogong-touwen-55-ci-novel",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:28.304281+00:00"
+      }
     },
     {
       "source": "",
@@ -4325,7 +4379,11 @@
           "url": "https://novelfull.net/btth-rebirth-of-liu-xi.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:29.566677+00:00"
+      }
     },
     {
       "title": "Building The Ultimate Fantasy",
@@ -4347,7 +4405,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-21T17:21:18.645135+00:00"
+      "metadataCheckedAt": "2026-10-21T17:21:18.645135+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:30.839412+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4369,7 +4431,11 @@
           "url": "https://novelfull.net/can-you-mend-my-broken-heart.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:32.000113+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4391,7 +4457,11 @@
           "url": "https://novelfull.net/cannon-fire-arc.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:33.283569+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4420,7 +4490,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/carefree-path-of-dreams"
+      "metadata_url": "https://kitsu.io/manga/carefree-path-of-dreams",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:34.536212+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4457,7 +4531,11 @@
           "url": "https://novelfull.com/castle-of-black-iron.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:35.800678+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4479,7 +4557,11 @@
           "url": "https://novelfull.net/catastrophe-card-king.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:37.094068+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4501,7 +4583,11 @@
           "url": "https://novelfull.net/catastrophic-necromancer.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:38.387519+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4523,7 +4609,11 @@
           "url": "https://novelfull.net/chaos-heir.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:39.665049+00:00"
+      }
     },
     {
       "source": "",
@@ -4558,7 +4648,11 @@
           "url": "https://novelfull.net/chaotic-sword-god.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:40.935639+00:00"
+      }
     },
     {
       "source": "",
@@ -4580,7 +4674,11 @@
           "url": "https://novelfull.net/checking-in-for-100000-years.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:42.120107+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -4607,7 +4705,11 @@
           "url": "https://novelfull.com/chief-kim-and-assistant-manager-choi.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-23T11:49:43.368788+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -5662,7 +5764,7 @@
       "title": "Day of Ascension",
       "alternative": "",
       "author": "Pig Nerd (宅猪)",
-      "chapters": 220,
+      "chapters": 222,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/da.webp?v=22b2b8e05665b41a223bb167180206606d1cf860",
@@ -7305,7 +7407,7 @@
       "title": "Endless Winter: My Camp Upgrades Infinitely",
       "alternative": "",
       "author": "",
-      "chapters": 2,
+      "chapters": 3,
       "status": "",
       "genres": [
         "Action",
@@ -11894,7 +11996,7 @@
       "title": "I Became the Rich Second-Generation Villain",
       "alternative": "",
       "author": "",
-      "chapters": 529,
+      "chapters": 533,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/i-became-the-rich-second-generation-villain-fb30d248d9dc3d45a411be484278da4e.jpg",
@@ -15567,7 +15669,7 @@
       "title": "Library of Heaven's Path 2: Eternal Fate of the Heavens",
       "alternative": "",
       "author": "",
-      "chapters": 406,
+      "chapters": 409,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/library-of-heaven-s-path-2-etern-298ae05132-4834a6bf7656b18292e4704f5b01b505.jpg",
@@ -15587,7 +15689,7 @@
     {
       "title": "Library of Heaven’s Path",
       "author": "Heng Sao Tian Ya, 横扫天涯",
-      "chapters": 406,
+      "chapters": 409,
       "status": "Completed",
       "genres": [
         "Comedy",
@@ -16870,7 +16972,7 @@
       "title": "Martial Cultivator",
       "alternative": "",
       "author": "",
-      "chapters": 1,
+      "chapters": 3,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/martial-cultivator-56a71aa2ce29d0b232c3e82b1a56120a.jpg",
@@ -17311,7 +17413,7 @@
       "title": "Master of Fangcun",
       "alternative": "",
       "author": "",
-      "chapters": 2686,
+      "chapters": 615,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/master-of-fangcun-7a63b4980d86a0f197405ba74e6718f7.jpg",
@@ -18559,10 +18661,10 @@
       "title": "My Core is the Boss",
       "alternative": "",
       "author": "Free-Roaming Crane(走地鹤)",
-      "chapters": 784,
+      "chapters": 3954,
       "status": "Ongoing",
       "genres": [],
-      "cover": "https://cdn.wuxiaworld.com/images/covers/cib.webp?v=2b8665d6ceff96db9b89d44e42409fd1ed1ba895",
+      "cover": "https://novelfull.net/uploads/thumbs/my-core-is-the-boss-0c7a25a2be2cf6066b97c2d2447353f1.jpg",
       "synopsis": "",
       "year": "",
       "rating": null,
@@ -19538,7 +19640,7 @@
       "title": "My Superpower Is Piloting Magical Girl Corpses?",
       "alternative": "",
       "author": "",
-      "chapters": 116,
+      "chapters": 880,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/my-superpower-is-piloting-magical-girl-corpses-9f754895d38e162b84e970c2793dc536.jpg",
@@ -22596,6 +22698,28 @@
         {
           "site": "NovelFull.net",
           "url": "https://novelfull.net/raising-bosss-twins-after-transmigration.html",
+          "lang": "EN"
+        }
+      ]
+    },
+    {
+      "source": "",
+      "title": "Ready, Set, Apocalypse",
+      "alternative": "",
+      "author": "Prince Noodles",
+      "chapters": 20,
+      "status": "Ongoing",
+      "genres": [],
+      "cover": "https://cdn.wuxiaworld.com/images/covers/rsa.webp?v=0440dacbcc35aa889908a2ae1eed7570765b9b88",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://www.wuxiaworld.com/novel/ready-set-apocalypse",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "Wuxiaworld",
+          "url": "https://www.wuxiaworld.com/novel/ready-set-apocalypse",
           "lang": "EN"
         }
       ]
@@ -29122,7 +29246,7 @@
       "title": "The Dao of Reincarnation: Ascending Through a Hundred Lives",
       "alternative": "",
       "author": "",
-      "chapters": 2686,
+      "chapters": 615,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-dao-of-reincarnation-ascending-through-a-hundred-lives-3328c5b6eb2cc34d24b440e0de4e5052.jpg",
@@ -33538,7 +33662,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:19.369836+00:00"
     },
     {
       "title": "The Whole Village Thrives After Adopting A Lucky Girl",
@@ -33559,7 +33684,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:21.037308+00:00"
     },
     {
       "title": "The Wife Of A Powerful Family Huo Shao How Dare You Flirt With Me",
@@ -33585,7 +33711,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:24.655986+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -33633,7 +33760,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:26.115435+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -33709,10 +33837,17 @@
       "metadata_pending": true,
       "author": "",
       "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "status": "Ongoing",
+      "genres": [
+        "Comedy",
+        "Harem",
+        "Isekai",
+        "Mecha",
+        "Romance",
+        "School Life"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/54201/large.jpg",
+      "synopsis": "Leon, a former Japanese worker, was reincarnated into an “otome game” world, and despaired at how it was a world where females hold dominance over males. It was as if men were just livestock that served as stepping stones for females in this world. The only exceptions were the game’s capture targets, a group of ikemen led by the crown prince. In these bizarre circumstances, Leon held one weapon. He has knowledge from his previous world, where his brazen sister had forced him to complete this game. Leon, who really just wants to to live as a shut-in in the countryside, uses that knowledge to unexpectedly raise a ferocious revolt against the women and ikemen. The curtains begin for an exhilarating fantasy about overtaking the fiendish heroine. (Source: NU)",
       "url": "https://novelfull.com/the-world-of-otome-games-is-tough-for-mobs.html",
       "source": "NovelFull.com",
       "sources": [
@@ -33727,7 +33862,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Otome Gee Sekai wa Mobu ni Kibishii Sekai desu",
+      "year": "2017",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/otome-game-sekai-wa-mob-ni-kibishii-sekai-desu",
+      "metadataCheckedAt": "2026-10-23T11:47:27.305911+00:00"
     },
     {
       "title": "The World Online",
@@ -33767,11 +33907,18 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 302,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Korea",
+        "Time Travel"
+      ],
+      "cover": "https://media.kitsu.app/manga/65226/poster_image/large-24f4c8e98426dd18304388cbbef93b67.jpeg",
+      "synopsis": "On that fateful day, a voice in the sky told everyone on Earth that the world they called home has just been part of some sort of simulation. The next thing everyone knew, the world was rife with monsters and dungeons and resurrecting immortal devas! I spent eleven years in that world as a deva, crawling and clawing my way through the dirt trying to make a name for myself. I wanted another chance at this, I made so many mistakes, I could have done so much better. But after all that wishing for a new beginning ended in a very bad ending... I was finally given that chance. I just had to be tortured by some smartass... But I'm going to make the most out of this! I'll become the strongest deva out there! And this time, I'll have my revenge! Source: Qidian",
       "url": "https://novelfull.com/the-world-turned-into-a-game-after-i-woke-up.html",
       "source": "NovelFull.com",
       "sources": [
@@ -33786,7 +33933,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "year": "2017",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/jagonani-sesangi-game-uro-bakkwieotda",
+      "metadataCheckedAt": "2026-10-23T11:47:28.547167+00:00"
     },
     {
       "source": "",
@@ -33835,6 +33986,29 @@
         {
           "site": "NovelFull.com",
           "url": "https://novelfull.com/the-yun-familys-ninth-child-is-an-imp.html",
+          "lang": "EN"
+        }
+      ],
+      "metadataCheckedAt": "2026-10-23T11:47:30.112462+00:00"
+    },
+    {
+      "source": "",
+      "title": "Then Let Them Pledge Their Loyalty!",
+      "alternative": "",
+      "author": "Eternal Era",
+      "chapters": 20,
+      "status": "Ongoing",
+      "genres": [],
+      "cover": "https://cdn.wuxiaworld.com/images/covers/ptl.webp?v=ecd7b601492c2c729e2aeed0145ff0eef5fb904c",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://www.wuxiaworld.com/novel/then-let-them-pledge-their-loyalty",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "Wuxiaworld",
+          "url": "https://www.wuxiaworld.com/novel/then-let-them-pledge-their-loyalty",
           "lang": "EN"
         }
       ]
@@ -33907,7 +34081,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:31.413787+00:00"
     },
     {
       "title": "This Game Is Too Realistic",
@@ -33928,7 +34103,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:32.891844+00:00"
     },
     {
       "source": "NovelFull.com",
@@ -33955,7 +34131,8 @@
         }
       ],
       "title_origin": "url",
-      "metadata_pending": true
+      "metadata_pending": true,
+      "metadataCheckedAt": "2026-10-23T11:47:34.414248+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34049,7 +34226,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:35.667901+00:00"
     },
     {
       "title": "Thriller Paradise",
@@ -34075,7 +34253,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:37.049763+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34147,7 +34326,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:38.286398+00:00"
     },
     {
       "title": "To My Dear Mr Huo",
@@ -34173,7 +34353,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:39.839150+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34238,7 +34419,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:41.433192+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34281,7 +34463,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:42.774016+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34431,7 +34614,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:44.078378+00:00"
     },
     {
       "title": "Transmigrated As A Delicate Bundle Of Luck For A Farming Family",
@@ -34452,7 +34636,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:45.896333+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34517,7 +34702,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:47.548181+00:00"
     },
     {
       "title": "Transmigrating To The 80S To Become Stepmom To Five Bigwigs",
@@ -34538,7 +34724,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:49.597926+00:00"
     },
     {
       "title": "Transmigration I Became The Daughter Of A Family Of Villains",
@@ -34564,7 +34751,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:51.606922+00:00"
     },
     {
       "title": "Transmigrator Meets Reincarnator",
@@ -34590,7 +34778,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:53.006634+00:00"
     },
     {
       "title": "Trapped With The Ceo",
@@ -34616,7 +34805,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:54.539368+00:00"
     },
     {
       "title": "Treasure Hunt Tycoon",
@@ -34642,7 +34832,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:55.811377+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34783,7 +34974,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:57.204558+00:00"
     },
     {
       "source": "",
@@ -34831,12 +35023,13 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:47:58.591169+00:00"
     },
     {
       "source": "",
       "title": "Ultimate Scheming System",
-      "alternative": "",
+      "alternative": "USS, Strongest Anti M.E.T.A., Bluffing Master Ultimate Scheming System",
       "author": "Lord Of The Common People, 太上布衣",
       "chapters": 1900,
       "status": "Ongoing",
@@ -34849,9 +35042,9 @@
         "Martial Arts",
         "Xianxia"
       ],
-      "cover": "",
-      "synopsis": "",
-      "year": "",
+      "cover": "https://media.kitsu.app/manga/poster_images/40983/large.jpg",
+      "synopsis": "I am the best when it comes to taking divergent paths. With just a flip of my hand, I shall take the path less commonly travelled. I search far and wide, only to find myself unbeatable and unrivaled. So now I ask, who else can match my awesomeness? Acting tough is second nature to me and I am a lone wolf. The road is long and winding but I shan’t feel lonely as long as I am able to act tough! Life and death bore me and I do whatever I deem fit. “Young man, way back when I started acting tough, you were still learning how to put on your underpants!” Xu Que thus decided to take the path of acting tough. He decided to act tough every single god-damned day. If he wasn’t acting tough, he was scheming for the best way to act tough! (Source: NU)",
+      "year": "2016",
       "rating": null,
       "url": "https://novelfull.com/ultimate-scheming-system.html",
       "language": "EN",
@@ -34861,7 +35054,10 @@
           "url": "https://novelfull.com/ultimate-scheming-system.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/ultimate-scheming-system",
+      "metadataCheckedAt": "2026-10-23T11:47:59.793174+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34931,7 +35127,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:01.126833+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -34998,7 +35195,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:02.550401+00:00"
     },
     {
       "source": "",
@@ -35026,7 +35224,8 @@
           "url": "https://novelfull.com/unparalleled-after-ten-consecutive-draws.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-23T11:48:03.902310+00:00"
     },
     {
       "title": "Unrivaled Medicine God",
@@ -35111,7 +35310,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:05.459466+00:00"
     },
     {
       "source": "",
@@ -35157,11 +35357,19 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 1356,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy",
+        "Fantasy World",
+        "Martial Arts",
+        "Parallel Universe"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/40549/large.jpg",
+      "synopsis": "Just as a gamer found an overpowered skill book called ‘Item Upgrade’ in the hottest virtual reality role-playing game on Earth, something happened to the game’s system, causing his soul to leave his body and go to another dimension. Common sense dictates that he would be born anew then become the greatest overlord of this world by making use of his advanced knowledge. Not in this case! He was already dead. Only some fragments of his soul and that skill book managed to get into that dimension and merge with an ordinary common youngster called Bai Yunfei. This was the enormous Tianhun continent, where humans could be said to have no limits. There was a group of humans here who could cultivate the power of their own souls then control their bodies, the natural elements and even other people’s souls with that power! These special beings were called — soul cultivators. Come witness how the several fragments of the dead inter-dimensional traveler’s soul and that skill book, which was not governed by the laws of this plane, were going to help Bai Yunfei become a legendary soul cultivator and craftsman! (Source. MU)",
       "url": "https://novelfull.com/upgrade-specialist-in-another-world.html",
       "source": "NovelFull.com",
       "sources": [
@@ -35176,7 +35384,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "year": "2011",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/yijie-zhi-zhuangbei-qianghua-zhuanjia",
+      "metadataCheckedAt": "2026-10-23T11:48:06.667185+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35318,7 +35530,8 @@
           "url": "https://novelfull.com/urban-super-almighty-student.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-23T11:48:08.158756+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35388,7 +35601,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:09.387867+00:00"
     },
     {
       "title": "Venerated Venomous Consort",
@@ -35443,7 +35657,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:11.404302+00:00"
     },
     {
       "title": "Venomous Empress Reborn",
@@ -35464,7 +35679,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:12.709550+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35527,7 +35743,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:14.238225+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35577,7 +35794,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:15.522125+00:00"
     },
     {
       "title": "Walker Of The Worlds",
@@ -35601,7 +35819,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:16.804577+00:00"
     },
     {
       "title": "War Sovereign Soaring The Heavens",
@@ -35654,7 +35873,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:18.002205+00:00"
     },
     {
       "title": "Warlock of the Magus World",
@@ -35715,7 +35935,8 @@
           "url": "https://novelfull.com/warlock-of-the-magus-world-fan-fiction.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-23T11:48:19.363046+00:00"
     },
     {
       "title": "Warning Tsundere President",
@@ -35741,7 +35962,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:20.910686+00:00"
     },
     {
       "source": "",
@@ -35753,12 +35975,13 @@
       "genres": [
         "Action",
         "Adventure",
+        "Isekai",
         "Martial Arts",
         "Xuanhuan"
       ],
-      "cover": "",
-      "synopsis": "",
-      "year": "",
+      "cover": "https://media.kitsu.app/manga/poster_images/54457/large.jpg",
+      "synopsis": "The course of commitments never did run smooth. After dying on Earth, the King of Mercenaries is reborn as Su Mo in the Firmament and Continent. In this brand-new world, Martial Art is the way of life, and the strong set the rules. Having awakened a Martial Soul of the lowest rank, possibly meaning he will never go far as a Martial Artist, Su Mo is determined to rise to the top again nonetheless. However, misfortunes never come singly. The love of his life is soon taken by one of the most powerful forces in the world. With no time to spare, watch as Su Mo overcomes all odds and struggle on the verge of death countless times, in order to meet his love again. As the protagonist reaches the top in that world, he has to take on more responsibilities and face new challenges. Follow Su Mo on his relentless journey to become stronger for the sake of those important to him, and uncover the deep, dark secrets and plots in the vast universe. (Source: NU)",
+      "year": "2016",
       "rating": null,
       "url": "https://novelfull.com/warriors-promise.html",
       "language": "EN",
@@ -35768,7 +35991,10 @@
           "url": "https://novelfull.com/warriors-promise.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/warriors-promise",
+      "metadataCheckedAt": "2026-10-23T11:48:22.166359+00:00"
     },
     {
       "source": "",
@@ -35851,7 +36077,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:23.403432+00:00"
     },
     {
       "title": "When Beauty Meets Beasts",
@@ -35872,7 +36099,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:24.706594+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35976,7 +36204,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:26.092745+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36024,7 +36253,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:27.482612+00:00"
     },
     {
       "title": "Wife Is Fierce Dont Mess With Her",
@@ -36050,7 +36280,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:29.159344+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36120,7 +36351,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:30.403218+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36189,7 +36421,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:32.047600+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36239,7 +36472,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:33.655202+00:00"
     },
     {
       "title": "World Reformation Activities Of The Dark God Loving Humans So Much I Reincarnated In One",
@@ -36247,10 +36481,14 @@
       "metadata_pending": true,
       "author": "",
       "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "cover": "https://media.kitsu.app/manga/38677/poster_image/large-57e706259bb298fc856552304e50104c.jpeg",
+      "synopsis": "At the genesis of the world, the ‘Dark God Entropy’ was defeated in the fight between the five other Gods, and was sealed. And then, after 1,600 years, the seal of the God of Darkness was released and he is liberated. The God that was now free didn’t really have any special intent for revenge and didn’t have anything to do, so he decided to reincarnate as a human and enjoy the life of a human being. The human that had obtained the soul of the Dark God and was born as ‘Kuromiya Haine’, a human that -while being human- possesses the powers and memories of the God of Darkness. The strongest existence. While saving the heroes that fight monsters, and fighting against the other Gods that are trying to rule the humans, he acts in order to make the world a better place. Source: NU",
       "url": "https://novelfull.com/world-reformation-activities-of-the-dark-god-loving-humans-so-much-i-reincarnated-in-one.html",
       "source": "NovelFull.com",
       "sources": [
@@ -36265,7 +36503,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "year": "2016",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/yonaoshi-ankokushin-no-honsou",
+      "metadataCheckedAt": "2026-10-23T11:48:34.875431+00:00"
     },
     {
       "source": "",
@@ -36297,7 +36539,8 @@
           "url": "https://novelfull.com/worlds-apocalypse-online.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-23T11:48:36.138294+00:00"
     },
     {
       "title": "Worldwide Simulation Era",
@@ -36318,7 +36561,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:37.494866+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36406,7 +36650,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:38.722452+00:00"
     },
     {
       "title": "Xianxia My Junior Sisters Are Freaks",
@@ -36432,7 +36677,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:40.097762+00:00"
     },
     {
       "source": "",
@@ -36461,11 +36707,19 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 1261,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Horror",
+        "Martial Arts",
+        "Politics",
+        "Supernatural"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/59474/large.jpg",
+      "synopsis": "The youthful Qin Ye was born almost a century ago, but thanks to immortality granted to him by the ‘fungus of aeons’ he can pass for a high schooler. He planned to live an eternal, reclusive life as a happy otaku, enjoying World of Warcraft and his favorite MOBA games, but Fate had other plans in store. Hell has broken down, and vengeful revenants stalk the mortal realms. With ghosts running amock throughout all of Cathay, Qin Ye must reluctantly adopt the mantle of ‘hero’ and bring peace to both the living and the dead, while rebuilding Hell. But this, of course, isn’t something a mere Netherworld Operative can do. For that, he’ll need to become more. King Yama is dead. Long live King Yama! (Source: Novel Updates)",
       "url": "https://novelfull.com/yama-rising.html",
       "source": "NovelFull.com",
       "sources": [
@@ -36475,7 +36729,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "year": "2018",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/yama-rising",
+      "metadataCheckedAt": "2026-10-23T11:48:41.437692+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36560,7 +36818,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:42.899042+00:00"
     },
     {
       "title": "Young Master Damiens Pet",
@@ -36586,7 +36845,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:44.280154+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36629,7 +36889,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:45.840699+00:00"
     },
     {
       "title": "Young Master Gu Please Be Gentle",
@@ -36655,7 +36916,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:47.276649+00:00"
     },
     {
       "title": "Young Master Mo, Are You Done Kissing?",
@@ -36682,7 +36944,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:48.723673+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36733,11 +36996,15 @@
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 1184,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Fantasy"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/54083/large.jpg",
+      "synopsis": "To pick is to choose. This is a story about choices. Three thousand worlds full of gods and demons, with a daoist scroll in your hand, you are able to control the entire universe… At the beginning of time, a mystical meteor came crashing down from outer space and scattered all over the world. A piece of it landed in the Eastern Continent. There were mysterious totems carved upon the meteor. Through viewing these totems, mankind comprehended the Dao and established the Orthodoxy. Several thousand years later, the fourteen years old orphan Chen Changsheng left his master to cure his illness and change his fate. He brought a part of a marriage vow with him to the capital, thus beginning the journey of a rising hero… (Source: NU)",
       "url": "https://novelfull.com/ze-tian-ji.html",
       "source": "NovelFull.com",
       "sources": [
@@ -36752,7 +37019,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Fighter of the Destiny, Way of Choices, ZTJ",
+      "year": "2014",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/ze-tian-ji",
+      "metadataCheckedAt": "2026-10-23T11:48:49.971177+00:00"
     },
     {
       "title": "Zero To Hero In The Martial Arts Library",
@@ -36773,7 +37045,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:51.729053+00:00"
     },
     {
       "source": "",
@@ -36802,7 +37075,8 @@
           "url": "https://novelfull.com/zhan-yue.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadataCheckedAt": "2026-10-23T11:48:52.929933+00:00"
     },
     {
       "source": "",
@@ -36843,7 +37117,7 @@
     {
       "source": "",
       "title": "Zhanxian",
-      "alternative": "",
+      "alternative": "Slaying Immortals, ZX",
       "author": "Ren Yuan, 任怨",
       "chapters": 1,
       "status": "Ongoing",
@@ -36855,9 +37129,9 @@
         "Mature",
         "Xianxia"
       ],
-      "cover": "",
-      "synopsis": "",
-      "year": "",
+      "cover": "https://media.kitsu.app/manga/73035/poster_image/large-997a755340ed908dc4d00fa6a50d2058.jpeg",
+      "synopsis": "Gripes have their origins and debts have their debtors. We haven’t crossed each other in days past or present, nor formed any grudges. I am but duty-bound to carry this out, so apologies in advance! In his past life, Yang Chen was a gentle person who was oppressed for his whole life. Now that he’s reborn, he chose to become an executioner and severs ties and grudges with his executioner’s blade, killing all that climb onto the Immortal Executioner’s Platform! Heads will roll! Humans’ in the human realm, demons’ in the demon realm, devils’ in the devil realm and immortals’ in the immortal realm! (Source: NU)",
+      "year": "2011",
       "rating": null,
       "url": "https://novelfull.com/zhanxian.html",
       "language": "EN",
@@ -36867,18 +37141,28 @@
           "url": "https://novelfull.com/zhanxian.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/zhanxian",
+      "metadataCheckedAt": "2026-10-23T11:48:54.096288+00:00"
     },
     {
       "title": "Zhu Xian",
       "title_origin": "url",
       "metadata_pending": true,
       "author": "",
-      "chapters": null,
-      "status": "",
-      "genres": [],
-      "cover": "",
-      "synopsis": "",
+      "chapters": 260,
+      "status": "Completed",
+      "genres": [
+        "Action",
+        "Adventure",
+        "Drama",
+        "Fantasy",
+        "Martial Arts",
+        "Romance"
+      ],
+      "cover": "https://media.kitsu.app/manga/poster_images/40767/large.jpg",
+      "synopsis": "Shenzhou is a wide and boundless land, especially the Central Plains, bearing the most fertile of soil. Nine tenths of the world’s population inhabited the rich localities. However, the wastelands surrounding the Central Plain were dangerous. The landscapes where perilous to travel and inhabited by dangerous beasts and poisonous plants; even the people were barbarians who guzzle blood and consume flesh. Legends speak of spiritual beasts which still inhabit the dark valley and forests. Many people searched for immortality. The land of Shenzhou is wide, providing home to many wise individuals with diverse beliefs. Immortality, to this day, still has not been found and the cultivators have begun to split into different factions, of both Good and Evil, with conflicts arising between them. Today, the Good became strong, while the Evil hid themselves. The three main factions of the good were Jadeon, Skysong and Incense. Our story began at Jadeon. [Taken from a summary in the review by Melakias] A terrible calamity has fallen onto Zhang Fan, not only becoming one of the three survivors of Grass Temple Village, where everyone else was horribly massacred, he was also tasked to carry one of the most evil artifacts, the Sinister Bead, and taught one of the most secret teachings of the Skysong Sect, the Brahmin Wisdom. Now he cultivates in the Jadeon Sect, his knowledge and possession will draw him into a chaotic story where he will have to carry some of the greatest burdens of the Martial World. (Source: Novel Updates)",
       "url": "https://novelfull.com/zhu-xian.html",
       "source": "NovelFull.com",
       "sources": [
@@ -36893,7 +37177,12 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "alternative": "Jade Dynasty, Noble Aspirations, The Legend of Chusen, Tru Tiên",
+      "year": "2003",
+      "metadata_source": "Kitsu",
+      "metadata_url": "https://kitsu.io/manga/zhu-xian",
+      "metadataCheckedAt": "2026-10-23T11:48:55.374380+00:00"
     },
     {
       "title": "Zombie Sister Strategy",
@@ -36919,7 +37208,8 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "metadataCheckedAt": "2026-10-23T11:48:57.025275+00:00"
     }
   ]
 }
