@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-24T11:12:37.826851+00:00",
+  "updated_at": "2026-10-24T16:07:35.707430+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -1191,7 +1191,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:57:55.540469+00:00",
+      "metadataCheckedAt": "2026-10-24T16:06:56.542444+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-23T05:00:05.920691+00:00"
@@ -2101,7 +2101,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:57:58.003255+00:00",
+      "metadataCheckedAt": "2026-10-24T16:06:57.766268+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-23T05:00:08.228337+00:00"
@@ -3967,7 +3967,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:57:59.592119+00:00",
+      "metadataCheckedAt": "2026-10-24T16:06:59.376537+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-23T05:00:16.678993+00:00"
@@ -4975,7 +4975,7 @@
       "title": "Chosen: Beyond Fate",
       "alternative": "",
       "author": "Windmoon (风月)",
-      "chapters": 384,
+      "chapters": 386,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/cbf.webp?v=20f808d91374d469ba84ace01d1d7b206ae687c6",
@@ -5425,7 +5425,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:01.031380+00:00",
+      "metadataCheckedAt": "2026-10-24T16:07:00.792766+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-23T17:18:32.343722+00:00"
@@ -5949,7 +5949,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:02.383282+00:00",
+      "metadataCheckedAt": "2026-10-24T16:07:02.136862+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-23T21:35:15.955528+00:00"
@@ -6034,7 +6034,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:03.685728+00:00",
+      "metadataCheckedAt": "2026-10-24T16:07:03.464861+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-23T21:35:19.594550+00:00"
@@ -6497,7 +6497,7 @@
       "title": "Destiny in Cinders",
       "alternative": "",
       "author": "Shrouded God of Gloomy Skies (阴天神隐)",
-      "chapters": 442,
+      "chapters": 444,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/dic.webp?v=afe52f139386bb44a8b63cc154d6f2c33c9b8d6a",
@@ -7132,7 +7132,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/douluo-dalu-novel"
+      "metadata_url": "https://kitsu.io/manga/douluo-dalu-novel",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:09.915492+00:00"
+      }
     },
     {
       "source": "",
@@ -7154,7 +7158,11 @@
           "url": "https://novelfull.net/douluo-ai-dragon-emperor.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:11.248848+00:00"
+      }
     },
     {
       "title": "Dr Jiangs Daily Adversities",
@@ -7176,14 +7184,18 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-23T17:17:06.927977+00:00"
+      "metadataCheckedAt": "2026-10-23T17:17:06.927977+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:12.560055+00:00"
+      }
     },
     {
       "source": "Wuxiaworld",
       "title": "Dragon Canon",
       "alternative": "",
       "author": "Misty Rain of Jiangnan (烟雨江南)",
-      "chapters": 456,
+      "chapters": 458,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/dc.webp?v=dbf623ea5ca438513798d88a6229aa954532b365",
@@ -7198,7 +7210,11 @@
           "url": "https://www.wuxiaworld.com/novel/dragon-canon",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:13.761356+00:00"
+      }
     },
     {
       "source": "",
@@ -7220,7 +7236,11 @@
           "url": "https://novelfull.net/dragon-god-supreme.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:15.161041+00:00"
+      }
     },
     {
       "title": "Dragon Kings Son In Law",
@@ -7251,7 +7271,11 @@
       "year": "2010",
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/dragon-kings-son-in-law",
-      "metadataCheckedAt": "2026-10-21T17:21:58.916254+00:00"
+      "metadataCheckedAt": "2026-10-21T17:21:58.916254+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:16.480154+00:00"
+      }
     },
     {
       "title": "Dragon Prince Yuan",
@@ -7283,7 +7307,11 @@
       "year": "2017",
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/yuan-zun-novel",
-      "metadataCheckedAt": "2026-10-21T17:22:00.129423+00:00"
+      "metadataCheckedAt": "2026-10-21T17:22:00.129423+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:17.653688+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7305,7 +7333,11 @@
           "url": "https://novelfull.net/dragon-blooded-war-god.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:19.069409+00:00"
+      }
     },
     {
       "source": "",
@@ -7339,7 +7371,11 @@
       ],
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/dragon-marked-war-god",
-      "metadataCheckedAt": "2026-10-22T04:55:51.807844+00:00"
+      "metadataCheckedAt": "2026-10-22T04:55:51.807844+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:20.454281+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7363,7 +7399,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/dragoon-ryuu-kishi-e-no-michi"
+      "metadata_url": "https://kitsu.io/manga/dragoon-ryuu-kishi-e-no-michi",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:21.623521+00:00"
+      }
     },
     {
       "source": "",
@@ -7398,7 +7438,11 @@
           "url": "https://novelfull.net/dual-cultivation-ying-yang-is-way-to-chaos.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:22.908050+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7427,7 +7471,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/deonjeon-dipenseu"
+      "metadata_url": "https://kitsu.io/manga/deonjeon-dipenseu",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:24.082337+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7456,7 +7504,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/dungeon-hunter"
+      "metadata_url": "https://kitsu.io/manga/dungeon-hunter",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:25.375128+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7478,7 +7530,11 @@
           "url": "https://novelfull.net/dxd-i-sealed-sukunas-finger-now-they-want-my-number.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:26.706281+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7500,7 +7556,11 @@
           "url": "https://novelfull.net/dysfunctional-an-assassins-guide-to-reincarnating-in-another-world.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:28.051456+00:00"
+      }
     },
     {
       "title": "Earths Best Gamer",
@@ -7527,7 +7587,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-23T17:17:08.333709+00:00"
+      "metadataCheckedAt": "2026-10-23T17:17:08.333709+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:29.525248+00:00"
+      }
     },
     {
       "title": "Eight Treasures Trousseau",
@@ -7554,7 +7618,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-23T17:17:09.787326+00:00"
+      "metadataCheckedAt": "2026-10-23T17:17:09.787326+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:30.706735+00:00"
+      }
     },
     {
       "source": "",
@@ -7576,7 +7644,11 @@
           "url": "https://novelfull.net/eldritch-horror-theatre.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:31.872977+00:00"
+      }
     },
     {
       "title": "Elite Doting Marriage: Crafty Husband, Aloof Cute Wife",
@@ -7603,7 +7675,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:33.226918+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -7630,7 +7706,11 @@
           "url": "https://novelfull.com/elite-mages-academy.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-24T16:07:34.387454+00:00"
+      }
     },
     {
       "title": "Elixir Supplier",
@@ -8652,7 +8732,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:05.333847+00:00"
+      "metadataCheckedAt": "2026-10-24T16:07:05.191659+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -8967,7 +9047,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:07.177316+00:00"
+      "metadataCheckedAt": "2026-10-24T16:07:07.088050+00:00"
     },
     {
       "source": "",
@@ -9211,7 +9291,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:09.018603+00:00"
+      "metadataCheckedAt": "2026-10-24T16:07:08.607470+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -10033,7 +10113,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-23T04:58:10.375044+00:00"
+      "metadataCheckedAt": "2026-10-24T16:07:09.915136+00:00"
     },
     {
       "source": "",
@@ -15252,7 +15332,7 @@
       "alternative": "Invincible Conqueror, Vô Địch Thiên Hạ, IC",
       "author": "Shen Jian, 神见",
       "chapters": 3753,
-      "status": "Ongoing",
+      "status": "Completed",
       "genres": [
         "Action",
         "Adventure",
@@ -20685,10 +20765,12 @@
       "source": "NovelFull.net",
       "title": "MY VAMPIRE SYSTEM",
       "alternative": "",
-      "author": "",
+      "author": "JKSManga",
       "chapters": 748,
       "status": "Completed",
-      "genres": [],
+      "genres": [
+        "Fantasy"
+      ],
       "cover": "https://novelfull.net/uploads/thumbs/my-vampire-system-024a26d908-7b1b860abd9d97b11bce4d6a39bd6e5b.jpg",
       "synopsis": "The human Race is at war with the Vicious Dalki and when they needed help more than ever, THEY started to come forward. Humans who had hidden in the shadows for hundreds of years, people with abilities. Some chose to share their knowledge to the rest of the world in hopes of winning the war, while others kept their abilities to themselves. Quinn had lost everything to the war, his home, his family and the only thing he had inherited was a crummy old book that he couldn’t even open. But when the book had finally opened, Quinn was granted a system and his whole life was turned around. He completed quest after quest and became more powerful, until one day the system gave him a quest he wasn’t sure he could complete. \"It is time to feed!\" \"You must drink human blood within 24 hours\" \"Your HP will continue to decrease until the task has been completed\" (Source: Webnovel)",
       "year": "2020",
@@ -20699,6 +20781,11 @@
         {
           "site": "NovelFull.net",
           "url": "https://novelfull.net/my-vampire-system-v122.html",
+          "lang": "EN"
+        },
+        {
+          "site": "NovelFull.com",
+          "url": "https://novelfull.com/my-vampire-system.html",
           "lang": "EN"
         }
       ],
@@ -27771,7 +27858,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T17:20:35.707173+00:00"
+      "metadataCheckedAt": "2026-10-24T16:04:54.819815+00:00"
     },
     {
       "title": "Starting With One Million Luck Points",
@@ -27793,7 +27880,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T17:20:37.318874+00:00"
+      "metadataCheckedAt": "2026-10-24T16:04:56.693210+00:00"
     },
     {
       "source": "",
@@ -27822,7 +27909,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-22T17:20:39.532857+00:00"
+      "metadataCheckedAt": "2026-10-24T16:04:59.633802+00:00"
     },
     {
       "source": "",
@@ -27983,7 +28070,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T17:20:41.011528+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:01.258276+00:00"
     },
     {
       "title": "Stop Friendly Fire",
@@ -28047,7 +28134,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T17:20:43.716236+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:02.931858+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28096,7 +28183,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T17:20:45.021527+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:04.384292+00:00"
     },
     {
       "title": "Strong Female Side Character Awakens",
@@ -28118,7 +28205,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T17:20:46.269687+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:05.753099+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28283,7 +28370,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:43.894718+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:07.049842+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28332,7 +28419,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:45.654236+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:08.844936+00:00"
     },
     {
       "title": "Substitute Brides Husband Is An Invisible Rich Man",
@@ -28359,7 +28446,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:47.367381+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:10.512418+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28408,7 +28495,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:48.987211+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:11.959336+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28452,7 +28539,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:50.694732+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:13.435791+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28528,7 +28615,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:51.972190+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:14.722948+00:00"
     },
     {
       "title": "Super Godly Machine Army",
@@ -28550,7 +28637,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:53.414095+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:16.303273+00:00"
     },
     {
       "title": "Super Insane Doctor Of The Goddess",
@@ -28572,7 +28659,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:54.857805+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:17.951178+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28665,7 +28752,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:56.983105+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:19.443906+00:00"
     },
     {
       "source": "",
@@ -28741,7 +28828,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:58.176933+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:20.707320+00:00"
     },
     {
       "source": "",
@@ -28834,7 +28921,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:43:59.783790+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:22.370799+00:00"
     },
     {
       "title": "Survive In The Wilderness The Actor King Sits In My Arms And Weeps",
@@ -28856,7 +28943,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:03.407388+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:26.723861+00:00"
     },
     {
       "source": "",
@@ -28960,7 +29047,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:05.033160+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:28.266497+00:00"
     },
     {
       "title": "Sweet Adorable Wife Please Kiss Slower",
@@ -28987,7 +29074,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:07.098240+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:29.809533+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -29031,7 +29118,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:08.548219+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:31.202346+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -29075,7 +29162,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:09.930292+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:32.440295+00:00"
     },
     {
       "title": "Sweet Wife In My Arms",
@@ -29097,7 +29184,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:11.332234+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:33.782515+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -29242,7 +29329,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:14.090580+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:35.250654+00:00"
     },
     {
       "title": "Take My Breath Away",
@@ -29269,7 +29356,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:15.338450+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:36.501414+00:00"
     },
     {
       "title": "Taking Part In A Survival Game With My Brother",
@@ -29291,7 +29378,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:17.232624+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:38.383231+00:00"
     },
     {
       "source": "",
@@ -29577,7 +29664,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:21.209326+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:39.756579+00:00"
     },
     {
       "source": "",
@@ -29806,7 +29893,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:24.217121+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:41.426961+00:00"
     },
     {
       "source": "",
@@ -29872,7 +29959,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:25.902937+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:43.082453+00:00"
     },
     {
       "title": "The Anarchic Consort",
@@ -29905,7 +29992,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:28.720218+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:44.414922+00:00"
     },
     {
       "source": "",
@@ -29954,7 +30041,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:30.199342+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:45.864463+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30022,7 +30109,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:31.825364+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:47.385762+00:00"
     },
     {
       "title": "The Beautiful Wife of the Whirlwind Marriage",
@@ -30218,7 +30305,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:34.506537+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:49.029612+00:00"
     },
     {
       "title": "The Book Eating Magician",
@@ -30277,7 +30364,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:37.092510+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:50.312930+00:00"
     },
     {
       "title": "The Boss Lost His Memory And Only Remembers Me",
@@ -30299,7 +30386,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:39.339208+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:52.560505+00:00"
     },
     {
       "title": "The Bumpy Road Of Marriage Divorce Now Daddy",
@@ -30321,7 +30408,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:41.167155+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:54.165460+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30392,7 +30479,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:42.617169+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:56.022325+00:00"
     },
     {
       "title": "The Ceos Wife Is A Medical Master",
@@ -30414,7 +30501,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:44.432309+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:57.855998+00:00"
     },
     {
       "title": "The Charm Of Soul Pets",
@@ -30472,7 +30559,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:47.962988+00:00"
+      "metadataCheckedAt": "2026-10-24T16:05:59.669908+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30523,7 +30610,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-22T21:44:50.875561+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:01.715886+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30611,7 +30698,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:52.160559+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:03.515442+00:00"
     },
     {
       "source": "",
@@ -30640,7 +30727,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-22T21:44:54.498732+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:05.953265+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30728,7 +30815,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:56.077559+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:07.328010+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30772,7 +30859,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:44:57.852409+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:09.131954+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -30898,7 +30985,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:02.089555+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:13.473990+00:00"
     },
     {
       "title": "The Devil’s Cage",
@@ -30987,7 +31074,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:05.553553+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:15.492696+00:00"
     },
     {
       "source": "",
@@ -31099,7 +31186,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:06.813459+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:16.799960+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31143,7 +31230,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:08.730424+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:19.055732+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31192,7 +31279,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:10.045486+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:20.289649+00:00"
     },
     {
       "source": "",
@@ -31220,7 +31307,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-22T21:45:11.524632+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:21.811574+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31269,7 +31356,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:14.890884+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:25.745927+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31378,7 +31465,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:16.713645+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:27.592633+00:00"
     },
     {
       "title": "The Experimental Log Of The Crazy Lich",
@@ -31474,7 +31561,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:20.180050+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:29.833107+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31589,7 +31676,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:21.537953+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:31.373704+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31731,7 +31818,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:25.634396+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:32.716821+00:00"
     },
     {
       "title": "The Formidable Son In Law The Charismatic Lucas Gray",
@@ -31758,7 +31845,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:27.771264+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:34.597868+00:00"
     },
     {
       "title": "The Founder Of Diabolism",
@@ -31878,7 +31965,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-22T21:45:30.493646+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:36.028630+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -31927,7 +32014,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:31.970883+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:37.634003+00:00"
     },
     {
       "title": "The Genius Doctor My Wife Is Valiant",
@@ -31949,7 +32036,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:33.619755+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:39.203652+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -32006,7 +32093,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:34.963489+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:40.534940+00:00"
     },
     {
       "title": "The Girl Who Restarted Time",
@@ -32033,7 +32120,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:36.444129+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:41.873603+00:00"
     },
     {
       "title": "The Godsfall Chronicles",
@@ -32088,7 +32175,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:39.368201+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:43.442544+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -32234,7 +32321,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:40.854408+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:44.956897+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -32283,7 +32370,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:43.363697+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:47.642303+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -32327,7 +32414,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:44.634951+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:48.924478+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -32430,7 +32517,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-22T21:45:46.019925+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:50.486129+00:00"
     },
     {
       "title": "The Immortals Poison",
@@ -32492,7 +32579,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:48.789780+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:52.021372+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -32703,7 +32790,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:51.390334+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:53.347897+00:00"
     },
     {
       "source": "",
@@ -32778,7 +32865,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-22T21:45:53.901139+00:00"
+      "metadataCheckedAt": "2026-10-24T16:06:54.620403+00:00"
     },
     {
       "title": "The Legend of the Dragon King",
