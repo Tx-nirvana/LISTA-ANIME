@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-26T13:14:38.589089+00:00",
+  "updated_at": "2026-10-26T22:50:06.331421+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -85,7 +85,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:00.513656+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:30.323493+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:34.764641+00:00"
@@ -111,7 +111,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:01.885142+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:31.644440+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:36.035595+00:00"
@@ -168,7 +168,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:03.351838+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:33.046142+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:38.575658+00:00"
@@ -207,7 +207,7 @@
       "title": "13 Mink Street",
       "alternative": "",
       "author": "Innocent Little Dragon (纯洁滴小龙)",
-      "chapters": 408,
+      "chapters": 409,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/13ms.webp?v=e20f5af26464cf93d82bb4bac69c5dc184e7b440",
@@ -279,7 +279,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:05.655521+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:35.268776+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:43.600694+00:00"
@@ -435,7 +435,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:07.157545+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:36.808032+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:48.743078+00:00"
@@ -832,7 +832,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:09.344981+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:39.073482+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:10.188894+00:00"
@@ -1447,7 +1447,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:50:11.198600+00:00",
+      "metadataCheckedAt": "2026-10-26T22:49:40.951414+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:32.143432+00:00"
@@ -4194,7 +4194,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T04:49:14.438292+00:00",
+      "metadataCheckedAt": "2026-10-26T22:48:44.673369+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-25T04:51:10.328043+00:00"
@@ -4288,7 +4288,7 @@
       "title": "Blade - Unbound",
       "alternative": "",
       "author": "Old West Zhang (张老西)",
-      "chapters": 283,
+      "chapters": 284,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/bu.webp?v=92f103edb914fd3e45df6e42f01e3cebf264383f",
@@ -9300,7 +9300,7 @@
       "title": "Family Rise by Daily Intelligence",
       "alternative": "",
       "author": "I love eating chive omelets.",
-      "chapters": 3,
+      "chapters": 4,
       "status": "Ongoing",
       "genres": [
         "Eastern",
@@ -11695,7 +11695,7 @@
     {
       "title": "Gourmet of Another World",
       "author": "Li Hongtian",
-      "chapters": 2243,
+      "chapters": 2244,
       "status": "Completed",
       "genres": [
         "Action",
@@ -11836,7 +11836,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/da-mo-wang"
+      "metadata_url": "https://kitsu.io/manga/da-mo-wang",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:40.951829+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -11858,7 +11862,11 @@
           "url": "https://novelfull.net/great-doctor-ling-ran.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:42.428604+00:00"
+      }
     },
     {
       "source": "",
@@ -11880,7 +11888,11 @@
           "url": "https://novelfull.net/great-li-martial-god.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:43.709016+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -11902,7 +11914,11 @@
           "url": "https://novelfull.net/greed-all-for-what.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:44.978604+00:00"
+      }
     },
     {
       "title": "Growing Fond Of You Mr Nian",
@@ -11924,7 +11940,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:20.779672+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:20.779672+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:46.286230+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -11964,7 +11984,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/hail-the-king-novel"
+      "metadata_url": "https://kitsu.io/manga/hail-the-king-novel",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:47.557295+00:00"
+      }
     },
     {
       "title": "Half Prince",
@@ -12007,7 +12031,11 @@
       "rating": 78,
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/1-2-prince-novel",
-      "metadataCheckedAt": "2026-10-21T21:51:57.000938+00:00"
+      "metadataCheckedAt": "2026-10-21T21:51:57.000938+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:48.834262+00:00"
+      }
     },
     {
       "title": "Handsome Ceos Darling Wife",
@@ -12034,7 +12062,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:22.172069+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:22.172069+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:50.048048+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -12058,7 +12090,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/maid-harem-nante-yurushimasen-dokuzetsu-tsun-tsun-x-botsuraku-do-m-x-dark-elf"
+      "metadata_url": "https://kitsu.io/manga/maid-harem-nante-yurushimasen-dokuzetsu-tsun-tsun-x-botsuraku-do-m-x-dark-elf",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:51.237195+00:00"
+      }
     },
     {
       "title": "Harem Tales Of A Reincarnated Elf Prince",
@@ -12085,7 +12121,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:23.716326+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:23.716326+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:52.515622+00:00"
+      }
     },
     {
       "title": "Heads Up The Ceos Wife Is A Hidden Big Boss",
@@ -12107,7 +12147,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:26.159101+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:26.159101+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:53.723600+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -12131,7 +12175,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/tian-guan-ci-fu-novel"
+      "metadata_url": "https://kitsu.io/manga/tian-guan-ci-fu-novel",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:54.916570+00:00"
+      }
     },
     {
       "title": "Heavenly Dao Rankings I Am Exposed As The Sword God",
@@ -12153,7 +12201,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:28.129661+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:28.129661+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:56.155422+00:00"
+      }
     },
     {
       "source": "",
@@ -12175,7 +12227,11 @@
           "url": "https://novelfull.net/heavenly-illusions.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:57.345060+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -12213,7 +12269,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/tian-zhu-bian"
+      "metadata_url": "https://kitsu.io/manga/tian-zhu-bian",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:58.679362+00:00"
+      }
     },
     {
       "title": "Heaven’s Devourer",
@@ -12250,7 +12310,11 @@
       "year": "2015",
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/heavens-devourer",
-      "metadataCheckedAt": "2026-10-21T21:52:05.619090+00:00"
+      "metadataCheckedAt": "2026-10-21T21:52:05.619090+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:49:59.989384+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -12272,7 +12336,11 @@
           "url": "https://novelfull.net/heidi-and-the-lord.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:50:01.210955+00:00"
+      }
     },
     {
       "title": "Hellbound With You",
@@ -12299,7 +12367,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:29.414092+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:29.414092+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:50:02.666348+00:00"
+      }
     },
     {
       "title": "Hello Mr King",
@@ -12321,7 +12393,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:30.616071+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:30.616071+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:50:03.898118+00:00"
+      }
     },
     {
       "title": "Hello Wife",
@@ -12348,7 +12424,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T11:40:31.743270+00:00"
+      "metadataCheckedAt": "2026-10-25T11:40:31.743270+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-26T22:50:05.098138+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -19293,7 +19373,7 @@
       "title": "Miss Fairy, Please Hear Me Out",
       "alternative": "",
       "author": "Sky Spanner (弥天大厦)",
-      "chapters": 294,
+      "chapters": 296,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/mfp.webp?v=40818293d9e5720d991f6ab479e744cf98d01f54",
@@ -26719,7 +26799,7 @@
       "title": "SCHOLAR’S ADVANCED TECHNOLOGICAL SYSTEM",
       "alternative": "",
       "author": "",
-      "chapters": 1586,
+      "chapters": 2084,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/scholars-advanced-technological--9d29e42087-2239c49aee6b961904acf173b7e4602a.jpg",
@@ -30081,7 +30161,7 @@
       "title": "TALISMAN EMPEROR",
       "alternative": "TE",
       "author": "",
-      "chapters": 3124,
+      "chapters": 3126,
       "status": "Completed",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/talisman-emperor-eec7729353-2239c49aee6b961904acf173b7e4602a.jpg",
@@ -34974,7 +35054,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:06.405849+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:41.059506+00:00"
     },
     {
       "title": "The Science Ace Go Back To The Past To Save Her Brothers",
@@ -34996,7 +35076,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:10.250133+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:44.977163+00:00"
     },
     {
       "title": "The Scum Villain’s Self-Saving System",
@@ -35154,7 +35234,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:11.555010+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:46.290769+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35321,7 +35401,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:13.187344+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:47.821943+00:00"
     },
     {
       "title": "The Strongest System",
@@ -35433,7 +35513,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:14.471812+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:49.027463+00:00"
     },
     {
       "title": "The Sweetest Medicine",
@@ -35460,7 +35540,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:15.796514+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:50.285481+00:00"
     },
     {
       "title": "The Sword And The Shadow",
@@ -35612,7 +35692,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:17.869606+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:52.304325+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35664,7 +35744,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:19.416400+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:53.734570+00:00"
     },
     {
       "title": "The Ultimate Evolution",
@@ -35691,7 +35771,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:20.617607+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:54.887580+00:00"
     },
     {
       "title": "The Unparalleled Spiritual Doctor Demon Emperors Defiant Love",
@@ -35718,7 +35798,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:22.649109+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:56.950896+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35808,7 +35888,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:24.156669+00:00"
+      "metadataCheckedAt": "2026-10-26T22:47:58.528998+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -35903,7 +35983,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:25.831482+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:00.069581+00:00"
     },
     {
       "title": "The Villains Wife",
@@ -35925,7 +36005,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:27.157442+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:01.601586+00:00"
     },
     {
       "title": "The Warden Of Sexy Witches",
@@ -35947,7 +36027,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:28.771301+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:03.160044+00:00"
     },
     {
       "title": "The Wealthy Psychic Lady 99 Stolen Kisses",
@@ -35974,7 +36054,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:30.793187+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:04.811701+00:00"
     },
     {
       "title": "The Whole Village Thrives After Adopting A Lucky Girl",
@@ -35996,7 +36076,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:32.403957+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:06.387032+00:00"
     },
     {
       "title": "The Wife Of A Powerful Family Huo Shao How Dare You Flirt With Me",
@@ -36023,7 +36103,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:35.657879+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:09.381926+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36072,7 +36152,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:37.134879+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:10.959618+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36322,7 +36402,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-24T20:59:38.703156+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:12.473783+00:00"
     },
     {
       "source": "",
@@ -36415,7 +36495,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:40.395428+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:13.794902+00:00"
     },
     {
       "title": "This Game Is Too Realistic",
@@ -36437,7 +36517,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:42.103517+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:15.263963+00:00"
     },
     {
       "source": "NovelFull.com",
@@ -36465,7 +36545,7 @@
       ],
       "title_origin": "url",
       "metadata_pending": true,
-      "metadataCheckedAt": "2026-10-24T20:59:43.814578+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:16.883073+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36560,7 +36640,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:45.164058+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:18.337712+00:00"
     },
     {
       "title": "Thriller Paradise",
@@ -36587,7 +36667,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:46.466165+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:19.620215+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36660,7 +36740,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:47.735165+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:20.870593+00:00"
     },
     {
       "title": "To My Dear Mr Huo",
@@ -36687,7 +36767,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:49.059402+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:22.082330+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36753,7 +36833,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:50.853645+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:23.690332+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36797,7 +36877,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:52.273267+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:25.031590+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -36948,7 +37028,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:53.573956+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:26.338890+00:00"
     },
     {
       "title": "Transmigrated As A Delicate Bundle Of Luck For A Farming Family",
@@ -36970,7 +37050,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:55.434426+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:28.056007+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -37036,7 +37116,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:57.296849+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:29.638527+00:00"
     },
     {
       "title": "Transmigrating To The 80S To Become Stepmom To Five Bigwigs",
@@ -37058,7 +37138,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T20:59:59.158315+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:31.713172+00:00"
     },
     {
       "title": "Transmigration I Became The Daughter Of A Family Of Villains",
@@ -37085,7 +37165,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:01.215537+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:33.524845+00:00"
     },
     {
       "title": "Transmigrator Meets Reincarnator",
@@ -37112,7 +37192,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:02.980547+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:34.897456+00:00"
     },
     {
       "title": "Trapped With The Ceo",
@@ -37139,7 +37219,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:04.607895+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:36.342061+00:00"
     },
     {
       "title": "Treasure Hunt Tycoon",
@@ -37166,7 +37246,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:05.938201+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:37.613084+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -37308,7 +37388,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:07.327564+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:38.903740+00:00"
     },
     {
       "source": "",
@@ -37357,7 +37437,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:08.848115+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:40.538462+00:00"
     },
     {
       "source": "",
@@ -37461,7 +37541,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:10.375581+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:41.726544+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -37529,7 +37609,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-24T21:00:11.719248+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:43.274002+00:00"
     },
     {
       "source": "",
@@ -37580,7 +37660,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T04:49:15.824326+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:46.002829+00:00"
     },
     {
       "title": "Unrivaled Medicine God",
@@ -37666,7 +37746,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:17.459712+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:47.478647+00:00"
     },
     {
       "source": "",
@@ -37886,7 +37966,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T04:49:19.028937+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:48.951306+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -37979,7 +38059,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:20.203564+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:50.124282+00:00"
     },
     {
       "title": "Venerated Venomous Consort",
@@ -38035,7 +38115,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:21.998610+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:51.869892+00:00"
     },
     {
       "title": "Venomous Empress Reborn",
@@ -38057,7 +38137,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:23.294469+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:53.129605+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38121,7 +38201,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:24.831984+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:54.658822+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38172,7 +38252,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:26.012615+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:55.826318+00:00"
     },
     {
       "title": "Walker Of The Worlds",
@@ -38197,7 +38277,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:27.202491+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:57.005155+00:00"
     },
     {
       "title": "War Sovereign Soaring The Heavens",
@@ -38251,12 +38331,12 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:28.401460+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:58.151581+00:00"
     },
     {
       "title": "Warlock of the Magus World",
       "author": "The Plagiarist, Wen Chao Gong, 文抄公",
-      "chapters": 244,
+      "chapters": 245,
       "status": "Completed",
       "genres": [
         "Action",
@@ -38313,7 +38393,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T04:49:29.748414+00:00"
+      "metadataCheckedAt": "2026-10-26T22:48:59.454096+00:00"
     },
     {
       "title": "Warning Tsundere President",
@@ -38340,7 +38420,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:31.330270+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:01.151968+00:00"
     },
     {
       "source": "",
@@ -38455,7 +38535,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:32.556577+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:02.394305+00:00"
     },
     {
       "title": "When Beauty Meets Beasts",
@@ -38477,7 +38557,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:33.770234+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:03.620986+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38615,7 +38695,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:35.056607+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:04.943136+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38664,7 +38744,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:36.476137+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:06.296228+00:00"
     },
     {
       "title": "Wife Is Fierce Dont Mess With Her",
@@ -38691,7 +38771,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:38.058749+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:07.892751+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38762,7 +38842,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:39.495272+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:09.087030+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38832,7 +38912,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:41.048858+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:10.681121+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -38883,7 +38963,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:42.507591+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:12.129927+00:00"
     },
     {
       "title": "World Reformation Activities Of The Dark God Loving Humans So Much I Reincarnated In One",
@@ -38950,7 +39030,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T04:49:43.809112+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:13.335342+00:00"
     },
     {
       "title": "Worldwide Simulation Era",
@@ -38972,7 +39052,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:45.149574+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:14.645394+00:00"
     },
     {
       "source": "",
@@ -39136,7 +39216,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:46.388592+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:15.973946+00:00"
     },
     {
       "title": "Xianxia My Junior Sisters Are Freaks",
@@ -39163,7 +39243,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:47.772783+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:17.352074+00:00"
     },
     {
       "source": "",
@@ -39304,7 +39384,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:49.199294+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:18.867465+00:00"
     },
     {
       "title": "Young Master Damiens Pet",
@@ -39331,7 +39411,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:50.431887+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:20.132253+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -39375,7 +39455,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:51.955002+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:21.816545+00:00"
     },
     {
       "title": "Young Master Gu Please Be Gentle",
@@ -39402,7 +39482,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:53.256412+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:23.173729+00:00"
     },
     {
       "title": "Young Master Mo, Are You Done Kissing?",
@@ -39430,7 +39510,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:54.703593+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:24.620164+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -39531,7 +39611,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:56.526143+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:26.312048+00:00"
     },
     {
       "source": "",
@@ -39561,7 +39641,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T04:49:57.718266+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:27.457210+00:00"
     },
     {
       "source": "",
@@ -39694,7 +39774,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T04:49:58.973633+00:00"
+      "metadataCheckedAt": "2026-10-26T22:49:28.743842+00:00"
     }
   ]
 }
