@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-27T18:11:49.671896+00:00",
+  "updated_at": "2026-10-27T22:24:11.334873+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -4314,7 +4314,7 @@
       "title": "Blade - Unbound",
       "alternative": "",
       "author": "Old West Zhang (张老西)",
-      "chapters": 284,
+      "chapters": 285,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/bu.webp?v=92f103edb914fd3e45df6e42f01e3cebf264383f",
@@ -14179,7 +14179,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:21.937750+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:21.937750+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:45.788841+00:00"
+      }
     },
     {
       "title": "I Get A Random New Occupation Every Week",
@@ -14201,7 +14205,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:23.689051+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:23.689051+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:47.297921+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14223,7 +14231,11 @@
           "url": "https://novelfull.net/i-got-stronger-by-using-copper-coins-until-i-am-invincible.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:48.728190+00:00"
+      }
     },
     {
       "title": "I Have 10 Training Avatars",
@@ -14250,7 +14262,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:25.122391+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:25.122391+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:50.098523+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14272,14 +14288,18 @@
           "url": "https://novelfull.net/i-have-a-bunch-of-players-on-earth.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:51.307755+00:00"
+      }
     },
     {
       "source": "",
       "title": "I Have a Cultivation Simulator",
       "alternative": "",
       "author": "",
-      "chapters": 120,
+      "chapters": 890,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/i-have-a-cultivation-simulator-4a407d76c14810076dd2a3c5424ee673.jpg",
@@ -14294,7 +14314,11 @@
           "url": "https://novelfull.net/i-have-a-cultivation-simulator.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:52.613607+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14316,7 +14340,11 @@
           "url": "https://novelfull.net/i-have-a-destiny-dice.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:53.856025+00:00"
+      }
     },
     {
       "title": "I Have A Divine Tree In My Heart",
@@ -14343,7 +14371,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:26.571971+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:26.571971+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:55.131501+00:00"
+      }
     },
     {
       "title": "I Have A Game Clone",
@@ -14365,7 +14397,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:27.950411+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:27.950411+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:56.365463+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14402,7 +14438,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/i-have-a-mansion-in-the-post-apocalyptic-world"
+      "metadata_url": "https://kitsu.io/manga/i-have-a-mansion-in-the-post-apocalyptic-world",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:57.609293+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14429,7 +14469,11 @@
           "url": "https://novelfull.com/i-have-a-martial-arts-panel.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:23:58.883836+00:00"
+      }
     },
     {
       "source": "",
@@ -14457,7 +14501,11 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-27T12:21:59.511000+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:59.511000+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:00.208720+00:00"
+      }
     },
     {
       "title": "I Have A Super Usb Drive",
@@ -14484,7 +14532,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:29.470828+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:29.470828+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:01.416019+00:00"
+      }
     },
     {
       "source": "",
@@ -14513,7 +14565,11 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-27T12:22:00.796679+00:00"
+      "metadataCheckedAt": "2026-10-27T12:22:00.796679+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:02.654750+00:00"
+      }
     },
     {
       "source": "",
@@ -14544,7 +14600,11 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-27T12:22:03.006038+00:00"
+      "metadataCheckedAt": "2026-10-27T12:22:03.006038+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:03.875539+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14566,7 +14626,11 @@
           "url": "https://novelfull.net/i-have-robbed-999-types-of-powers.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:05.095593+00:00"
+      }
     },
     {
       "source": "",
@@ -14598,7 +14662,11 @@
           "url": "https://novelfull.net/i-have-the-alchemy-emperor-in-my-head.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:06.362602+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -14620,7 +14688,11 @@
           "url": "https://novelfull.net/i-help-the-richest-man-spend-money-to-prevent-disasters.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:07.579983+00:00"
+      }
     },
     {
       "title": "I Inherit An Auction House At The Start Trillion Times Rebate",
@@ -14647,7 +14719,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:31.931972+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:31.931972+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:08.889631+00:00"
+      }
     },
     {
       "title": "I Just Want To Be In A Relationship",
@@ -14674,7 +14750,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-27T12:21:33.158957+00:00"
+      "metadataCheckedAt": "2026-10-27T12:21:33.158957+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-10-27T22:24:10.096570+00:00"
+      }
     },
     {
       "title": "I Love You Monster The Blindfolded Wife X The Masked Husband",
@@ -19734,7 +19814,7 @@
       "title": "Miss Fairy, Please Hear Me Out",
       "alternative": "",
       "author": "Sky Spanner (弥天大厦)",
-      "chapters": 296,
+      "chapters": 298,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/mfp.webp?v=40818293d9e5720d991f6ab479e744cf98d01f54",
@@ -23087,7 +23167,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:17.099662+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:30.927116+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23251,7 +23331,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:18.717413+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:32.416799+00:00"
     },
     {
       "source": "",
@@ -23295,7 +23375,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:20.371273+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:33.773526+00:00"
     },
     {
       "source": "",
@@ -23322,7 +23402,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T21:00:21.717350+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:35.430923+00:00"
     },
     {
       "title": "Overlord Ln",
@@ -23349,7 +23429,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:23.323761+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:36.937063+00:00"
     },
     {
       "source": "",
@@ -23455,7 +23535,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:24.763348+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:38.770444+00:00"
     },
     {
       "title": "Pampered By The Toughest Man After Divorce",
@@ -23477,7 +23557,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:26.240966+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:40.362760+00:00"
     },
     {
       "title": "Pampered Poisonous Royal Wife",
@@ -23504,7 +23584,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:27.665392+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:42.018224+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23580,7 +23660,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:28.964383+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:43.456931+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -23648,7 +23728,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:30.537638+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:45.079665+00:00"
     },
     {
       "source": "",
@@ -23816,7 +23896,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:32.323055+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:46.780131+00:00"
     },
     {
       "title": "Perfect Secret Love: The Bad New Wife is a Little Sweet",
@@ -23950,7 +24030,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:33.570721+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:48.070503+00:00"
     },
     {
       "title": "Pet Simulator",
@@ -23972,7 +24052,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:35.051390+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:49.563360+00:00"
     },
     {
       "title": "Phoenix Ascending",
@@ -23999,7 +24079,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:36.532300+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:51.068584+00:00"
     },
     {
       "source": "",
@@ -24055,7 +24135,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:38.948170+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:52.841661+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -24104,7 +24184,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:40.305322+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:54.378772+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -24170,7 +24250,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:41.958625+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:56.135666+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -24430,7 +24510,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:43.807036+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:57.631860+00:00"
     },
     {
       "title": "Priceless Babys Super Daddy",
@@ -24452,7 +24532,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:45.097613+00:00"
+      "metadataCheckedAt": "2026-10-27T22:21:59.134912+00:00"
     },
     {
       "title": "Priceless New Bride Accidentally Offending The Dangerous Ceo",
@@ -24474,7 +24554,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:46.822071+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:00.979471+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -24518,7 +24598,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:48.165483+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:02.465520+00:00"
     },
     {
       "source": "",
@@ -24609,7 +24689,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:49.653120+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:04.298648+00:00"
     },
     {
       "title": "Professional Body Double",
@@ -24636,7 +24716,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:50.935761+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:05.751398+00:00"
     },
     {
       "source": "",
@@ -24680,7 +24760,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:53.239555+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:07.727144+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -24838,7 +24918,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T21:00:56.998448+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:11.843468+00:00"
     },
     {
       "title": "Quick Transmigration: Heroine Arrives, Woman Rapidly Retreats!",
@@ -24866,7 +24946,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:55.121696+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:09.980281+00:00"
     },
     {
       "title": "Quickly Wear The Face Of The Devil",
@@ -24893,7 +24973,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:00:59.733986+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:14.849975+00:00"
     },
     {
       "source": "NovelFull.com",
@@ -25237,7 +25317,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:00.991503+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:16.158430+00:00"
     },
     {
       "title": "Rebirth How A Loser Became A Prince Charming",
@@ -25264,7 +25344,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:02.826022+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:18.091459+00:00"
     },
     {
       "title": "Rebirth Into A Wolf I Can See My Evolution Paths",
@@ -25286,7 +25366,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:04.959532+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:20.276690+00:00"
     },
     {
       "title": "Rebirth Leading Families To Survive In The Apocalypse",
@@ -25308,7 +25388,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:07.147603+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:22.533351+00:00"
     },
     {
       "title": "Rebirth Of A Movie Star",
@@ -25335,7 +25415,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:08.519729+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:23.997094+00:00"
     },
     {
       "title": "Rebirth Of A Supermodel",
@@ -25362,7 +25442,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:10.471873+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:25.677314+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -25411,7 +25491,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:12.503809+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:27.704255+00:00"
     },
     {
       "title": "Rebirth Of The Apocalypse Queen On Your Knees Young Emperor",
@@ -25433,7 +25513,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:14.632289+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:29.936094+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -25576,7 +25656,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:16.041375+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:31.422635+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -25624,7 +25704,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-25T21:01:17.627602+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:33.043325+00:00"
     },
     {
       "title": "Rebirth of the Thief Who Roamed the World",
@@ -25721,7 +25801,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:19.416815+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:35.360143+00:00"
     },
     {
       "title": "Rebirth The Fake Heiress Stuns The World",
@@ -25743,7 +25823,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:21.020638+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:37.019884+00:00"
     },
     {
       "title": "Rebirth to a Military Marriage: Good Morning Chief",
@@ -25766,7 +25846,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-25T21:01:22.846029+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:38.880339+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -25861,7 +25941,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:04.170772+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:40.256530+00:00"
     },
     {
       "title": "Reborn Aristocrat Return Of The Vicious Heiress",
@@ -25883,7 +25963,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:05.815841+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:41.996689+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -25951,7 +26031,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:07.106731+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:43.399130+00:00"
     },
     {
       "title": "Reborn As The Blissful Wife In The Countryside",
@@ -25973,7 +26053,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:08.803721+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:45.163330+00:00"
     },
     {
       "title": "Reborn Femme Fatale First Daughter",
@@ -25995,7 +26075,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:10.233502+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:46.834475+00:00"
     },
     {
       "title": "Reborn In The Eighties As A Housewife With A Space",
@@ -26017,7 +26097,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:12.310029+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:49.248401+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -26066,7 +26146,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:13.828356+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:51.010085+00:00"
     },
     {
       "title": "Reborn Missy An Adorable Wife",
@@ -26088,7 +26168,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:15.338563+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:52.740032+00:00"
     },
     {
       "source": "",
@@ -26221,7 +26301,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:16.917251+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:54.496552+00:00"
     },
     {
       "source": "",
@@ -26255,7 +26335,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-10-26T04:56:18.219344+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:55.922364+00:00"
     },
     {
       "title": "Red Storm",
@@ -26502,7 +26582,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:19.547271+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:57.405272+00:00"
     },
     {
       "title": "Reincarnation Multi Skilled Goddess Is So Beautiful",
@@ -26524,7 +26604,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:21.641070+00:00"
+      "metadataCheckedAt": "2026-10-27T22:22:59.949080+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -26629,7 +26709,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:22.821518+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:01.377084+00:00"
     },
     {
       "title": "Release That Man",
@@ -26656,7 +26736,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:23.980644+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:02.823692+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -26779,7 +26859,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:25.136034+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:04.118915+00:00"
     },
     {
       "title": "Return Of The Female Knight",
@@ -26806,7 +26886,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:26.282265+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:05.451006+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -26898,7 +26978,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:28.118850+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:07.377068+00:00"
     },
     {
       "title": "Returning from the Immortal World",
@@ -26986,7 +27066,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:30.118885+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:09.503522+00:00"
     },
     {
       "source": "",
@@ -27062,7 +27142,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:31.460237+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:11.125927+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -27111,7 +27191,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:32.803216+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:12.906476+00:00"
     },
     {
       "source": "",
@@ -27349,7 +27429,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:34.336641+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:14.585390+00:00"
     },
     {
       "source": "",
@@ -27444,7 +27524,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:35.471069+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:15.982876+00:00"
     },
     {
       "title": "Seizing Dreams",
@@ -27471,7 +27551,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:36.623655+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:17.304544+00:00"
     },
     {
       "title": "Seoul Stations Necromancer",
@@ -27537,7 +27617,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:37.794009+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:18.783993+00:00"
     },
     {
       "title": "Sha Po Lang",
@@ -27650,7 +27730,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:39.307803+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:20.360534+00:00"
     },
     {
       "title": "She Is From The Countryside",
@@ -27672,7 +27752,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:40.674293+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:21.810058+00:00"
     },
     {
       "title": "She Is The Side Character Watch Her Change Her Fate",
@@ -27694,7 +27774,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:43.342492+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:24.273624+00:00"
     },
     {
       "title": "She Lives Without Regret In This Life",
@@ -27716,7 +27796,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:44.799075+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:25.900804+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -27767,7 +27847,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:46.347055+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:27.605269+00:00"
     },
     {
       "title": "Shinrei Tantei Yakumo",
@@ -27864,7 +27944,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:47.465064+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:28.892203+00:00"
     },
     {
       "title": "Shuras Wrath",
@@ -27925,7 +28005,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:50.624670+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:31.535353+00:00"
     },
     {
       "title": "Silent Crown",
@@ -27952,7 +28032,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:51.912659+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:33.075905+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -27996,7 +28076,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:53.139939+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:34.460298+00:00"
     },
     {
       "source": "",
@@ -28113,7 +28193,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:54.273738+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:35.753038+00:00"
     },
     {
       "title": "So I Am A Demon Descendent",
@@ -28135,7 +28215,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:55.784490+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:37.219847+00:00"
     },
     {
       "source": "",
@@ -28192,7 +28272,7 @@
       "title": "Something’s Wrong with This Game — I Became a God by Mining!",
       "alternative": "",
       "author": "",
-      "chapters": 120,
+      "chapters": 890,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/somethings-wrong-with-this-game-i-became-a-god-by-mining-4fe1f467340a69531caa8a62ffbe0e45.jpg",
@@ -28235,7 +28315,7 @@
       ],
       "title_origin": "url",
       "metadata_pending": true,
-      "metadataCheckedAt": "2026-10-26T04:56:57.439222+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:39.115278+00:00"
     },
     {
       "title": "Sorry My Interstellar Fleet Only Recruits Women",
@@ -28257,7 +28337,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:56:58.998472+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:40.952074+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -28351,7 +28431,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:57:00.203952+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:42.369911+00:00"
     },
     {
       "title": "Sovereign Of Judgment",
@@ -28499,7 +28579,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:57:02.046341+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:44.185114+00:00"
     },
     {
       "title": "Spirit Realm",
@@ -28616,7 +28696,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-10-26T04:57:03.364689+00:00"
+      "metadataCheckedAt": "2026-10-27T22:23:45.788441+00:00"
     },
     {
       "source": "",
@@ -39589,7 +39669,7 @@
       "title": "Wu dong Qian Kun: I, Lin Langtian, Refuse to be a Supporting Character",
       "alternative": "",
       "author": "",
-      "chapters": 755,
+      "chapters": 756,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/wu-dong-qian-kun-i-lin-langtian-refuse-to-be-a-supporting-character-78b941357179533511279c23368f4d55.jpg",
@@ -40102,7 +40182,7 @@
       "title": "Zhang Fei - The Abandoned Son",
       "alternative": "",
       "author": "JosieGan",
-      "chapters": 516,
+      "chapters": 517,
       "status": "Ongoing",
       "genres": [
         "Action",
