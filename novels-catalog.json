@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T19:02:16.141881+00:00",
+  "updated_at": "2026-11-16T06:40:59.207620+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -85,7 +85,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:49.767657+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:11.735305+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:34.764641+00:00"
@@ -111,7 +111,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:51.553272+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:13.035377+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:36.035595+00:00"
@@ -168,7 +168,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:54.208607+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:14.453802+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:38.575658+00:00"
@@ -279,7 +279,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:56.723735+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:17.073591+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:43.600694+00:00"
@@ -435,7 +435,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:58.283128+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:18.748095+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T17:22:48.743078+00:00"
@@ -832,7 +832,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:00.586078+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:21.092541+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:10.188894+00:00"
@@ -1447,7 +1447,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:02.670856+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:22.964939+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:32.143432+00:00"
@@ -1478,7 +1478,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:05.064709+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:24.803243+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-21T21:53:33.350048+00:00"
@@ -1558,7 +1558,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:07.231228+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:26.776095+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:46.294570+00:00"
@@ -1610,7 +1610,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:10.036835+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:28.862271+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:48.859910+00:00"
@@ -1662,7 +1662,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:12.350171+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:31.066784+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:51.436412+00:00"
@@ -1714,7 +1714,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:15.491034+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:32.731530+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:53.940658+00:00"
@@ -1818,7 +1818,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:51:18.290863+00:00",
+      "metadataCheckedAt": "2026-11-16T06:40:34.641299+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-22T04:57:57.762365+00:00"
@@ -2956,7 +2956,7 @@
       "title": "Aurora Scroll",
       "alternative": "",
       "author": "",
-      "chapters": 579,
+      "chapters": 566,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/aurora-scroll-2d9208ea49f5a3b32599a3f4990498d2.jpg",
@@ -3450,7 +3450,7 @@
       "title": "Beast Taming: I Have an Immortal Mansion",
       "alternative": "",
       "author": "",
-      "chapters": 4,
+      "chapters": 2,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/beast-taming-i-have-an-immortal-mansion-cd6c4a8a6ddcac3389595573d26fadad.jpg",
@@ -4056,7 +4056,7 @@
       "title": "Beyond the Zenith",
       "alternative": "",
       "author": "Human Arsenal (人间武库)",
-      "chapters": 194,
+      "chapters": 196,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/bz.webp?v=452c35caf08768f7cf1a76c376074909a5506e5e",
@@ -4246,7 +4246,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T06:56:51.674625+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:24.802896+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-25T04:51:10.328043+00:00"
@@ -4340,7 +4340,7 @@
       "title": "Blade - Unbound",
       "alternative": "",
       "author": "Old West Zhang (张老西)",
-      "chapters": 303,
+      "chapters": 304,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/bu.webp?v=92f103edb914fd3e45df6e42f01e3cebf264383f",
@@ -5121,7 +5121,7 @@
       "title": "Chunibyo in Cultivation World",
       "alternative": "",
       "author": "",
-      "chapters": 400,
+      "chapters": 310,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/chunibyo-in-cultivation-world-92ef06bd978a863ee618c553247ddf54.jpg",
@@ -5607,7 +5607,7 @@
       "title": "Crossing the Timeline: Is It Reasonable for Me, the God of Wealth, To Be Short on Money?",
       "alternative": "",
       "author": "",
-      "chapters": 625,
+      "chapters": 629,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/crossing-the-timeline-is-it-reasonable-for-me-the-god-of-wealth-to-be-short-on-money-b096acf3b6f00f73cae559c678ebfe6e.jpg",
@@ -5906,7 +5906,7 @@
       "title": "Cultivation: From Poor Peasant to Celestial Lord",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/cultivation-from-poor-peasant-to-celestial-lord-0ee802495de014b45b8d1f974ca4409d.jpg",
@@ -6257,7 +6257,7 @@
       "title": "Day of Ascension",
       "alternative": "",
       "author": "Pig Nerd (宅猪)",
-      "chapters": 256,
+      "chapters": 257,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/da.webp?v=22b2b8e05665b41a223bb167180206606d1cf860",
@@ -8631,7 +8631,7 @@
       "title": "ETERNAL LIFE FROM TALISMAN PAINTING",
       "alternative": "",
       "author": "",
-      "chapters": 4875,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/eternal-life-from-talisman-painting-fbbe2c5b6abd1fe749564e9a5f1f548d.jpg",
@@ -8657,7 +8657,7 @@
       "title": "Eternal Life: I Can Sell Everything",
       "alternative": "",
       "author": "Sunken Boat Angling Snow",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -13672,7 +13672,7 @@
       "title": "I AM USING HACKS IN CULTIVATION WORLD",
       "alternative": "",
       "author": "",
-      "chapters": 19,
+      "chapters": 3954,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/i-am-using-hacks-in-cultivation-world-bcd34e5ed6cf852811ab79895b05a6a1.jpg",
@@ -14512,7 +14512,7 @@
       "title": "I Have a Cultivation Simulator",
       "alternative": "",
       "author": "",
-      "chapters": 560,
+      "chapters": 351,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/i-have-a-cultivation-simulator-4a407d76c14810076dd2a3c5424ee673.jpg",
@@ -15261,7 +15261,7 @@
       "title": "I Secretly Cultivate Immortality in the Martial Arts World",
       "alternative": "",
       "author": "",
-      "chapters": 400,
+      "chapters": 310,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/i-secretly-cultivate-immortality-in-the-martial-arts-world-7b25f49b717156b1f8bb3200c7f0c157.jpg",
@@ -15439,7 +15439,7 @@
       "title": "I Swear I'm Not a Demon Masquerading as a Human",
       "alternative": "",
       "author": "Pitiful Xixi (可怜的夕夕)",
-      "chapters": 274,
+      "chapters": 276,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/snd.webp?v=ff73b4e8c946650f3e170f9c820c3cea35e2cded",
@@ -15915,7 +15915,7 @@
       "title": "Immortal Ascension Through Marriage: Investing in My Wife Get Returns",
       "alternative": "",
       "author": "",
-      "chapters": 154,
+      "chapters": 439,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/immortal-ascension-through-marriage-investing-in-my-wife-get-returns-dbc7d222f720bbaad0cfaad6844efed1.jpg",
@@ -15941,7 +15941,7 @@
       "title": "Immortal Cultivation Begins with Drawing Talismans",
       "alternative": "",
       "author": "",
-      "chapters": 577,
+      "chapters": 310,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/immortal-cultivation-begins-with-drawing-talismans-cf3a9af50b465214cd20a5d7f5e58d29.jpg",
@@ -16249,7 +16249,7 @@
       "title": "Immortality Simulator",
       "alternative": "",
       "author": "Angry Squid, 愤怒的乌贼",
-      "chapters": 734,
+      "chapters": 744,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -16287,7 +16287,7 @@
       "title": "Immortality Simulator [Wuxiaworld]",
       "alternative": "",
       "author": "",
-      "chapters": 734,
+      "chapters": 744,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/immortality-simulator-wuxiaworld-8afa3f0d5752ef50bff42c070bdb5cc7.jpg",
@@ -16350,7 +16350,7 @@
       "title": "Immortality Through Array Formations",
       "alternative": "",
       "author": "Observing the Emptiness",
-      "chapters": 3,
+      "chapters": 2,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -17032,7 +17032,7 @@
       "title": "Invincible Soul Emperor",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/invincible-soul-emperor-351b67fa4f12a69953cd98b744c2c7b0.jpg",
@@ -17724,7 +17724,7 @@
       "title": "King of Ten Thousand Years",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/king-of-ten-thousand-years-d03805b5aa9e6527101ef6b2ce8d726b.jpg",
@@ -18796,7 +18796,7 @@
       "title": "Longevity through Farming, Breeding and Cultivating",
       "alternative": "",
       "author": "Not greater than 1",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "Ongoing",
       "genres": [
         "Eastern",
@@ -18993,7 +18993,7 @@
       "title": "Lord of All Gods",
       "alternative": "",
       "author": "",
-      "chapters": 3492,
+      "chapters": 3495,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/lord-of-all-gods-7ceffb9dd3b2799646261fb912f633b2.jpg",
@@ -20902,7 +20902,7 @@
       "title": "Miss Fairy, Please Hear Me Out",
       "alternative": "",
       "author": "Sky Spanner (弥天大厦)",
-      "chapters": 344,
+      "chapters": 346,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/mfp.webp?v=40818293d9e5720d991f6ab479e744cf98d01f54",
@@ -23495,7 +23495,7 @@
       "title": "Myriad Dragon Divine Sovereign",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/myriad-dragon-divine-sovereign-6cea394fbcb1369e4521ac3ef6c24b7d.jpg",
@@ -23954,7 +23954,7 @@
       "title": "New Ability Every Ten Days: Becoming a Vampire Made Me Too OP",
       "alternative": "",
       "author": "Three Lifetimes of Dao",
-      "chapters": 302,
+      "chapters": 304,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/naetd.webp?v=e440d24e791bff4ea9576aed3e6d53cf8845f0e5",
@@ -27143,7 +27143,7 @@
       "title": "Realm Walker",
       "alternative": "",
       "author": "Paperboy Young Master (卖报小郎君)",
-      "chapters": 306,
+      "chapters": 307,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/rw.webp?v=4186b7e66bb56d5422ea69b483670e8a4f9bf398",
@@ -29259,6 +29259,32 @@
       }
     },
     {
+      "source": "",
+      "title": "Reverend Insanity : Blood Path",
+      "alternative": "",
+      "author": "",
+      "chapters": 2,
+      "status": "",
+      "genres": [],
+      "cover": "https://novelfull.net/uploads/thumbs/reverend-insanity-blood-path-e57c3319dacaac6d9bfeb38c62913665.jpg",
+      "synopsis": "",
+      "year": "",
+      "rating": null,
+      "url": "https://novelfull.net/reverend-insanity-blood-path.html",
+      "language": "EN",
+      "sources": [
+        {
+          "site": "NovelFull.net",
+          "url": "https://novelfull.net/reverend-insanity-blood-path.html",
+          "lang": "EN"
+        }
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:34.641823+00:00"
+      }
+    },
+    {
       "title": "Rich Young Mistress Young Master Xies Dearest Beloved Wife",
       "title_origin": "url",
       "metadata_pending": true,
@@ -29734,7 +29760,7 @@
       "title": "Sect: Starting with Comprehending Thunder Skill",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/sect-starting-with-comprehending-thunder-skill-128d8d17b5e2f1bec588b949e8ea0b10.jpg",
@@ -30368,7 +30394,7 @@
       "title": "Sign-In in the Forbidden Archive: Starting with 100 Divine Pills",
       "alternative": "",
       "author": "",
-      "chapters": 72,
+      "chapters": 74,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/sign-in-in-the-forbidden-archive-starting-with-100-divine-pills-ab122dbf65f53634ba91bdf94d80af16.jpg",
@@ -30698,7 +30724,7 @@
       "title": "Something’s Wrong with This Game — I Became a God by Mining!",
       "alternative": "",
       "author": "",
-      "chapters": 560,
+      "chapters": 351,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/somethings-wrong-with-this-game-i-became-a-god-by-mining-4fe1f467340a69531caa8a62ffbe0e45.jpg",
@@ -31119,7 +31145,7 @@
       "title": "Spirit Ruin, Sword Coffin, Blind Swordsman",
       "alternative": "",
       "author": "",
-      "chapters": 1054,
+      "chapters": 1064,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/spirit-ruin-sword-coffin-blind-swordsman-bc2fe4c81df3cacc246694da477e3784.jpg",
@@ -31455,7 +31481,7 @@
       "title": "STARTING FROM A SON IN LAW TO BUILD AN LONG LASTING FAMILY",
       "alternative": "",
       "author": "",
-      "chapters": 2,
+      "chapters": 3,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/starting-from-a-son-in-law-to-build-an-long-lasting-family-eb89eb38ca21557cca7481c90197a425.jpg",
@@ -31696,7 +31722,7 @@
       "title": "Stealing Immortal",
       "alternative": "",
       "author": "",
-      "chapters": 4920,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/stealing-immortal-42871e50dfd1969d1cfdc6e2eae22625.jpg",
@@ -34424,7 +34450,7 @@
       "title": "The Blade-Wielding Legend",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-blade-wielding-legend-b9f50fba0a90119473e48adbf7f2270d.jpg",
@@ -35044,7 +35070,7 @@
       "title": "The Dao of Thread and Root",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-dao-of-thread-and-root-d8299e865a193db95ae65d2041c989d8.jpg",
@@ -37367,7 +37393,7 @@
       "title": "The Last Dual-Cultivator",
       "alternative": "",
       "author": "",
-      "chapters": 47,
+      "chapters": 53,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-last-dual-cultivator-6265287fee65a087ea3e527d6a7b0c71.jpg",
@@ -38790,7 +38816,7 @@
       "title": "The Quest for Immortality",
       "alternative": "",
       "author": "",
-      "chapters": 2931,
+      "chapters": 2938,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-quest-for-immortality-6bf740451a592e8baaf7cd819af6d1e6.jpg",
@@ -39334,7 +39360,7 @@
       "title": "The Sect Leader Has Taken in a New Female Disciple",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-sect-leader-has-taken-in-a-new-female-disciple-80a6458f9ab1803e1b01225ffc885e80.jpg",
@@ -39469,7 +39495,7 @@
       "title": "The Sorcerer's Handbook",
       "alternative": "",
       "author": "Listening Day (听日)",
-      "chapters": 610,
+      "chapters": 612,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/tsh.webp?v=efe662ce52ed9ef3d166effc41efc211c0a4a264",
@@ -39864,7 +39890,7 @@
       "title": "The System Bound the Wrong Person, Forcing a Side Character to Follow the Protagonist’s Script",
       "alternative": "",
       "author": "",
-      "chapters": 400,
+      "chapters": 310,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-system-bound-the-wrong-person-forcing-a-side-character-to-follow-the-protagonists-script-b998a87ab0fe4dd41acc630aa5815d31.jpg",
@@ -39988,7 +40014,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:46.759998+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:33.703136+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T06:34:45.291384+00:00"
@@ -40048,7 +40074,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:48.320137+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:35.152636+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T06:34:47.870512+00:00"
@@ -40079,7 +40105,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:49.857450+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:36.302446+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T06:34:49.087890+00:00"
@@ -40110,7 +40136,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:51.922409+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:38.517687+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T06:34:50.306020+00:00"
@@ -40216,7 +40242,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:53.487010+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:39.919408+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T06:34:55.495954+00:00"
@@ -40327,7 +40353,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:55.323783+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:41.387149+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T06:35:00.543315+00:00"
@@ -40353,7 +40379,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:55:57.915089+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:42.705447+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:22.773511+00:00"
@@ -40379,7 +40405,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:01.478496+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:44.247502+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:24.034026+00:00"
@@ -40410,7 +40436,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:03.321054+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:45.954514+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:25.246019+00:00"
@@ -40436,7 +40462,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:04.989828+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:47.515331+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:26.451473+00:00"
@@ -40467,7 +40493,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:08.666056+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:50.468603+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:27.657832+00:00"
@@ -40524,7 +40550,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:10.665426+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:51.954263+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:30.202891+00:00"
@@ -40810,7 +40836,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T06:56:12.833611+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:53.452788+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:41.393334+00:00"
@@ -40919,7 +40945,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:14.175195+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:54.744380+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T18:13:46.433075+00:00"
@@ -40945,7 +40971,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:16.581681+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:56.152094+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:29.633127+00:00"
@@ -40977,7 +41003,7 @@
       ],
       "title_origin": "url",
       "metadata_pending": true,
-      "metadataCheckedAt": "2026-11-13T06:56:18.106573+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:57.639665+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:30.888780+00:00"
@@ -41088,7 +41114,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:19.603788+00:00",
+      "metadataCheckedAt": "2026-11-16T06:38:58.874908+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:36.036418+00:00"
@@ -41119,7 +41145,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:21.214380+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:00.068986+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:37.244658+00:00"
@@ -41204,7 +41230,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:22.630349+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:01.269850+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:41.248904+00:00"
@@ -41235,7 +41261,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:24.266861+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:02.500908+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:42.463525+00:00"
@@ -41313,7 +41339,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:25.904819+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:04.068182+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:46.347108+00:00"
@@ -41365,7 +41391,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:28.808829+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:05.442842+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-14T22:35:49.042869+00:00"
@@ -41416,7 +41442,7 @@
       "title": "Top-Tier Perception Starts From Basic Fist Techniques",
       "alternative": "",
       "author": "",
-      "chapters": 307,
+      "chapters": 315,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/top-tier-perception-starts-from-basic-fist-techniques-bd7dd7b2fbaaee092a5928fb9ba5b525.jpg",
@@ -41540,7 +41566,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:30.265797+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:06.758490+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:09.717487+00:00"
@@ -41566,7 +41592,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:32.071416+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:08.526846+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:10.906730+00:00"
@@ -41670,7 +41696,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:33.719956+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:10.094373+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:15.754379+00:00"
@@ -41696,7 +41722,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:35.648432+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:12.005353+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:16.895748+00:00"
@@ -41727,7 +41753,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:37.825136+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:14.015438+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:18.037119+00:00"
@@ -41758,7 +41784,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:39.193764+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:15.386932+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:19.184513+00:00"
@@ -41789,7 +41815,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:40.632599+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:16.960966+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:20.322190+00:00"
@@ -41820,7 +41846,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:42.198524+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:18.139035+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:21.474142+00:00"
@@ -42008,7 +42034,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:43.639592+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:19.556721+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:28.581886+00:00"
@@ -42065,7 +42091,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:45.667919+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:20.961049+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T06:43:30.968585+00:00"
@@ -42185,7 +42211,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:47.222335+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:22.142679+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T19:01:56.790121+00:00"
@@ -42265,7 +42291,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:48.746472+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:23.432563+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T19:02:00.482022+00:00"
@@ -42324,7 +42350,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T06:56:53.418776+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:26.138156+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T19:02:02.956094+00:00"
@@ -42422,7 +42448,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T06:56:54.931928+00:00",
+      "metadataCheckedAt": "2026-11-16T06:39:27.680147+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-15T19:02:06.476295+00:00"
@@ -42674,7 +42700,11 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T06:56:56.407692+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:29.155165+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:35.924645+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -42696,7 +42726,11 @@
           "url": "https://novelfull.net/urban-supreme-evil-young-master.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:37.171388+00:00"
+      }
     },
     {
       "source": "",
@@ -42718,7 +42752,11 @@
           "url": "https://novelfull.net/urban-vagabond-reload.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:38.498568+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -42740,7 +42778,11 @@
           "url": "https://novelfull.net/valerian-empire.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:39.753770+00:00"
+      }
     },
     {
       "title": "Valhalla Saga",
@@ -42767,14 +42809,18 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:49:50.495460+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:30.486659+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:41.040421+00:00"
+      }
     },
     {
       "source": "",
       "title": "Vampire Progenitor of the Immortal World",
       "alternative": "",
       "author": "",
-      "chapters": 4936,
+      "chapters": 4949,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/vampire-progenitor-of-the-immortal-world-3cd6ed4f5d16fce543660b338a69a301.jpg",
@@ -42789,7 +42835,11 @@
           "url": "https://novelfull.net/vampire-progenitor-of-the-immortal-world.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:42.226306+00:00"
+      }
     },
     {
       "title": "Venerated Venomous Consort",
@@ -42818,7 +42868,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:43.454617+00:00"
+      }
     },
     {
       "title": "Vengeance Ex Husband Ceo Please Love Me",
@@ -42845,7 +42899,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:49:53.243703+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:32.183995+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:44.634010+00:00"
+      }
     },
     {
       "title": "Venomous Empress Reborn",
@@ -42867,7 +42925,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:49:54.962733+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:33.457418+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:45.846206+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -42904,7 +42966,11 @@
           "url": "https://novelfull.com/versatile-mage.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:47.096600+00:00"
+      }
     },
     {
       "title": "Very Pure And Ambiguous The Prequel",
@@ -42931,7 +42997,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:49:57.562267+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:34.884873+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:48.366661+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -42955,7 +43025,11 @@
         }
       ],
       "metadata_source": "Kitsu",
-      "metadata_url": "https://kitsu.io/manga/the-s-class-hunter-doesn-t-want-to-be-a-villainous-princess"
+      "metadata_url": "https://kitsu.io/manga/the-s-class-hunter-doesn-t-want-to-be-a-villainous-princess",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:49.589907+00:00"
+      }
     },
     {
       "title": "Waiting For You Online",
@@ -42982,7 +43056,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:49:59.394637+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:36.153509+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:50.854659+00:00"
+      }
     },
     {
       "title": "Walker Of The Worlds",
@@ -43007,7 +43085,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:01.181398+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:37.297296+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:52.059330+00:00"
+      }
     },
     {
       "title": "War Sovereign Soaring The Heavens",
@@ -43039,7 +43121,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:53.267832+00:00"
+      }
     },
     {
       "title": "Warlock Apprentice",
@@ -43061,7 +43147,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:03.006929+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:38.408169+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:54.452450+00:00"
+      }
     },
     {
       "title": "Warlock of the Magus World",
@@ -43095,7 +43185,11 @@
           "lang": "EN"
         }
       ],
-      "language": "EN"
+      "language": "EN",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:55.631374+00:00"
+      }
     },
     {
       "source": "",
@@ -43123,7 +43217,11 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T19:50:06.671096+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:39.693539+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:56.813500+00:00"
+      }
     },
     {
       "title": "Warning Tsundere President",
@@ -43150,7 +43248,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:09.124698+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:41.139461+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-16T06:40:58.016177+00:00"
+      }
     },
     {
       "source": "",
@@ -43265,7 +43367,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:10.418061+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:42.293075+00:00"
     },
     {
       "title": "When Beauty Meets Beasts",
@@ -43287,7 +43389,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:11.918215+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:43.523025+00:00"
     },
     {
       "source": "",
@@ -43447,7 +43549,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:13.429286+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:44.753792+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -43496,7 +43598,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:15.668247+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:46.099025+00:00"
     },
     {
       "title": "Wife Is Fierce Dont Mess With Her",
@@ -43523,7 +43625,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:17.360352+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:47.608887+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -43594,7 +43696,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:19.073373+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:48.797370+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -43664,7 +43766,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:20.618019+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:50.317664+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -43715,7 +43817,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:22.563898+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:51.848045+00:00"
     },
     {
       "title": "World Reformation Activities Of The Dark God Loving Humans So Much I Reincarnated In One",
@@ -43782,7 +43884,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T19:50:23.921424+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:53.018201+00:00"
     },
     {
       "title": "Worldwide Simulation Era",
@@ -43804,7 +43906,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:25.945980+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:54.299084+00:00"
     },
     {
       "source": "",
@@ -43887,7 +43989,7 @@
       "title": "Wu dong Qian Kun: I, Lin Langtian, Refuse to be a Supporting Character",
       "alternative": "",
       "author": "",
-      "chapters": 767,
+      "chapters": 770,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/wu-dong-qian-kun-i-lin-langtian-refuse-to-be-a-supporting-character-78b941357179533511279c23368f4d55.jpg",
@@ -43968,7 +44070,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:27.877676+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:55.514290+00:00"
     },
     {
       "title": "Xianxia My Junior Sisters Are Freaks",
@@ -43995,7 +44097,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:30.697442+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:56.887652+00:00"
     },
     {
       "source": "",
@@ -44136,7 +44238,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:32.630032+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:58.459564+00:00"
     },
     {
       "title": "Young Master Damiens Pet",
@@ -44163,7 +44265,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:34.490564+00:00"
+      "metadataCheckedAt": "2026-11-16T06:39:59.679888+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -44207,7 +44309,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:37.447485+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:02.360428+00:00"
     },
     {
       "title": "Young Master Gu Please Be Gentle",
@@ -44234,7 +44336,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:39.525406+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:03.716720+00:00"
     },
     {
       "title": "Young Master Mo, Are You Done Kissing?",
@@ -44262,7 +44364,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:41.596920+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:05.383668+00:00"
     },
     {
       "source": "NovelFull.net",
@@ -44363,7 +44465,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:43.961045+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:07.059942+00:00"
     },
     {
       "source": "",
@@ -44393,14 +44495,14 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-13T19:50:45.746799+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:08.581834+00:00"
     },
     {
       "source": "",
       "title": "Zhang Fei - The Abandoned Son",
       "alternative": "",
       "author": "JosieGan",
-      "chapters": 532,
+      "chapters": 536,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -44526,7 +44628,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-13T19:50:47.579658+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:10.150165+00:00"
     }
   ]
 }
