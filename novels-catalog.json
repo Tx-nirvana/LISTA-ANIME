@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-17T08:05:34.729975+00:00",
+  "updated_at": "2026-11-17T21:07:35.492878+00:00",
   "items": [
     {
       "source": "NovelFull.net",
@@ -29,7 +29,7 @@
       ],
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:33.447784+00:00"
+        "at": "2026-11-17T21:07:26.393227+00:00"
       }
     },
     {
@@ -88,7 +88,7 @@
       "metadataCheckedAt": "2026-11-16T06:40:11.735305+00:00",
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:34.764641+00:00"
+        "at": "2026-11-17T21:07:27.724990+00:00"
       }
     },
     {
@@ -114,7 +114,7 @@
       "metadataCheckedAt": "2026-11-16T06:40:13.035377+00:00",
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:36.035595+00:00"
+        "at": "2026-11-17T21:07:28.925862+00:00"
       }
     },
     {
@@ -145,7 +145,7 @@
       ],
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:37.271854+00:00"
+        "at": "2026-11-17T21:07:30.121532+00:00"
       }
     },
     {
@@ -171,7 +171,7 @@
       "metadataCheckedAt": "2026-11-16T06:40:14.453802+00:00",
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:38.575658+00:00"
+        "at": "2026-11-17T21:07:31.523705+00:00"
       }
     },
     {
@@ -199,7 +199,7 @@
       "metadata_url": "https://kitsu.io/manga/1-2-prince-novel",
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:39.797925+00:00"
+        "at": "2026-11-17T21:07:32.712389+00:00"
       }
     },
     {
@@ -207,7 +207,7 @@
       "title": "13 Mink Street",
       "alternative": "",
       "author": "Innocent Little Dragon (纯洁滴小龙)",
-      "chapters": 439,
+      "chapters": 440,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/13ms.webp?v=e20f5af26464cf93d82bb4bac69c5dc184e7b440",
@@ -225,7 +225,7 @@
       ],
       "linkCheck": {
         "status": "ok",
-        "at": "2026-10-21T17:22:41.076394+00:00"
+        "at": "2026-11-17T21:07:34.087493+00:00"
       }
     },
     {
@@ -2337,7 +2337,7 @@
       "title": "An Alchemist's Path to Eternity",
       "alternative": "",
       "author": "The Rain Keeps Falling, 雨去欲续",
-      "chapters": 3360,
+      "chapters": 3361,
       "status": "Ongoing",
       "genres": [
         "Action",
@@ -5057,7 +5057,7 @@
       "title": "Chosen: Beyond Fate",
       "alternative": "",
       "author": "Windmoon (风月)",
-      "chapters": 432,
+      "chapters": 434,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/cbf.webp?v=20f808d91374d469ba84ace01d1d7b206ae687c6",
@@ -6657,7 +6657,7 @@
       "title": "Destiny in Cinders",
       "alternative": "",
       "author": "Shrouded God of Gloomy Skies (阴天神隐)",
-      "chapters": 490,
+      "chapters": 492,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/dic.webp?v=afe52f139386bb44a8b63cc154d6f2c33c9b8d6a",
@@ -7407,7 +7407,7 @@
       "title": "Dragon Canon",
       "alternative": "",
       "author": "Misty Rain of Jiangnan (烟雨江南)",
-      "chapters": 504,
+      "chapters": 506,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/dc.webp?v=dbf623ea5ca438513798d88a6229aa954532b365",
@@ -18580,7 +18580,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:05.142815+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:00.666744+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T05:59:32.272193+00:00"
@@ -18606,7 +18606,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:07.238120+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:09.373520+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T05:59:33.414832+00:00"
@@ -18694,7 +18694,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:09.353852+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:12.539978+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T05:59:37.023962+00:00"
@@ -18751,7 +18751,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:12.063259+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:17.863869+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T05:59:39.351559+00:00"
@@ -18982,7 +18982,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:13.960436+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:20.469221+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T05:59:48.651121+00:00"
@@ -19090,7 +19090,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:15.417822+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:24.349093+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T05:59:53.357135+00:00"
@@ -19221,7 +19221,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:16.892283+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:27.102450+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:31.398923+00:00"
@@ -19287,7 +19287,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:18.497539+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:29.027762+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:33.859832+00:00"
@@ -19313,7 +19313,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:20.461319+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:34.353852+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:35.065059+00:00"
@@ -19365,7 +19365,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:22.032118+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:36.722649+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:37.501880+00:00"
@@ -19396,7 +19396,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:23.353433+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:39.727289+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:38.679332+00:00"
@@ -19514,7 +19514,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:24.988144+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:42.124249+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:43.600945+00:00"
@@ -19540,7 +19540,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:26.716853+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:45.373491+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:44.820417+00:00"
@@ -19566,7 +19566,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:29.050681+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:47.485269+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:46.017827+00:00"
@@ -19597,7 +19597,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:31.860348+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:49.582792+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:47.214749+00:00"
@@ -19649,7 +19649,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:33.423635+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:52.446985+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:49.701651+00:00"
@@ -19714,7 +19714,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-14T18:12:35.675412+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:55.203188+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T13:06:52.170568+00:00"
@@ -19792,7 +19792,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:37.714168+00:00",
+      "metadataCheckedAt": "2026-11-17T21:03:57.994906+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T22:30:32.431383+00:00"
@@ -19853,7 +19853,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:39.621604+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:05.009015+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T22:30:34.890015+00:00"
@@ -19989,7 +19989,7 @@
       ],
       "title_origin": "url",
       "metadata_pending": true,
-      "metadataCheckedAt": "2026-11-14T18:12:42.240159+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:07.741326+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T22:30:41.247499+00:00"
@@ -20022,7 +20022,7 @@
       ],
       "title_origin": "url",
       "metadata_pending": true,
-      "metadataCheckedAt": "2026-11-14T18:12:43.748193+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:11.051584+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T22:30:42.436881+00:00"
@@ -20306,7 +20306,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:46.140511+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:13.225380+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-30T22:30:52.279105+00:00"
@@ -20389,7 +20389,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:47.921759+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:15.441369+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T05:52:34.356833+00:00"
@@ -20415,7 +20415,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:51.292037+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:18.917162+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T05:52:35.531962+00:00"
@@ -20452,7 +20452,7 @@
       "title": "Master of Fangcun",
       "alternative": "",
       "author": "",
-      "chapters": 630,
+      "chapters": 2762,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/master-of-fangcun-7a63b4980d86a0f197405ba74e6718f7.jpg",
@@ -20529,7 +20529,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:52.891315+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:21.193945+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T05:52:40.239924+00:00"
@@ -20773,7 +20773,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:56.689877+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:28.803570+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T05:52:49.636930+00:00"
@@ -20891,7 +20891,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:58.244374+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:30.811375+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T05:52:54.273182+00:00"
@@ -20902,7 +20902,7 @@
       "title": "Miss Fairy, Please Hear Me Out",
       "alternative": "",
       "author": "Sky Spanner (弥天大厦)",
-      "chapters": 348,
+      "chapters": 350,
       "status": "Ongoing",
       "genres": [],
       "cover": "https://cdn.wuxiaworld.com/images/covers/mfp.webp?v=40818293d9e5720d991f6ab479e744cf98d01f54",
@@ -20974,7 +20974,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:12:59.971120+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:33.486429+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T12:41:21.771340+00:00"
@@ -21116,7 +21116,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:01.948894+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:38.482418+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T12:41:27.780194+00:00"
@@ -21142,7 +21142,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:03.927862+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:44.926473+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T12:41:28.934429+00:00"
@@ -21350,7 +21350,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:06.050315+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:46.724703+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T12:41:36.118228+00:00"
@@ -21457,7 +21457,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:08.689509+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:49.912263+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T12:41:39.566287+00:00"
@@ -21568,7 +21568,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:10.398330+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:52.574397+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:45:49.206181+00:00"
@@ -21599,7 +21599,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:13.001343+00:00",
+      "metadataCheckedAt": "2026-11-17T21:04:56.265056+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:45:50.376470+00:00"
@@ -21695,7 +21695,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:15.996516+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:00.436146+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:45:53.917383+00:00"
@@ -21721,7 +21721,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:19.494894+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:04.031916+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:45:55.060583+00:00"
@@ -21783,7 +21783,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T18:13:21.154548+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:06.809493+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:45:57.401125+00:00"
@@ -21906,7 +21906,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-14T18:13:22.772697+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:12.911178+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:46:02.216628+00:00"
@@ -21937,7 +21937,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:24.749485+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:14.486943+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:46:03.359134+00:00"
@@ -21963,7 +21963,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:26.381054+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:16.473934+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:46:04.502341+00:00"
@@ -22097,7 +22097,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:29.205452+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:19.441897+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-10-31T21:46:09.162718+00:00"
@@ -22185,7 +22185,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:31.340313+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:21.505118+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T06:16:37.447828+00:00"
@@ -22322,7 +22322,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:35.003775+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:24.767433+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T06:16:43.852353+00:00"
@@ -22438,7 +22438,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:36.228521+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:26.646665+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T06:16:48.813629+00:00"
@@ -22464,7 +22464,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:42.856239+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:31.354745+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T06:16:50.033955+00:00"
@@ -22490,7 +22490,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:44.670957+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:32.794669+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T06:16:51.239172+00:00"
@@ -22747,7 +22747,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:46.057992+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:34.656972+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:16.044194+00:00"
@@ -22778,7 +22778,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:49.590897+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:39.348577+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:17.267097+00:00"
@@ -22856,7 +22856,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:52.559009+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:43.651817+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:20.976165+00:00"
@@ -22882,7 +22882,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:54.533535+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:45.584213+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:22.176686+00:00"
@@ -22908,7 +22908,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:56.561486+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:49.276975+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:23.356572+00:00"
@@ -23019,7 +23019,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:58.101411+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:51.451676+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:28.339591+00:00"
@@ -23081,7 +23081,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:32:59.828332+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:53.357810+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:30.799379+00:00"
@@ -23112,7 +23112,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:02.171537+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:55.157105+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:32.005249+00:00"
@@ -23138,7 +23138,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:06.180476+00:00",
+      "metadataCheckedAt": "2026-11-17T21:05:57.272500+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T13:35:33.205172+00:00"
@@ -23149,7 +23149,7 @@
       "title": "My Superpower Is Piloting Magical Girl Corpses?",
       "alternative": "",
       "author": "",
-      "chapters": 287,
+      "chapters": 323,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/my-superpower-is-piloting-magical-girl-corpses-9f754895d38e162b84e970c2793dc536.jpg",
@@ -23249,7 +23249,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:07.915368+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:00.024157+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T22:12:28.877382+00:00"
@@ -23367,7 +23367,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:10.379094+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:02.893310+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T22:12:34.009271+00:00"
@@ -23450,7 +23450,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:12.847526+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:06.840403+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T22:12:38.035386+00:00"
@@ -23616,7 +23616,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:14.612440+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:08.406695+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T22:12:44.246566+00:00"
@@ -23668,7 +23668,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:17.038280+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:11.558711+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T22:12:46.719787+00:00"
@@ -23720,7 +23720,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:19.206873+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:13.740344+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-01T22:12:49.197434+00:00"
@@ -23995,7 +23995,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:21.869142+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:15.874933+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T06:15:05.741555+00:00"
@@ -24052,7 +24052,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:24.364466+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:17.672934+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T06:15:08.260318+00:00"
@@ -24120,7 +24120,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:25.969830+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:19.218516+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T06:15:10.712386+00:00"
@@ -24151,7 +24151,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:27.260593+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:22.556209+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T06:15:11.953470+00:00"
@@ -24312,7 +24312,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:29.195306+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:24.784239+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T06:15:18.226471+00:00"
@@ -24338,7 +24338,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:32.772410+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:27.731166+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T06:15:19.482534+00:00"
@@ -24423,7 +24423,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:34.457836+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:30.089961+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T16:05:32.051902+00:00"
@@ -24449,7 +24449,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:35.752270+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:31.608871+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T16:05:33.354979+00:00"
@@ -24558,7 +24558,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:38.752368+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:33.562324+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T16:05:38.948400+00:00"
@@ -24745,7 +24745,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:40.796479+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:36.483212+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T16:05:46.811701+00:00"
@@ -24771,7 +24771,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:43.959520+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:38.341251+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T16:05:48.118124+00:00"
@@ -24959,7 +24959,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:45.895184+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:40.786482+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-02T16:05:56.241515+00:00"
@@ -25011,7 +25011,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:47.183526+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:42.509020+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:43.107661+00:00"
@@ -25042,7 +25042,7 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-14T22:33:49.325359+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:45.789137+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:44.398277+00:00"
@@ -25073,7 +25073,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:51.183854+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:52.993943+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:45.628991+00:00"
@@ -25195,7 +25195,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:52.898007+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:56.202206+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:50.712182+00:00"
@@ -25221,7 +25221,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:54.540064+00:00",
+      "metadataCheckedAt": "2026-11-17T21:06:59.442329+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:51.942955+00:00"
@@ -25252,7 +25252,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:33:58.657880+00:00",
+      "metadataCheckedAt": "2026-11-17T21:07:05.970294+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:53.169730+00:00"
@@ -25340,7 +25340,7 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-14T22:34:00.962571+00:00",
+      "metadataCheckedAt": "2026-11-17T21:07:10.118443+00:00",
       "linkCheck": {
         "status": "ok",
         "at": "2026-11-03T01:07:56.922199+00:00"
@@ -35070,7 +35070,7 @@
       "title": "The Dao of Reincarnation: Ascending Through a Hundred Lives",
       "alternative": "",
       "author": "",
-      "chapters": 630,
+      "chapters": 2762,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-dao-of-reincarnation-ascending-through-a-hundred-lives-3328c5b6eb2cc34d24b440e0de4e5052.jpg",
@@ -38726,7 +38726,7 @@
       "title": "The Prodigies War",
       "alternative": "",
       "author": "",
-      "chapters": 3168,
+      "chapters": 3170,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-prodigies-war-94239cae56b1e490a4e2f92d3f1e6f89.jpg",
@@ -38842,7 +38842,7 @@
       "title": "The Quest for Immortality",
       "alternative": "",
       "author": "",
-      "chapters": 2,
+      "chapters": 3,
       "status": "",
       "genres": [],
       "cover": "https://novelfull.net/uploads/thumbs/the-quest-for-immortality-6bf740451a592e8baaf7cd819af6d1e6.jpg",
@@ -44491,7 +44491,11 @@
           "url": "https://novelfull.net/young-master-feng-your-lady-has-stunned-the-world.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:10.119099+00:00"
+      }
     },
     {
       "title": "Young Master Fus Incredible Real Heiress",
@@ -44513,7 +44517,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-16T06:40:02.360428+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:02.360428+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:11.682562+00:00"
+      }
     },
     {
       "title": "Young Master Gu Please Be Gentle",
@@ -44540,7 +44548,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-16T06:40:03.716720+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:03.716720+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:13.026244+00:00"
+      }
     },
     {
       "title": "Young Master Mo, Are You Done Kissing?",
@@ -44568,7 +44580,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-16T06:40:05.383668+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:05.383668+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:14.222876+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -44590,7 +44606,11 @@
           "url": "https://novelfull.net/young-master-qin-keeps-coveting-me-after-i-beat-him-up.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:15.429985+00:00"
+      }
     },
     {
       "source": "NovelFull.net",
@@ -44612,7 +44632,11 @@
           "url": "https://novelfull.net/yuru-fuwa-noka-no-moji-bake-skill.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:16.759490+00:00"
+      }
     },
     {
       "title": "Ze Tian Ji",
@@ -44647,7 +44671,11 @@
       "year": "2014",
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/ze-tian-ji",
-      "metadataCheckedAt": "2026-10-23T11:48:49.971177+00:00"
+      "metadataCheckedAt": "2026-10-23T11:48:49.971177+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:18.051012+00:00"
+      }
     },
     {
       "title": "Zero To Hero In The Martial Arts Library",
@@ -44669,7 +44697,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-16T06:40:07.059942+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:07.059942+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:19.242485+00:00"
+      }
     },
     {
       "source": "",
@@ -44699,7 +44731,11 @@
           "lang": "EN"
         }
       ],
-      "metadataCheckedAt": "2026-11-16T06:40:08.581834+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:08.581834+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:20.427481+00:00"
+      }
     },
     {
       "source": "",
@@ -44735,7 +44771,11 @@
           "url": "https://novelfull.net/zhang-fei-the-abandoned-son.html",
           "lang": "EN"
         }
-      ]
+      ],
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:21.630655+00:00"
+      }
     },
     {
       "source": "",
@@ -44767,7 +44807,11 @@
       ],
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/zhanxian",
-      "metadataCheckedAt": "2026-10-23T11:48:54.096288+00:00"
+      "metadataCheckedAt": "2026-10-23T11:48:54.096288+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:22.814914+00:00"
+      }
     },
     {
       "title": "Zhu Xian",
@@ -44805,7 +44849,11 @@
       "year": "2003",
       "metadata_source": "Kitsu",
       "metadata_url": "https://kitsu.io/manga/zhu-xian",
-      "metadataCheckedAt": "2026-10-23T11:48:55.374380+00:00"
+      "metadataCheckedAt": "2026-10-23T11:48:55.374380+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:24.010715+00:00"
+      }
     },
     {
       "title": "Zombie Sister Strategy",
@@ -44832,7 +44880,11 @@
         }
       ],
       "language": "EN",
-      "metadataCheckedAt": "2026-11-16T06:40:10.150165+00:00"
+      "metadataCheckedAt": "2026-11-16T06:40:10.150165+00:00",
+      "linkCheck": {
+        "status": "ok",
+        "at": "2026-11-17T21:07:25.204767+00:00"
+      }
     }
   ]
 }
